@@ -1,0 +1,30 @@
+language: python
+sudo: required
+dist: trusty
+python:
+- '2.7'
+- '3.5'
+- '3.6'
+before_install:
+- pip install --upgrade pip setuptools wheel
+- pip install --only-binary=numpy,scipy numpy scipy
+- pip install PyOpenGL
+install:
+- pip install .
+- pip install nose2
+script:
+- cd tests
+- nose2
+- cd ..
+deploy:
+  provider: pypi
+  skip_existing: true
+  user: mmatl
+  on:
+    tags: true
+    branch: master
+  password:
+    secure: O4WWMbTYb2eVYIO4mMOVa6/xyhX7mPvJpd96cxfNvJdyuqho8VapOhzqsI5kahMB1hFjWWr61yR4+Ru5hoDYf3XA6BQVk8eCY9+0H7qRfvoxex71lahKAqfHLMoE1xNdiVTgl+QN9hYjOnopLod24rx8I8eXfpHu/mfCpuTYGyLlNcDP5St3bXpXLPB5wg8Jo1YRRv6W/7fKoXyuWjewk9cJAS0KrEgnDnSkdwm6Pb+80B2tcbgdGvpGaByw5frndwKiMUMgVUownepDU5POQq2p29wwn9lCvRucULxjEgO+63jdbZRj5fNutLarFa2nISfYnrd72LOyDfbJubwAzzAIsy2JbFORyeHvCgloiuE9oE7a9oOQt/1QHBoIV0seiawMWn55Yp70wQ7HlJs4xSGJWCGa5+9883QRNsvj420atkb3cgO8P+PXwiwTi78Dq7Z/xHqccsU0b8poqBneQoA+pUGgNnF6V7Z8e9RsCcse2gAWSZWuOK3ua+9xCgH7I7MeL3afykr2aJ+yFCoYJMFrUjJeodMX2RbL0q+3FzIPZeGW3WdhTEAL9TSKRcJBSQTskaQlZx/OcpobxS7t3d2S68CCLG9uMTqOTYws55WZ1etalA75sRk9K2MR7ZGjZW3jdtvMViISc/t6Rrjea1GE8ZHGJC6/IeLIWA2c7nc=
+  distributions: sdist bdist_wheel
+notifications:
+  email: false
