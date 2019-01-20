@@ -49,14 +49,16 @@ class Viewer(pyglet.window.Window):
 
     * `a`: Toggles rotational animation mode.
     * `c`: Toggles backface culling.
-    * `f`: Toggles face normal visualization.
+    * `f`: Toggles fullscreen mode.
     * `h`: Toggles shadow rendering.
     * `l`: Toggles lighting mode (scene lighting, Raymond lighting, or direct lighting).
+    * `m`: Toggles face normal visualization.
     * `n`: Toggles vertex normal visualization.
     * `q`: Quits the viewer.
     * `r`: Starts recording a GIF, and pressing again stops recording and opens a file dialog.
     * `s`: Opens a file dialog to save the current view as an image.
     * `w`: Toggles wireframe mode (scene default, flip wireframes, all wireframe, or all solid).
+    * `z`: Resets the camera to the initial view.
 
     Parameters
     ----------
@@ -111,6 +113,7 @@ class Viewer(pyglet.window.Window):
         * `save_directory`: `str`, A directory to open the file dialogs in. Defaults to `None`.
         * `window_title`: `str`, A title for the viewer's application window. Defaults to `"Scene Viewer"`.
         * `refresh_rate`: `float`, A refresh rate for rendering, in Hertz. Defaults to `30.0`.
+        * `fullscreen`: `bool`, Whether to make viewer fullscreen. Defaults to `False`.
 
     Note
     ----
@@ -150,7 +153,8 @@ class Viewer(pyglet.window.Window):
             'use_direct_lighting' : False,
             'save_directory' : None,
             'window_title' : 'Scene Viewer',
-            'refresh_rate': 30.0
+            'refresh_rate': 30.0,
+            'fullscreen': False
         }
 
         self.render_flags = self._default_render_flags.copy()
@@ -370,9 +374,91 @@ class Viewer(pyglet.window.Window):
 
         # Otherwise, use default key functions
 
-        # W toggles through wireframe modes
+        # A causes the frame to rotate
         self._message_text = None
-        if symbol == pyglet.window.key.W:
+        if symbol == pyglet.window.key.A:
+            self.viewer_flags['rotate'] = not self.viewer_flags['rotate']
+            if self.viewer_flags['rotate']:
+                self._message_text = 'Rotation On'
+            else:
+                self._message_text = 'Rotation Off'
+
+        # C toggles backface culling
+        elif symbol == pyglet.window.key.C:
+            self.render_flags['cull_faces'] = not self.render_flags['cull_faces']
+            if self.render_flags['cull_faces']:
+                self._message_text = 'Cull Faces On'
+            else:
+                self._message_text = 'Cull Faces Off'
+
+        # F toggles face normals
+        elif symbol == pyglet.window.key.F:
+            self.viewer_flags['fullscreen'] = not self.viewer_flags['fullscreen']
+            self.set_fullscreen(self.viewer_flags['fullscreen'])
+            if self.viewer_flags['fullscreen']:
+                self._message_text = 'Fullscreen On'
+            else:
+                self._message_text = 'Fullscreen Off'
+
+        # S toggles shadows
+        elif symbol == pyglet.window.key.H and sys.platform != 'darwin':
+            self.render_flags['shadows'] = not self.render_flags['shadows']
+            if self.render_flags['shadows']:
+                self._message_text = 'Shadows On'
+            else:
+                self._message_text = 'Shadows Off'
+
+        # L toggles the lighting mode
+        elif symbol == pyglet.window.key.L:
+            if self.viewer_flags['use_raymond_lighting']:
+                self.viewer_flags['use_raymond_lighting'] = False
+                self.viewer_flags['use_direct_lighting'] = True
+                self._message_text = 'Direct Lighting'
+            elif self.viewer_flags['use_direct_lighting']:
+                self.viewer_flags['use_raymond_lighting'] = False
+                self.viewer_flags['use_direct_lighting'] = False
+                self._message_text = 'Default Lighting'
+            else:
+                self.viewer_flags['use_raymond_lighting'] = True
+                self.viewer_flags['use_direct_lighting'] = False
+                self._message_text = 'Raymond Lighting'
+
+        # M toggles face normals
+        elif symbol == pyglet.window.key.M:
+            self.render_flags['face_normals'] = not self.render_flags['face_normals']
+            if self.render_flags['face_normals']:
+                self._message_text = 'Face Normals On'
+            else:
+                self._message_text = 'Face Normals Off'
+
+        # N toggles vertex normals
+        elif symbol == pyglet.window.key.N:
+            self.render_flags['vertex_normals'] = not self.render_flags['vertex_normals']
+            if self.render_flags['vertex_normals']:
+                self._message_text = 'Vert Normals On'
+            else:
+                self._message_text = 'Vert Normals Off'
+
+        # Q quits the viewer
+        elif symbol == pyglet.window.key.Q:
+            self.on_close()
+
+        # R starts recording frames
+        elif symbol == pyglet.window.key.R:
+            if self.viewer_flags['record']:
+                self._save_gif()
+                self.set_caption(self.viewer_flags['window_title'])
+            else:
+                self.set_caption('{} (RECORDING)'.format(self.viewer_flags['window_title']))
+            self.viewer_flags['record'] = not self.viewer_flags['record']
+
+
+        # S saves the current frame as an image
+        elif symbol == pyglet.window.key.S:
+            self._save_image()
+
+        # W toggles through wireframe modes
+        elif symbol == pyglet.window.key.W:
             if self.render_flags['flip_wireframe']:
                 self.render_flags['flip_wireframe'] = False
                 self.render_flags['all_wireframe'] = True
@@ -394,81 +480,9 @@ class Viewer(pyglet.window.Window):
                 self.render_flags['all_solid'] = False
                 self._message_text = 'Flip Wireframe'
 
-        # L toggles the lighting mode
-        elif symbol == pyglet.window.key.L:
-            if self.viewer_flags['use_raymond_lighting']:
-                self.viewer_flags['use_raymond_lighting'] = False
-                self.viewer_flags['use_direct_lighting'] = True
-                self._message_text = 'Direct Lighting'
-            elif self.viewer_flags['use_direct_lighting']:
-                self.viewer_flags['use_raymond_lighting'] = False
-                self.viewer_flags['use_direct_lighting'] = False
-                self._message_text = 'Default Lighting'
-            else:
-                self.viewer_flags['use_raymond_lighting'] = True
-                self.viewer_flags['use_direct_lighting'] = False
-                self._message_text = 'Raymond Lighting'
-
-        # S toggles shadows
-        elif symbol == pyglet.window.key.H and sys.platform != 'darwin':
-            self.render_flags['shadows'] = not self.render_flags['shadows']
-            if self.render_flags['shadows']:
-                self._message_text = 'Shadows On'
-            else:
-                self._message_text = 'Shadows Off'
-
-        # N toggles vertex normals
-        elif symbol == pyglet.window.key.N:
-            self.render_flags['vertex_normals'] = not self.render_flags['vertex_normals']
-            if self.render_flags['vertex_normals']:
-                self._message_text = 'Vert Normals On'
-            else:
-                self._message_text = 'Vert Normals Off'
-
-        # F toggles face normals
-        elif symbol == pyglet.window.key.F:
-            self.render_flags['face_normals'] = not self.render_flags['face_normals']
-            if self.render_flags['face_normals']:
-                self._message_text = 'Face Normals On'
-            else:
-                self._message_text = 'Face Normals Off'
-
         # Z resets the camera viewpoint
         elif symbol == pyglet.window.key.Z:
             self._reset_view()
-
-        # A causes the frame to rotate
-        elif symbol == pyglet.window.key.A:
-            self.viewer_flags['rotate'] = not self.viewer_flags['rotate']
-            if self.viewer_flags['rotate']:
-                self._message_text = 'Rotation On'
-            else:
-                self._message_text = 'Rotation Off'
-
-        # C toggles backface culling
-        elif symbol == pyglet.window.key.C:
-            self.render_flags['cull_faces'] = not self.render_flags['cull_faces']
-            if self.render_flags['cull_faces']:
-                self._message_text = 'Cull Faces On'
-            else:
-                self._message_text = 'Cull Faces Off'
-
-        # S saves the current frame as an image
-        elif symbol == pyglet.window.key.S:
-            self._save_image()
-
-        # Q quits the viewer
-        elif symbol == pyglet.window.key.Q:
-            self.on_close()
-
-        # R starts recording frames
-        elif symbol == pyglet.window.key.R:
-            if self.viewer_flags['record']:
-                self._save_gif()
-                self.set_caption(self.viewer_flags['window_title'])
-            else:
-                self.set_caption('{} (RECORDING)'.format(self.viewer_flags['window_title']))
-            self.viewer_flags['record'] = not self.viewer_flags['record']
 
         if self._message_text is not None:
             self._message_opac = 1.0 + self._ticks_till_fade
