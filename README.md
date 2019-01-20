@@ -12,7 +12,9 @@ you can get started visualizing 3D data instantly.
 
 Extensive API documentation is provided [here](https://mmatl.github.io/pyrender).
 
-![Scene image](docs/source/rotation.gif)
+<p align="center">
+  <img src="https://github.com/mmatl/pyrender/blob/master/docs/source/rotation.gif?raw=true" alt="GIF of Viewer"/>
+</p>
 
 ## Installation
 You can install pyrender directly from pip.
