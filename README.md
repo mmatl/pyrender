@@ -1,6 +1,7 @@
 # Pyrender
 
 [![Build Status](https://travis-ci.org/mmatl/pyrender.svg?branch=master)](https://travis-ci.org/mmatl/pyrender)
+
 Pyrender is a pure Python (2.7 - 3.3+) library for visualizing and rendering
 3D scenes using OpenGL and physically-based rendering (PBR).
 It is designed around the [glTF 2.0 specification from
@@ -17,7 +18,7 @@ Extensive API documentation is provided [here](https://mmatl.github.io/pyrender)
 You can install pyrender directly from pip.
 
 ```bash
-pip install trimesh
+pip install pyrender
 ```
 
 If you plan to use pyrender for long runs of generating data, I'd recommend
@@ -33,7 +34,8 @@ python setup.py install
 
 Despite being lightweight, pyrender has lots of features, including:
 
-* An easy-to-use visualizer with support for animation, showing face and vertex
+* Simple interoperation with the amazing [trimesh](https://github.com/mikedh/trimesh) project.
+* An easy-to-use scene viewer with support for animation, showing face and vertex
 normals, toggling lighting conditions, and saving images and GIFs.
 * An offscreen rendering module for generating images of 3D scenes.
 * Support for several types of lighting, including point, spot, and directional
@@ -190,3 +192,29 @@ plt.figure()
 plt.imshow(color)
 plt.show()
 ```
+
+## Viewer Keyboard and Mouse Controls
+
+When using the viewer, the basic controls for moving about the scene are as follows:
+
+* To rotate the camera about the center of the scene, hold the left mouse button and drag the cursor.
+* To rotate the camera about its viewing axis, hold `CTRL` left mouse button and drag the cursor.
+* To pan the camera, do one of the following:
+    * Hold `SHIFT`, then hold the left mouse button and drag the cursor.
+    * Hold the middle mouse button and drag the cursor.
+* To zoom the camera in or out, do one of the following:
+    * Scroll the mouse wheel.
+    * Hold the right mouse button and drag the cursor.
+
+The available keyboard commands are as follows:
+
+* `a`: Toggles rotational animation mode.
+* `c`: Toggles backface culling.
+* `f`: Toggles face normal visualization.
+* `h`: Toggles shadow rendering.
+* `l`: Toggles lighting mode (scene lighting, Raymond lighting, or direct lighting).
+* `n`: Toggles vertex normal visualization.
+* `q`: Quits the viewer.
+* `r`: Starts recording a GIF, and pressing again stops recording and opens a file dialog.
+* `s`: Opens a file dialog to save the current view as an image.
+* `w`: Toggles wireframe mode (scene default, flip wireframes, all wireframe, or all solid).
