@@ -315,6 +315,7 @@ class Scene(object):
             self.add_node(child, node)
 
         self._path_cache = {}
+        self._bounds = None
 
     def has_node(self, node):
         """Check if a node is already in the scene.
