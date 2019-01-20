@@ -75,8 +75,9 @@ class ShaderProgram(object):
 
         self._program_id = None
         self._vao_id = None # PYOPENGL BUG
+
         # DEBUG
-        self._unif_map = {}
+        #self._unif_map = {}
 
     def _add_to_context(self):
         if self._program_id is not None:
@@ -210,14 +211,32 @@ class ShaderProgram(object):
             If True, ints will be treated as unsigned values.
         """
         try:
-            self._unif_map[name] = 1, (1,)
+            # DEBUG
+            #self._unif_map[name] = 1, (1,)
             loc = glGetUniformLocation(self._program_id, name)
 
             if loc == -1:
                 raise ValueError('Invalid shader name variable: {}'.format(name))
 
+            if isinstance(value, np.ndarray):
+                # DEBUG
+                #self._unif_map[name] = value.size, value.shape
+                if value.ndim == 1:
+                    if np.issubdtype(value.dtype, np.unsignedinteger) or unsigned:
+                        dtype = 'u'
+                        value = value.astype(np.uint32)
+                    elif np.issubdtype(value.dtype, np.integer):
+                        dtype = 'i'
+                        value = value.astype(np.int32)
+                    else:
+                        dtype = 'f'
+                        value = value.astype(np.float32)
+                    self.FUNC_MAP[(value.shape[0], dtype)](loc, 1, value)
+                else:
+                    self.FUNC_MAP[(value.shape[0], value.shape[1])](loc, 1, GL_TRUE, value)
+
             # Call correct uniform function
-            if isinstance(value, float):
+            elif isinstance(value, float):
                 glUniform1f(loc, value)
             elif isinstance(value, int):
                 if unsigned:
@@ -229,78 +248,31 @@ class ShaderProgram(object):
                     glUniform1ui(loc, int(value))
                 else:
                     glUniform1i(loc, int(value))
-            elif isinstance(value, np.ndarray):
-                self._unif_map[name] = value.size, value.shape
-                # Set correct data type
-                if np.issubdtype(value.dtype, np.unsignedinteger) or unsigned:
-                    value = value.astype(np.uint32)
-                    if value.ndim == 1:
-                        if value.shape[0] == 1:
-                            glUniform1uiv(loc, 1, value)
-                        elif value.shape[0] == 2:
-                            glUniform2uiv(loc, 1, value)
-                        elif value.shape[0] == 3:
-                            glUniform3uiv(loc, 1, value)
-                        elif value.shape[0] == 4:
-                            glUniform4uiv(loc, 1, value)
-                        else:
-                            raise ValueError('Invalid data type')
-                    else:
-                        raise ValueError('Invalid data type')
-                elif np.issubdtype(value.dtype, np.signedinteger):
-                    value = value.astype(np.int32)
-                    if value.ndim == 1:
-                        if value.shape[0] == 1:
-                            glUniform1iv(loc, 1, value)
-                        elif value.shape[0] == 2:
-                            glUniform2iv(loc, 1, value)
-                        elif value.shape[0] == 3:
-                            glUniform3iv(loc, 1, value)
-                        elif value.shape[0] == 4:
-                            glUniform4iv(loc, 1, value)
-                        else:
-                            raise ValueError('Invalid data type')
-                    else:
-                        raise ValueError('Invalid data type')
-                elif np.issubdtype(value.dtype, np.floating):
-                    value = value.astype(np.float32)
-                    if value.ndim == 1:
-                        if value.shape[0] == 1:
-                            glUniform1fv(loc, 1, value)
-                        elif value.shape[0] == 2:
-                            glUniform2fv(loc, 1, value)
-                        elif value.shape[0] == 3:
-                            glUniform3fv(loc, 1, value)
-                        elif value.shape[0] == 4:
-                            glUniform4fv(loc, 1, value)
-                        else:
-                            raise ValueError('Invalid data type')
-                    elif value.ndim == 2:
-                        if value.shape == (2,2):
-                            glUniformMatrix2fv(loc, 1, GL_TRUE, value)
-                        elif value.shape == (2,3):
-                            glUniformMatrix2x3fv(loc, 1, GL_TRUE, value)
-                        elif value.shape == (2,4):
-                            glUniformMatrix2x4fv(loc, 1, GL_TRUE, value)
-                        elif value.shape == (3,2):
-                            glUniformMatrix3x2fv(loc, 1, GL_TRUE, value)
-                        elif value.shape == (3,3):
-                            glUniformMatrix3fv(loc, 1, GL_TRUE, value)
-                        elif value.shape == (3,4):
-                            glUniformMatrix3x4fv(loc, 1, GL_TRUE, value)
-                        if value.shape == (4,2):
-                            glUniformMatrix4x2fv(loc, 1, GL_TRUE, value)
-                        elif value.shape == (4,3):
-                            glUniformMatrix4x3fv(loc, 1, GL_TRUE, value)
-                        elif value.shape == (4,4):
-                            glUniformMatrix4fv(loc, 1, GL_TRUE, value)
-                        else:
-                            raise ValueError('Invalid data type')
-                    else:
-                        raise ValueError('Invalid data type')
-                else:
-                    raise ValueError('Invalid data type')
             else:
                 raise ValueError('Invalid data type')
-        except:
-            self._unif_map.pop(name)
+        except Exception as e:
+            pass
+
+    FUNC_MAP = {
+        (1,'u')    : glUniform1uiv,
+        (2,'u')    : glUniform2uiv,
+        (3,'u')    : glUniform3uiv,
+        (4,'u')    : glUniform4uiv,
+        (1,'i')    : glUniform1iv,
+        (2,'i')    : glUniform2iv,
+        (3,'i')    : glUniform3iv,
+        (4,'i')    : glUniform4iv,
+        (1,'f')    : glUniform1fv,
+        (2,'f')    : glUniform2fv,
+        (3,'f')    : glUniform3fv,
+        (4,'f')    : glUniform4fv,
+        (2,2)      : glUniformMatrix2fv,
+        (2,3)      : glUniformMatrix2x3fv,
+        (2,4)      : glUniformMatrix2x4fv,
+        (3,2)      : glUniformMatrix3x2fv,
+        (3,3)      : glUniformMatrix4fv,
+        (3,4)      : glUniformMatrix3x4fv,
+        (4,2)      : glUniformMatrix4x2fv,
+        (4,3)      : glUniformMatrix4x3fv,
+        (4,4)      : glUniformMatrix4fv,
+    }

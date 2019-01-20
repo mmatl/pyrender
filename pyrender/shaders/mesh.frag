@@ -372,7 +372,6 @@ void main()
         res = res * (1.0 - shadow);
 #endif
         color.xyz += res;
-        //color = vec3(shadow);
     }
 
     for (int i = 0; i < n_point_lights; i++) {

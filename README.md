@@ -214,6 +214,7 @@ The available keyboard commands are as follows:
 * `c`: Toggles backface culling.
 * `f`: Toggles fullscreen mode.
 * `h`: Toggles shadow rendering.
+* `i`: Toggles axis display mode (no axes, world axis, mesh axes, all axes).
 * `l`: Toggles lighting mode (scene lighting, Raymond lighting, or direct lighting).
 * `m`: Toggles face normal visualization.
 * `n`: Toggles vertex normal visualization.
@@ -222,3 +223,7 @@ The available keyboard commands are as follows:
 * `s`: Opens a file dialog to save the current view as an image.
 * `w`: Toggles wireframe mode (scene default, flip wireframes, all wireframe, or all solid).
 * `z`: Resets the camera to the default view.
+
+As a note, displaying shadows significantly slows down rendering, so if you're
+experiencing low framerates, just kill shadows or reduce the number of lights in
+your scene.

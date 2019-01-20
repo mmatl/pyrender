@@ -57,6 +57,7 @@ class Scene(object):
         self._directional_light_nodes = set()
         self._camera_nodes = set()
         self._main_camera_node = None
+        self._bounds = None
 
         # Transform tree
         self._digraph = nx.DiGraph()
@@ -283,7 +284,9 @@ class Scene(object):
             self._name_to_nodes[node.name].add(node)
         for obj in [node.mesh, node.camera, node.light]:
             if obj is not None:
-                self._obj_to_nodes[obj] = node
+                if obj not in self._obj_to_nodes:
+                    self._obj_to_nodes[obj] = set()
+                self._obj_to_nodes[obj].add(node)
                 if obj.name is not None:
                     if obj.name not in self._obj_name_to_nodes:
                         self._obj_name_to_nodes[obj.name] = set()
@@ -353,7 +356,9 @@ class Scene(object):
         for obj in [node.mesh, node.camera, node.light]:
             if obj is None:
                 continue
-            self._obj_to_nodes.pop(obj)
+            self._obj_to_nodes[obj].remove(node)
+            if len(self._obj_to_nodes[obj]) == 0:
+                self._obj_to_nodes.pop(obj)
             if obj.name is not None:
                 self._obj_name_to_nodes[obj.name].remove(node)
                 if len(self._obj_name_to_nodes[obj.name]) == 0:
@@ -401,21 +406,36 @@ class Scene(object):
 
         return pose
 
+    def set_pose(self, node, pose):
+        """Get the local-frame pose of a node in the scene.
+
+        Parameters
+        ----------
+        node : :obj:`Node`
+            The node to set the pose of.
+        pose : (4,4) float
+            The pose to set the node to.
+        """
+        node.matrix = pose
+        if node.mesh is not None:
+            self._bounds = None
+
     @property
     def bounds(self):
         """(2,3) float : The axis-aligned bounds of the scene.
         """
-        # Compute corners
-        corners = []
-        for mesh_node in self.mesh_nodes:
-            mesh = mesh_node.mesh
-            pose = self.get_pose(mesh_node)
-            corners_local = trimesh.bounds.corners(mesh.bounds)
-            corners_world = pose[:3,:3].dot(corners_local.T).T + pose[:3,3]
-            corners.append(corners_world)
-        corners = np.vstack(corners)
-        bounds = np.array([np.min(corners, axis=0), np.max(corners, axis=0)])
-        return bounds
+        if self._bounds is None:
+            # Compute corners
+            corners = []
+            for mesh_node in self.mesh_nodes:
+                mesh = mesh_node.mesh
+                pose = self.get_pose(mesh_node)
+                corners_local = trimesh.bounds.corners(mesh.bounds)
+                corners_world = pose[:3,:3].dot(corners_local.T).T + pose[:3,3]
+                corners.append(corners_world)
+            corners = np.vstack(corners)
+            self._bounds = np.array([np.min(corners, axis=0), np.max(corners, axis=0)])
+        return self._bounds
 
     @property
     def centroid(self):

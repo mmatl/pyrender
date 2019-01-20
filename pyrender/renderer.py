@@ -545,18 +545,26 @@ class Renderer(object):
         """
         max_n_lights = self._compute_max_n_lights(flags)
 
+        n_d = min(len(scene.directional_light_nodes), max_n_lights[0])
+        n_s = min(len(scene.spot_light_nodes), max_n_lights[1])
+        n_p = min(len(scene.point_light_nodes), max_n_lights[2])
         program.set_uniform('ambient_light', scene.ambient_light)
-        program.set_uniform('n_directional_lights', min(len(scene.directional_light_nodes), max_n_lights[0]))
-        program.set_uniform('n_spot_lights', min(len(scene.spot_light_nodes), max_n_lights[1]))
-        program.set_uniform('n_point_lights', min(len(scene.point_light_nodes), max_n_lights[2]))
+        program.set_uniform('n_directional_lights', n_d)
+        program.set_uniform('n_spot_lights', n_s)
+        program.set_uniform('n_point_lights', n_p)
         plc = 0
         slc = 0
         dlc = 0
 
-        for n in self._sorted_nodes_by_distance(scene, scene.light_nodes, node):
+        light_nodes = scene.light_nodes
+        if n_d > max_n_lights[0] or n_s > max_n_lights[1] or n_p > max_n_lights[2]:
+            light_nodes = self._sorted_nodes_by_distance(scene, scene.light_nodes, node)
+
+        for n in light_nodes:
             l = n.light
-            position = scene.get_pose(n)[:3,3]
-            direction = -scene.get_pose(n)[:3,2]
+            pose = scene.get_pose(n)
+            position = pose[:3,3]
+            direction = -pose[:3,2]
             shadow = bool(flags & RenderFlags.SHADOWS_ALL)
 
             if isinstance(l, PointLight):
@@ -588,10 +596,10 @@ class Renderer(object):
 
             program.set_uniform(b + 'color', l.color)
             program.set_uniform(b + 'intensity', l.intensity)
-            if l.range is not None:
-                program.set_uniform(b + 'range', l.range)
-            else:
-                program.set_uniform(b + 'range', 0)
+            #if l.range is not None:
+            #    program.set_uniform(b + 'range', l.range)
+            #else:
+            #    program.set_uniform(b + 'range', 0)
 
             if shadow:
                 self._bind_texture(l.shadow_texture, b + 'shadow_map', program)
@@ -731,11 +739,13 @@ class Renderer(object):
     def _get_light_cam_matrices(self, scene, light_node, flags):
         light = light_node.light
         pose = scene.get_pose(light_node).copy()
-        camera = light.get_shadow_camera(scene.scale)
+        s = scene.scale
+        camera = light.get_shadow_camera(s)
         P = camera.get_projection_matrix()
         if isinstance(light, DirectionalLight):
             direction = -pose[:3,2]
-            loc = scene.centroid - direction * scene.scale
+            c = scene.centroid
+            loc = c - direction * s
             pose[:3,3] = loc
         V = np.linalg.inv(pose) # V maps from world to camera
         return V, P
