@@ -99,7 +99,8 @@ class ShaderProgram(object):
             )
 
         # Create empty vertex array and bind it
-        self._vao_id = glGenVertexArrays(1)
+        if self._vao_id is None:
+            self._vao_id = glGenVertexArrays(1)
         glBindVertexArray(self._vao_id)
 
         # Compile program
