@@ -36,6 +36,8 @@ class Scene(object):
 
         if bg_color is None:
             bg_color = np.ones(4)
+        else:
+            bg_color = format_color_vector(bg_color, 4)
 
         if ambient_light is None:
             ambient_light = np.zeros(3)

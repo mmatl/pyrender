@@ -340,8 +340,6 @@ class Renderer(object):
 
         # If doing offscreen render, copy result from framebuffer and return
         if flags & RenderFlags.OFFSCREEN:
-            if flags & RenderFlags.DEPTH_ONLY:
-                return self._read_main_framebuffer(scene)[1]
             return self._read_main_framebuffer(scene)
         else:
             return
