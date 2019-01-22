@@ -57,6 +57,7 @@ class OffscreenRenderer(object):
             The depth buffer in linear units.
         """
 
+        self._platform.make_current()
         # If platform does not support dynamically-resizing framebuffers,
         # destroy it and restart it
         if (self._platform.viewport_height != self.viewport_height or

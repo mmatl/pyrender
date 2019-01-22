@@ -3,6 +3,7 @@
 import copy
 import os
 import sys
+from threading import Thread, Lock
 
 import imageio
 import numpy as np
@@ -128,7 +129,7 @@ class Viewer(pyglet.window.Window):
 
     def __init__(self, scene, viewport_size=None,
                  render_flags=None, viewer_flags=None,
-                 registered_keys=None, **kwargs):
+                 registered_keys=None, run_in_thread=False, **kwargs):
 
         ########################################################################
         # Save attributes and flags
@@ -137,6 +138,7 @@ class Viewer(pyglet.window.Window):
             viewport_size = (640, 480)
         self._scene = scene
         self._viewport_size = viewport_size
+        self.run_in_thread = run_in_thread
 
         self._default_render_flags = {
             'flip_wireframe' : False,
@@ -239,26 +241,28 @@ class Viewer(pyglet.window.Window):
         # Initialize OpenGL context and renderer
         ########################################################################
         self._renderer = Renderer(self._viewport_size[0], self._viewport_size[1])
-        try:
-            conf = gl.Config(sample_buffers=1, samples=4,
-                             depth_size=24, double_buffer=True,
-                             major_version=OPEN_GL_MAJOR,
-                             minor_version=OPEN_GL_MINOR)
-            super(Viewer, self).__init__(config=conf, resizable=True,
-                                         width=self._viewport_size[0],
-                                         height=self._viewport_size[1])
-        except Exception as e:
-            raise ValueError('Failed to initialize Pyglet window with an OpenGL 3+ context. ' \
-                             'If you\'re logged in via SSH, ensure that you\'re running your script ' \
-                             'with vglrun (i.e. VirtualGL). Otherwise, the internal error message was: ' \
-                             '"{}"'.format(e.message))
+        self._context_active = False
 
-        self.set_caption(self.viewer_flags['window_title'])
+        if self.run_in_thread:
+            self.scene_lock = Lock()
+            self._thread = Thread(target=self._init_and_start_app)
+            self._thread.start()
+        else:
+            self._init_and_start_app()
 
-        # Start timing event
+    def _init_and_start_app(self):
+        conf = gl.Config(sample_buffers=1, samples=4,
+                         depth_size=24, double_buffer=True,
+                         major_version=OPEN_GL_MAJOR,
+                         minor_version=OPEN_GL_MINOR)
+        super(Viewer, self).__init__(config=conf, resizable=True,
+                                     width=self._viewport_size[0],
+                                     height=self._viewport_size[1])
+        if self.context.config.major_version < 3:
+            raise ValueError('Unable to initialize an OpenGL 3+ context')
         clock.schedule_interval(Viewer.time_event, 1.0/self.viewer_flags['refresh_rate'], self)
-
-        # Start the event loop
+        self.switch_to()
+        self.set_caption(self.viewer_flags['window_title'])
         pyglet.app.run()
 
     @property
@@ -306,6 +310,9 @@ class Viewer(pyglet.window.Window):
         if self._renderer is None:
             return
 
+        if self.run_in_thread:
+            self.scene_lock.acquire()
+
         # Make OpenGL context current
         self.switch_to()
 
@@ -322,6 +329,9 @@ class Viewer(pyglet.window.Window):
                 color=np.array([0.1,0.7,0.2,np.clip(self._message_opac, 0.0, 1.0)]),
                 align=TextAlign.BOTTOM_RIGHT
             )
+
+        if self.run_in_thread:
+            self.scene_lock.release()
 
     def on_resize(self, width, height):
         """Resize the camera and trackball when the window is resized.
