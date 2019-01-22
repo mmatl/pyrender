@@ -436,8 +436,11 @@ class Scene(object):
                 corners_local = trimesh.bounds.corners(mesh.bounds)
                 corners_world = pose[:3,:3].dot(corners_local.T).T + pose[:3,3]
                 corners.append(corners_world)
-            corners = np.vstack(corners)
-            self._bounds = np.array([np.min(corners, axis=0), np.max(corners, axis=0)])
+            if len(corners) == 0:
+                self._bounds = np.zeros((2,3))
+            else:
+                corners = np.vstack(corners)
+                self._bounds = np.array([np.min(corners, axis=0), np.max(corners, axis=0)])
         return self._bounds
 
     @property

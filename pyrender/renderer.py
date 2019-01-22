@@ -300,6 +300,7 @@ class Renderer(object):
         # Set up camera matrices
         V, P = self._get_camera_matrices(scene)
 
+        program = None
         # Now, render each object in sorted order
         for node in self._sorted_mesh_nodes(scene):
             mesh = node.mesh
