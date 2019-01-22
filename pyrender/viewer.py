@@ -306,6 +306,9 @@ class Viewer(pyglet.window.Window):
         if self._renderer is None:
             return
 
+        # Make OpenGL context current
+        self.switch_to()
+
         # Render the scene
         self.clear()
         self._render()

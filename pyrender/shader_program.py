@@ -74,7 +74,6 @@ class ShaderProgram(object):
             self.defines = {}
 
         self._program_id = None
-        self._vao_id = None # PYOPENGL BUG
 
         # DEBUG
         #self._unif_map = {}
@@ -98,16 +97,8 @@ class ShaderProgram(object):
                 self._load(self.geometry_shader), GL_GEOMETRY_SHADER)
             )
 
-        # Create empty vertex array and bind it
-        if self._vao_id is None:
-            self._vao_id = glGenVertexArrays(1)
-        glBindVertexArray(self._vao_id)
-
         # Compile program
         self._program_id = gl_shader_utils.compileProgram(*shader_ids)
-
-        # Unbind empty VAO (PYOPENGL BUG)
-        glBindVertexArray(0)
 
     def _in_context(self):
         return self._program_id is not None
@@ -115,9 +106,7 @@ class ShaderProgram(object):
     def _remove_from_context(self):
         if self._program_id is not None:
             glDeleteProgram(self._program_id)
-            glDeleteVertexArrays(1, [self._vao_id])
             self._program_id = None
-            self._vao_id = None
 
     def _load(self, shader_filename):
         path, _ = os.path.split(shader_filename)
@@ -166,7 +155,7 @@ class ShaderProgram(object):
         """
         if self._program_id is None:
             raise ValueError('Cannot bind program that is not in context')
-        glBindVertexArray(self._vao_id)
+        #glBindVertexArray(self._vao_id)
         glUseProgram(self._program_id)
 
     def _unbind(self):
