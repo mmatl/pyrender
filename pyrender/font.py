@@ -187,14 +187,19 @@ class Font(object):
             xoff = -width/2.0
         elif align == TextAlign.TOP_LEFT:
             yoff = -height
-        elif align == TextAlign.TOP_CENTER:
-            yoff = -height
-            xoff = -width/2.0
         elif align == TextAlign.TOP_RIGHT:
             yoff = -height
             xoff = -width
+        elif align == TextAlign.TOP_CENTER:
+            yoff = -height
+            xoff = -width/2.0
         elif align == TextAlign.CENTER:
             xoff = -width/2.0
+            yoff = -height/2.0
+        elif align == TextAlign.CENTER_LEFT:
+            yoff = -height/2.0
+        elif align == TextAlign.CENTER_RIGHT:
+            xoff = -width
             yoff = -height/2.0
 
         x += xoff

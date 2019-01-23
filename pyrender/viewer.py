@@ -22,7 +22,7 @@ except ImportError:
     except:
         pass
 
-from .constants import OPEN_GL_MAJOR, OPEN_GL_MINOR, RenderFlags, TextAlign
+from .constants import OPEN_GL_MAJOR, OPEN_GL_MINOR, TEXT_PADDING, RenderFlags, TextAlign
 from .light import DirectionalLight
 from .node import Node
 from .camera import PerspectiveCamera
@@ -120,6 +120,7 @@ class Viewer(pyglet.window.Window):
         * `fullscreen`: `bool`, Whether to make viewer fullscreen. Defaults to `False`.
         * `show_world_axis`: `bool`, Whether to show the world axis. Defaults to `False`.
         * `show_mesh_axes`: `bool`, Whether to show the individual mesh axes. Defaults to `False`.
+        * `caption`: `list of dict`, Text caption(s) to display on the viewer. Defaults to `None`. 
 
     Note
     ----
@@ -147,7 +148,7 @@ class Viewer(pyglet.window.Window):
             'shadows' : False,
             'vertex_normals' : False,
             'face_normals' : False,
-            'cull_faces' : True,
+            'cull_faces' : True
         }
         self._default_viewer_flags = {
             'mouse_pressed' : False,
@@ -163,7 +164,8 @@ class Viewer(pyglet.window.Window):
             'refresh_rate': 30.0,
             'fullscreen': False,
             'show_world_axis': False,
-            'show_mesh_axes': False
+            'show_mesh_axes': False,
+            'caption': None
         }
 
         self.render_flags = self._default_render_flags.copy()
@@ -323,12 +325,26 @@ class Viewer(pyglet.window.Window):
         if self._message_text is not None:
             self._renderer.render_text(
                 self._message_text,
-                self.viewport_size[0]-20,
-                20,
+                self.viewport_size[0]-TEXT_PADDING,
+                TEXT_PADDING,
                 font_pt=20,
                 color=np.array([0.1,0.7,0.2,np.clip(self._message_opac, 0.0, 1.0)]),
                 align=TextAlign.BOTTOM_RIGHT
             )
+        
+        if self.viewer_flags['caption'] is not None:
+            for caption in self.viewer_flags['caption']:
+                xpos, ypos = self._location_to_x_y(caption['location'])
+                self._renderer.render_text(
+                    caption['text'],
+                    xpos,
+                    ypos,
+                    font_name=caption['font_name'],
+                    font_pt=caption['font_pt'],
+                    color=caption['color'],
+                    scale=caption['scale'],
+                    align=caption['location']
+                )
 
         if self.run_in_thread:
             self.scene_lock.release()
@@ -703,7 +719,7 @@ class Viewer(pyglet.window.Window):
             if self._message_opac > 1.0:
                 self._message_opac -= 1.0
             else:
-                self._message_opac *= 0.90;
+                self._message_opac *= 0.90
             if self._message_opac < 0.05:
                 self._message_opac = 1.0 + self._ticks_till_fade
                 self._message_text = None
@@ -798,3 +814,23 @@ class Viewer(pyglet.window.Window):
             axis_node = self._axes[main_node]
             self.scene.remove_node(axis_node)
         self._axes = {}
+
+    def _location_to_x_y(self, location):
+        if location == TextAlign.CENTER:
+            return (self.viewport_size[0]/2.0, self.viewport_size[1]/2.0)
+        elif location == TextAlign.CENTER_LEFT:
+            return (TEXT_PADDING, self.viewport_size[1]/2.0)
+        elif location == TextAlign.CENTER_RIGHT:
+            return (self.viewport_size[0]-TEXT_PADDING, self.viewport_size[1]/2.0)
+        elif location == TextAlign.BOTTOM_LEFT:
+            return (TEXT_PADDING, TEXT_PADDING)
+        elif location == TextAlign.BOTTOM_RIGHT:
+            return (self.viewport_size[0]-TEXT_PADDING, TEXT_PADDING)
+        elif location == TextAlign.BOTTOM_CENTER:
+            return (self.viewport_size[0]/2.0, TEXT_PADDING)
+        elif location == TextAlign.TOP_LEFT:
+            return (TEXT_PADDING, self.viewport_size[1]-TEXT_PADDING)
+        elif location == TextAlign.TOP_RIGHT:
+            return (self.viewport_size[0]-TEXT_PADDING, self.viewport_size[1]-TEXT_PADDING)
+        elif location == TextAlign.TOP_CENTER:
+            return (self.viewport_size[0]/2.0, self.viewport_size[1]-TEXT_PADDING)
