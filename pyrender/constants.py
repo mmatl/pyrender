@@ -6,6 +6,7 @@ OPEN_GL_MINOR = 1         # Target OpenGL Minor Version
 FLOAT_SZ = 4              # Byte size of GL float32
 UINT_SZ = 4               # Byte size of GL uint32
 SHADOW_TEX_SZ = 1024      # Width and Height of Shadow Textures
+TEXT_PADDING = 20         # Width of padding for rendering text (px)
 
 class GLTF(object):
     NEAREST = 9728
@@ -68,11 +69,12 @@ class ProgramFlags:
     FACE_NORMALS = 4
 
 class TextAlign:
-    NONE = 0
-    BOTTOM_LEFT = 1
-    BOTTOM_RIGHT = 2
-    BOTTOM_CENTER = 3
-    TOP_LEFT = 4
-    TOP_RIGHT = 5
-    TOP_CENTER = 6
-    CENTER = 7
+    CENTER = 0
+    CENTER_LEFT = 1
+    CENTER_RIGHT = 2
+    BOTTOM_LEFT = 3
+    BOTTOM_RIGHT = 4
+    BOTTOM_CENTER = 5
+    TOP_LEFT = 6
+    TOP_RIGHT = 7
+    TOP_CENTER = 8
