@@ -243,7 +243,6 @@ class Viewer(pyglet.window.Window):
         # Initialize OpenGL context and renderer
         ########################################################################
         self._renderer = Renderer(self._viewport_size[0], self._viewport_size[1])
-        self._context_active = False
 
         if self.run_in_thread:
             self.scene_lock = Lock()

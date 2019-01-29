@@ -929,7 +929,7 @@ class Renderer(object):
         glReadBuffer(GL_NONE)
 
         glClear(GL_DEPTH_BUFFER_BIT)
-        glViewport(0, 0, self.dpscale * SHADOW_TEX_SZ, self.dpscale * SHADOW_TEX_SZ)
+        glViewport(0, 0, SHADOW_TEX_SZ, SHADOW_TEX_SZ)
         glEnable(GL_DEPTH_TEST)
         glDepthMask(GL_TRUE)
         glDepthFunc(GL_LESS)
