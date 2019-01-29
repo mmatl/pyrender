@@ -161,9 +161,10 @@ class Mesh(object):
                 )
             return material
 
-        default_material = MetallicRoughnessMaterial(
-            alphaMode='BLEND', baseColorFactor=np.array([0.5, 0.5, 0.5, 1.0])
-        )
+        if material is None:
+            material = MetallicRoughnessMaterial(
+                alphaMode='BLEND', baseColorFactor=np.array([0.5, 0.5, 0.5, 1.0])
+            )
 
 
         # Compute positions, normals, texture coordinates, colors, and indices
@@ -171,10 +172,9 @@ class Mesh(object):
             positions = mesh.vertices.copy()
             normals = mesh.vertex_normals.copy()
             indices = mesh.faces.copy()
-            if mesh.visual.defined and material is None:
+            if mesh.visual.defined:
                 if mesh.visual.kind == 'vertex':
                     color_0 = mesh.visual.vertex_colors.copy()
-                    material = default_material
                 elif mesh.visual.kind == 'face':
                     raise ValueError('Cannot use face colors with smooth mesh')
                 elif mesh.visual.kind == 'texture':
@@ -183,14 +183,12 @@ class Mesh(object):
         else:
             positions = mesh.vertices[mesh.faces].reshape((3*len(mesh.faces), 3))
             normals = np.repeat(mesh.face_normals, 3, axis=0)
-            if mesh.visual.defined and material is None:
+            if mesh.visual.defined:
                 if mesh.visual.kind == 'vertex':
                     color_0 = mesh.visual.vertex_colors[mesh.faces].\
                         reshape(3*len(mesh.faces), mesh.visual.vertex_colors.shape[1])
-                    material = default_material
                 elif mesh.visual.kind == 'face':
                     color_0 = np.repeat(mesh.visual.face_colors, 3, axis=0)
-                    material = default_material
                 elif mesh.visual.kind == 'texture':
                     texcoord_0 = mesh.visual.uv[mesh.faces].reshape((3*len(mesh.faces), mesh.visual.uv.shape[1]))
                     material = get_material(mesh.visual.material)
