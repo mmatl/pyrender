@@ -22,7 +22,8 @@ except ImportError:
     except:
         pass
 
-from .constants import OPEN_GL_MAJOR, OPEN_GL_MINOR, TEXT_PADDING, RenderFlags, TextAlign
+from .constants import (OPEN_GL_MAJOR, OPEN_GL_MINOR, TEXT_PADDING,
+                        DEFAULT_Z_FAR, DEFAULT_Z_NEAR, RenderFlags, TextAlign)
 from .light import DirectionalLight
 from .node import Node
 from .camera import PerspectiveCamera
@@ -218,10 +219,12 @@ class Viewer(pyglet.window.Window):
             self._prior_main_camera_node = n
         else:
             self._default_camera_pose = self._compute_initial_camera_pose()
+            znear = min(scene.scale / 10.0, DEFAULT_Z_NEAR)
+            zfar = max(scene.scale * 10.0, DEFAULT_Z_FAR)
             self._camera_node = Node(
                 name='__viewer_camera__',
                 matrix=self._default_camera_pose,
-                camera = PerspectiveCamera(yfov=np.pi / 3.0),
+                camera = PerspectiveCamera(yfov=np.pi / 3.0, znear=znear, zfar=zfar)
             )
             scene.add_node(self._camera_node)
             scene.main_camera_node = self._camera_node
@@ -736,7 +739,9 @@ class Viewer(pyglet.window.Window):
             [1.0, 0.0, 0.0],
             [0.0, s2, s2]
         ])
-        cp[:3,3] = 0.7*np.array([scale, 0.0, scale]) + centroid
+        hfov = np.pi / 6.0
+        dist = scale / (2.0 * np.tan(hfov))
+        cp[:3,3] = dist * np.array([1.0, 0.0, 1.0]) + centroid
 
         return cp
 

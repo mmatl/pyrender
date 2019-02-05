@@ -163,9 +163,9 @@ class Mesh(object):
 
         if material is None:
             material = MetallicRoughnessMaterial(
-                alphaMode='BLEND', baseColorFactor=np.array([0.5, 0.5, 0.5, 1.0])
+                alphaMode='BLEND', baseColorFactor=np.array([0.4, 0.4, 0.4, 1.0]),
+                metallicFactor=1.0, roughnessFactor=0.1
             )
-
 
         # Compute positions, normals, texture coordinates, colors, and indices
         if smooth:
