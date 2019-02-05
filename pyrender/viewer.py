@@ -441,6 +441,7 @@ class Viewer(pyglet.window.Window):
         elif symbol == pyglet.window.key.F:
             self.viewer_flags['fullscreen'] = not self.viewer_flags['fullscreen']
             self.set_fullscreen(self.viewer_flags['fullscreen'])
+            self.activate()
             if self.viewer_flags['fullscreen']:
                 self._message_text = 'Fullscreen On'
             else:
