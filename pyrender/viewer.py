@@ -65,7 +65,7 @@ class Viewer(pyglet.window.Window):
     * `w`: Toggles wireframe mode (scene default, flip wireframes, all wireframe, or all solid).
     * `z`: Resets the camera to the initial view.
 
-    Parameters
+    Attributes
     ----------
     scene : :obj:`Scene`
         The scene to visualize.
@@ -140,6 +140,7 @@ class Viewer(pyglet.window.Window):
             viewport_size = (640, 480)
         self._scene = scene
         self._viewport_size = viewport_size
+        self._is_active = False
         self.run_in_thread = run_in_thread
 
         self._default_render_flags = {
@@ -247,6 +248,8 @@ class Viewer(pyglet.window.Window):
         ########################################################################
         self._renderer = Renderer(self._viewport_size[0], self._viewport_size[1])
 
+        self._is_active = True
+
         if self.run_in_thread:
             self.scene_lock = Lock()
             self._thread = Thread(target=self._init_and_start_app)
@@ -276,6 +279,12 @@ class Viewer(pyglet.window.Window):
     @property
     def viewport_size(self):
         return self._viewport_size
+
+    @property
+    def is_active(self):
+        """bool : `True` if the viewer is active, or `False` if it has been closed.
+        """
+        return self._is_active
 
     def on_close(self):
         """Exit the event loop when the window is closed.
@@ -307,6 +316,8 @@ class Viewer(pyglet.window.Window):
         OpenGL.contextdata.cleanupContext()
         self.close()
         pyglet.app.exit()
+
+        self._is_active = False
 
     def on_draw(self):
         """Redraw the scene into the viewing window.
