@@ -237,12 +237,11 @@ class Viewer(pyglet.window.Window):
 
         # Set up axes
         self._axes = {}
-        self._axis_mesh = Mesh.from_trimesh(trimesh.creation.axis(origin_size=1.0, axis_radius=0.5,
-                                            axis_length=10.0), smooth=False)
+        self._axis_mesh = Mesh.from_trimesh(trimesh.creation.axis(origin_size=0.1, axis_radius=0.05,
+                                            axis_length=1.0), smooth=False)
         if self.viewer_flags['show_world_axis']:
-            self._add_scene_axis()
-        if self.viewer_flags['show_mesh_axes']:
-            self._add_mesh_axes()
+            self._set_axes(world=self.viewer_flags['show_world_axis'],
+                           mesh=self.viewer_flags['show_mesh_axes'])
 
         ########################################################################
         # Initialize OpenGL context and renderer
@@ -474,26 +473,22 @@ class Viewer(pyglet.window.Window):
             if self.viewer_flags['show_world_axis'] and not self.viewer_flags['show_mesh_axes']:
                 self.viewer_flags['show_world_axis'] = False
                 self.viewer_flags['show_mesh_axes'] = True
-                self._remove_scene_axis()
-                self._add_mesh_axes()
+                self._set_axes(False, True)
                 self._message_text = 'Mesh Axes On'
             elif not self.viewer_flags['show_world_axis'] and self.viewer_flags['show_mesh_axes']:
                 self.viewer_flags['show_world_axis'] = True
                 self.viewer_flags['show_mesh_axes'] = True
-                self._add_scene_axis()
-                self._add_mesh_axes()
+                self._set_axes(True, True)
                 self._message_text = 'All Axes On'
             elif self.viewer_flags['show_world_axis'] and self.viewer_flags['show_mesh_axes']:
                 self.viewer_flags['show_world_axis'] = False
                 self.viewer_flags['show_mesh_axes'] = False
-                self._remove_scene_axis()
-                self._remove_mesh_axes()
+                self._set_axes(False, False)
                 self._message_text = 'All Axes Off'
             else:
                 self.viewer_flags['show_world_axis'] = True
                 self.viewer_flags['show_mesh_axes'] = False
-                self._add_scene_axis()
-                self._remove_mesh_axes()
+                self._set_axes(True, False)
                 self._message_text = 'World Axis On'
 
         # L toggles the lighting mode
@@ -790,41 +785,40 @@ class Viewer(pyglet.window.Window):
         n = Node(light=l, matrix=np.eye(4))
         return n
 
-    def _add_mesh_axes(self):
-        old_nodes = []
-        existing_axes = set([self._axes[k] for k in self._axes])
-        for node in self.scene.mesh_nodes:
-            if node not in existing_axes:
-                old_nodes.append(node)
+    def _set_axes(self, world, mesh):
+        scale = self.scene.scale
+        if world:
+            if 'scene' not in self._axes:
+                n = Node(mesh=self._axis_mesh, scale=np.ones(3)*scale*0.3)
+                self.scene.add_node(n)
+                self._axes['scene'] = n
+        else:
+            if 'scene' in self._axes:
+                self.scene.remove_node(self._axes['scene'])
+                self._axes.pop('scene')
 
-        for node in old_nodes:
-            if node in self._axes:
-                continue
-            pose = self.scene.get_pose(node)
-            n = Node(mesh=self._axis_mesh, scale=np.ones(3)*node.mesh.scale*0.05)
-            self.scene.add_node(n, parent_node=node)
-            self._axes[node] = n
+        if mesh:
+            old_nodes = []
+            existing_axes = set([self._axes[k] for k in self._axes])
+            for node in self.scene.mesh_nodes:
+                if node not in existing_axes:
+                    old_nodes.append(node)
 
-    def _add_scene_axis(self):
-        if 'scene' in self._axes:
-            return
-        n = Node(mesh=self._axis_mesh, scale=np.ones(3)*self.scene.scale*0.02)
-        self.scene.add_node(n)
-        self._axes['scene'] = n
-
-    def _remove_scene_axis(self):
-        if 'scene' in self._axes:
-            self.scene.remove_node(self._axes['scene'])
-            self._axes.pop('scene')
-
-    def _remove_mesh_axes(self):
-        to_remove = set()
-        for main_node in self._axes:
-            if main_node in self.scene.mesh_nodes:
-                self.scene.remove_node(self._axes[main_node])
-                to_remove.add(main_node)
-        for main_node in to_remove:
-            self._axes.pop(main_node)
+            for node in old_nodes:
+                if node in self._axes:
+                    continue
+                pose = self.scene.get_pose(node)
+                n = Node(mesh=self._axis_mesh, scale=np.ones(3)*node.mesh.scale*0.5)
+                self.scene.add_node(n, parent_node=node)
+                self._axes[node] = n
+        else:
+            to_remove = set()
+            for main_node in self._axes:
+                if main_node in self.scene.mesh_nodes:
+                    self.scene.remove_node(self._axes[main_node])
+                    to_remove.add(main_node)
+            for main_node in to_remove:
+                self._axes.pop(main_node)
 
     def _remove_axes(self):
         for main_node in self._axes:
