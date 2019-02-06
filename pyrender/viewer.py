@@ -237,7 +237,8 @@ class Viewer(pyglet.window.Window):
 
         # Set up axes
         self._axes = {}
-        self._axis_mesh = Mesh.from_trimesh(trimesh.creation.axis(origin_size=1.0), smooth=False)
+        self._axis_mesh = Mesh.from_trimesh(trimesh.creation.axis(origin_size=1.0, axis_radius=0.5,
+                                            axis_length=10.0), smooth=False)
         if self.viewer_flags['show_world_axis']:
             self._add_scene_axis()
         if self.viewer_flags['show_mesh_axes']:
