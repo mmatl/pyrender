@@ -461,3 +461,33 @@ class Scene(object):
         """(3,) float : The length of the diagonal of the scene's AABB.
         """
         return np.linalg.norm(self.extents)
+
+    @staticmethod
+    def from_trimesh(self, trimesh_scene, bg_color=None, ambient_light=None):
+        """Create a `pyrender` scene from a `trimesh` scene.
+
+        Parameters
+        ----------
+        scene : trimesh.Scene
+            Scene with trimesh.Trimesh, trimesh.PointCloud object
+        ambient_light : (3,) float or None
+            Ambient light in the scene
+
+        Returns
+        -----------
+        scene_pr : pyrender.scene.Scene
+        Contains same geometry as trimesh version
+        """
+        # convert trimesh geometries to pyrender geometries
+        geometries = {name: Mesh.from_trimesh(geom)
+                      for name, geom in scene.geometry.items()}
+
+        # create the pyrender scene object
+        scene_pr = Scene(bg_color=bg_color, ambient_light=ambient_light)
+
+        # add every node with geometry to the pyrender scene
+        for node in scene.graph.nodes_geometry:
+            pose, geom_name = scene.graph[node]
+            scene_pr.add(geometries[geom_name], pose=pose)
+
+        return scene_pr
