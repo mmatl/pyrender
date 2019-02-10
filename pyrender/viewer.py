@@ -774,14 +774,14 @@ class Viewer(pyglet.window.Window):
             matrix = np.eye(4)
             matrix[:3,:3] = np.c_[x,y,z]
             nodes.append(Node(
-                light=DirectionalLight(color=np.ones(3), intensity=3.3),
+                light=DirectionalLight(color=np.ones(3), intensity=1.0),
                 matrix=matrix
             ))
 
         return nodes
 
     def _create_direct_light(self):
-        l = DirectionalLight(color=np.ones(3), intensity=10.0)
+        l = DirectionalLight(color=np.ones(3), intensity=3.0)
         n = Node(light=l, matrix=np.eye(4))
         return n
 
