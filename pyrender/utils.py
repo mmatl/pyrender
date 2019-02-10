@@ -6,7 +6,7 @@ def format_color_vector(value, length):
         value = value / 255.0
     if isinstance(value, float):
         value = np.repeat(value, length)
-    if isinstance(value, list):
+    if isinstance(value, list) or isinstance(value, tuple):
         value = np.array(value)
     if isinstance(value, np.ndarray):
         value = value.squeeze()
