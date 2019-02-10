@@ -16,8 +16,8 @@ requirements = [
     'numpy',                        # Numpy
     'Pillow',                       # For Trimesh texture conversions
     'pyglet==1.4.0a1',              # For the pyglet viewer
-    'PyOpenGL==3.1.0',              # For OpenGL
-    'PyOpenGL_accelerate==3.1.0',   # For OpenGL
+    'PyOpenGL',                     # For OpenGL
+    'PyOpenGL_accelerate',          # For OpenGL
     'six',                          # For Python 2/3 interop
     'trimesh',                      # For meshes
 ]
