@@ -341,7 +341,7 @@ class Renderer(object):
 
         # If doing offscreen render, copy result from framebuffer and return
         if flags & RenderFlags.OFFSCREEN:
-            return self._read_main_framebuffer(scene)
+            return self._read_main_framebuffer(scene, flags)
         else:
             return
 
@@ -1001,27 +1001,33 @@ class Renderer(object):
         self._main_db_ms = None
         self._main_fb_dims = (None, None)
 
-    def _read_main_framebuffer(self, scene):
+    def _read_main_framebuffer(self, scene, flags):
         width, height = self._main_fb_dims[0], self._main_fb_dims[1]
+
+        # Bind framebuffer and blit buffers
         glBindFramebuffer(GL_READ_FRAMEBUFFER, self._main_fb_ms)
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, self._main_fb)
         glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_LINEAR)
         glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST)
         glBindFramebuffer(GL_READ_FRAMEBUFFER, self._main_fb)
-        color_buf = glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE)
+
+        # Read depth
         depth_buf = glReadPixels(0, 0, width, height, GL_DEPTH_COMPONENT, GL_FLOAT)
-
-        color_im = np.frombuffer(color_buf, dtype=np.uint8).reshape((height, width, 3))
-        color_im = np.flip(color_im, axis=0)
-
         depth_im = np.frombuffer(depth_buf, dtype=np.float32).reshape((height, width))
         depth_im = np.flip(depth_im, axis=0)
-
         inf_inds = (depth_im == 1.0)
         depth_im = 2.0 * depth_im - 1.0
         z_near, z_far = scene.main_camera_node.camera.znear, scene.main_camera_node.camera.zfar
         depth_im = 2.0 * z_near * z_far / (z_far + z_near - depth_im * (z_far - z_near))
         depth_im[inf_inds] = 0.0
+
+        if flags & RenderFlags.DEPTH_ONLY:
+            return depth_im
+
+        # Read color
+        color_buf = glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE)
+        color_im = np.frombuffer(color_buf, dtype=np.uint8).reshape((height, width, 3))
+        color_im = np.flip(color_im, axis=0)
 
         return color_im, depth_im
 

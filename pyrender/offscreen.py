@@ -72,13 +72,14 @@ class OffscreenRenderer(object):
 
         if self._platform.supports_framebuffers():
             flags |= RenderFlags.OFFSCREEN
-            color, depth = self._renderer.render(scene, flags)
+            return self._renderer.render(scene, flags)
         else:
             self._renderer.render(scene, flags)
-            color = self._renderer.read_color_buf()
             depth = self._renderer.read_depth_buf()
-
-        return color, depth
+            if flags & RenderFlags.DEPTH_ONLY:
+                return depth
+            color = self._renderer.read_color_buf()
+            return color, depth
 
     def delete(self):
         """Free all OpenGL resources.
