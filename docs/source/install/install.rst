@@ -32,7 +32,7 @@ First, install build dependencies via `apt` or your system's package manager.
 
 .. code-block:: bash
 
-   sudo apt-get install llvm-6 freeglut3 freeglut3-dev
+   sudo apt-get install llvm-6.0 freeglut3 freeglut3-dev
 
 Then, download the current release of Mesa from here_.
 Unpack the source and go to the source folder:
