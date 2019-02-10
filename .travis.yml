@@ -12,8 +12,8 @@ before_install:
   # Pre-install osmesa
   - sudo apt update
   - sudo wget https://github.com/mmatl/travis_debs/raw/master/xenial/customosmesa_18.3.3-0.deb
-  - sudo mv customosmesa_18.3.3-0.deb /var/cache/apt/archives
-  - sudo apt install customosmesa
+  - sudo dpkg -i ./customosmesa_18.3.3-0.deb || true
+  - sudo apt install -f
   - git clone https://github.com/mmatl/pyopengl.git
   - cd pyopengl
   - pip install .
