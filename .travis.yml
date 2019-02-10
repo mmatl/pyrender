@@ -9,25 +9,11 @@ python:
 - '3.7'
 
 before_install:
-  # Pre-install opengl
+  # Pre-install osmesa
   - sudo apt update
-  - sudo apt install llvm-6.0 llvm-6.0-tools llvm-6.0-dev freeglut3 freeglut3-dev git
-  - mkdir mesa
-  - cd mesa
-  - wget ftp://ftp.freedesktop.org/pub/mesa/mesa-18.3.3.tar.gz
-  - tar zxf mesa-18.3.3.tar.gz
-  - cd mesa-18.3.3
-  - mkdir mesa_install
-  - ./configure --prefix=$PWD/mesa_install --enable-opengl --disable-gles1 --disable-gles2 --disable-va --disable-xvmc --disable-vdpau --enable-shared-glapi --disable-texture-float --enable-gallium-llvm --enable-llvm-shared-libs --with-gallium-drivers=swrast,swr --disable-dri --with-dri-drivers= --disable-egl --with-egl-platforms= --disable-gbm --disable-glx --disable-osmesa --enable-gallium-osmesa ac_cv_path_LLVM_CONFIG=llvm-config-6.0
-  - make -j4
-  - make install
-  - export LIBRARY_PATH=$LIBRARY_PATH:"$PWD/mesa_install/lib"
-  - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"$PWD/mesa_install/lib"
-  - export C_INCLUDE_PATH=$C_INCLUDE_PATH:"$PWD/mesa_install/include/"
-  - export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:"$PWD/mesa_install/include/"
-  - cd ../..
-  - mkdir deps
-  - cd deps
+  - wget https://github.com/mmatl/travis_debs/blob/master/xenial/mesa_18.3.3-0.deb?raw=true
+  - sudo dpkg -i ./mesa_18.3.3-0.deb
+  - sudo apt-get install -f
   - git clone https://github.com/mmatl/pyopengl.git
   - cd pyopengl
   - pip install .
