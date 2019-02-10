@@ -17,7 +17,7 @@ before_install:
   - git clone https://github.com/mmatl/pyopengl.git
   - cd pyopengl
   - pip install .
-  - cd ../..
+  - cd ..
   - pip install PyOpenGL_accelerate
 
 install:
