@@ -190,7 +190,9 @@ class Mesh(object):
                 elif mesh.visual.kind == 'face':
                     color_0 = np.repeat(mesh.visual.face_colors, 3, axis=0)
                 elif mesh.visual.kind == 'texture':
-                    texcoord_0 = mesh.visual.uv[mesh.faces].reshape((3*len(mesh.faces), mesh.visual.uv.shape[1]))
+                    if mesh.visual.uv is not None:
+                        texcoord_0 = mesh.visual.uv[mesh.faces].reshape(
+                                (3*len(mesh.faces), mesh.visual.uv.shape[1]))
                     material = get_material(mesh.visual.material)
 
         primitive = Primitive(
