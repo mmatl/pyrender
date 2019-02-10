@@ -10,7 +10,6 @@ import numpy as np
 import OpenGL
 import pyglet
 pyglet.options['shadow_window'] = False
-import pyglet.gl as gl
 from pyglet import clock
 import trimesh
 
@@ -258,10 +257,11 @@ class Viewer(pyglet.window.Window):
             self._init_and_start_app()
 
     def _init_and_start_app(self):
-        conf = gl.Config(sample_buffers=1, samples=4,
-                         depth_size=24, double_buffer=True,
-                         major_version=OPEN_GL_MAJOR,
-                         minor_version=OPEN_GL_MINOR)
+        from pyglet.gl import Config
+        conf = Config(sample_buffers=1, samples=4,
+                      depth_size=24, double_buffer=True,
+                      major_version=OPEN_GL_MAJOR,
+                      minor_version=OPEN_GL_MINOR)
         super(Viewer, self).__init__(config=conf, resizable=True,
                                      width=self._viewport_size[0],
                                      height=self._viewport_size[1])
