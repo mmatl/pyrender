@@ -1,6 +1,7 @@
 # Pyrender
 
 [![Build Status](https://travis-ci.org/mmatl/pyrender.svg?branch=master)](https://travis-ci.org/mmatl/pyrender)
+[![Documentation Status](https://readthedocs.org/projects/pyrender/badge/?version=latest)](https://pyrender.readthedocs.io/en/latest/?badge=latest)
 
 Pyrender is a pure Python (2.7 - 3.3+) library for visualizing and rendering
 3D scenes using OpenGL and physically-based rendering (PBR).
@@ -10,7 +11,7 @@ specification.
 Pyrender is designed to lightweight, easy to install, and simple to use so that
 you can get started visualizing 3D data instantly.
 
-Extensive API documentation is provided [here](https://mmatl.github.io/pyrender).
+Extensive API documentation is provided [here](https://pyrender.readthedocs.io/en/latest/).
 
 <p align="center">
   <img src="https://github.com/mmatl/pyrender/blob/master/docs/source/rotation.gif?raw=true" alt="GIF of Viewer"/>
