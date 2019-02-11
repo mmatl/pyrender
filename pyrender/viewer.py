@@ -100,6 +100,7 @@ class Viewer(pyglet.window.Window):
         * `face_normals`: `bool`, If `True`, face normals will be rendered as blue lines.
           Defaults to `False`.
         * `cull_faces`: `bool`, If `True`, backfaces will be culled. Defaults to `True`.
+        * `point_size` : float, The point size in pixels. Defaults to 1px.
 
     Note
     ----
@@ -149,7 +150,8 @@ class Viewer(pyglet.window.Window):
             'shadows' : False,
             'vertex_normals' : False,
             'face_normals' : False,
-            'cull_faces' : True
+            'cull_faces' : True,
+            'point_size' : 1.0,
         }
         self._default_viewer_flags = {
             'mouse_pressed' : False,
@@ -245,7 +247,8 @@ class Viewer(pyglet.window.Window):
         ########################################################################
         # Initialize OpenGL context and renderer
         ########################################################################
-        self._renderer = Renderer(self._viewport_size[0], self._viewport_size[1])
+        self._renderer = Renderer(self._viewport_size[0], self._viewport_size[1],
+                                  self.render_flags['point_size'])
 
         self._is_active = True
 
@@ -344,7 +347,7 @@ class Viewer(pyglet.window.Window):
                 color=np.array([0.1,0.7,0.2,np.clip(self._message_opac, 0.0, 1.0)]),
                 align=TextAlign.BOTTOM_RIGHT
             )
-        
+
         if self.viewer_flags['caption'] is not None:
             for caption in self.viewer_flags['caption']:
                 xpos, ypos = self._location_to_x_y(caption['location'])

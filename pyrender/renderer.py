@@ -30,9 +30,11 @@ class Renderer(object):
         Width of the viewport in pixels.
     viewport_height : int
         Width of the viewport height in pixels.
+    point_size : float, optional
+        Size of points in pixels. Defaults to 1.0.
     """
 
-    def __init__(self, viewport_width, viewport_height):
+    def __init__(self, viewport_width, viewport_height, point_size=1.0):
         self.dpscale = 1
         # Scaling needed on retina displays
         if sys.platform == 'darwin':
@@ -40,6 +42,7 @@ class Renderer(object):
 
         self.viewport_width = viewport_width
         self.viewport_height = viewport_height
+        self.point_size = point_size
 
         # Optional framebuffer for offscreen renders
         self._main_fb = None
@@ -76,6 +79,14 @@ class Renderer(object):
     @viewport_height.setter
     def viewport_height(self, value):
         self._viewport_height = self.dpscale * value
+
+    @property
+    def point_size(self):
+        return self._point_size
+
+    @point_size.setter
+    def point_size(self, value):
+        self._point_size = float(value)
 
     def render(self, scene, flags):
         """Render a scene with the given set of flags.
@@ -390,6 +401,7 @@ class Renderer(object):
     def _normals_pass(self, scene, flags):
         # Set up viewport for render
         self._configure_forward_pass_viewport(flags)
+        program = None
 
         # Set up camera matrices
         V, P = self._get_camera_matrices(scene)
@@ -524,6 +536,12 @@ class Renderer(object):
             glCullFace(GL_BACK)
             glBlendFunc(GL_ONE, GL_ZERO)
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+
+        # Set point size if needed
+        glDisable(GL_PROGRAM_POINT_SIZE)
+        if primitive.mode == GLTF.POINTS:
+            glEnable(GL_PROGRAM_POINT_SIZE)
+            glPointSize(self.point_size)
 
         # Render mesh
         n_instances = 1
@@ -815,7 +833,10 @@ class Renderer(object):
             fragment_shader = 'mesh.frag'
         elif bool(program_flags & (ProgramFlags.VERTEX_NORMALS | ProgramFlags.FACE_NORMALS)):
             vertex_shader = 'vertex_normals.vert'
-            geometry_shader = 'vertex_normals.geom'
+            if primitive.mode == GLTF.POINTS:
+                geometry_shader = 'vertex_normals_pc.geom'
+            else:
+                geometry_shader = 'vertex_normals.geom'
             fragment_shader = 'vertex_normals.frag'
         else:
             vertex_shader = 'mesh_depth.vert'

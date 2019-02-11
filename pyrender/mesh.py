@@ -77,7 +77,7 @@ class Mesh(object):
         return False
 
     @staticmethod
-    def from_points(points, colors=None, is_visible=True, poses=None):
+    def from_points(points, colors=None, normals=None, is_visible=True, poses=None):
         """Create a Mesh from a set of points.
 
         Parameters
@@ -86,6 +86,8 @@ class Mesh(object):
             The point positions.
         colors : (n,3) or (n,4) float, optional
             RGB or RGBA colors for each point.
+        normals : (n,3) float, optionals
+            The normal vectors for each point.
         is_visible : bool
             If False, the points will not be rendered.
         poses : (x,4,4)
@@ -98,6 +100,7 @@ class Mesh(object):
         """
         primitive = Primitive(
             positions=points,
+            normals=normals,
             color_0=colors,
             mode=GLTF.POINTS,
             poses=poses
