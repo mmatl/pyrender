@@ -6,13 +6,12 @@ python:
 - '2.7'
 - '3.5'
 - '3.6'
-- '3.7'
 
 before_install:
   # Pre-install osmesa
   - sudo apt update
-  - sudo wget https://github.com/mmatl/travis_debs/raw/master/xenial/customosmesa_18.3.3-0.deb
-  - sudo dpkg -i ./customosmesa_18.3.3-0.deb || true
+  - sudo wget https://github.com/mmatl/travis_debs/raw/master/xenial/mesa_18.3.3-0.deb
+  - sudo dpkg -i ./mesa_18.3.3-0.deb || true
   - sudo apt install -f
   - git clone https://github.com/mmatl/pyopengl.git
   - cd pyopengl
@@ -27,7 +26,7 @@ install:
 
 script:
   #- pytest -W default --cov=ambicore tests/
-  - PYOPENGL_PLATFORM=osmesa pytest -W default tests/
+  - PYOPENGL_PLATFORM=osmesa pytest tests
 
     #after_success:
     #  - coveralls
