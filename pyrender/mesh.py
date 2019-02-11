@@ -178,7 +178,8 @@ class Mesh(object):
                 elif mesh.visual.kind == 'face':
                     raise ValueError('Cannot use face colors with smooth mesh')
                 elif mesh.visual.kind == 'texture':
-                    texcoord_0 = mesh.visual.uv.copy()
+                    if mesh.visual.uv is not None:
+                        texcoord_0 = mesh.visual.uv.copy()
                     material = get_material(mesh.visual.material)
         else:
             positions = mesh.vertices[mesh.faces].reshape((3*len(mesh.faces), 3))
