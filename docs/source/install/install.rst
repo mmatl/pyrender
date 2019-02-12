@@ -1,17 +1,21 @@
 Python Installation
 ~~~~~~~~~~~~~~~~~~~
 
-This package is available via `pip`. However,
-before you install it, I'd recommend installing my fork of `Pyglet`,
-as the current one won't play nicely with MacOS and has a memory leak:
+This package is available via `pip`.
+
+.. code-block:: bash
+
+   pip install pyrender
+
+If you're on MacOS, you'll need
+to pre-install my fork of `pyglet`, as the version on `pypi` hasn't yet included
+my change that enables OpenGL contexts on MacOS.
 
 .. code-block:: bash
 
    git clone https://github.com/mmatl/pyglet.git
    cd pyglet
-   python setup.py install
-   cd ..
-   pip install pyrender
+   pip install .
 
 Getting Pyrender Working with OSMesa
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -65,7 +69,7 @@ Now, configure the installation by running the following command:
    make install
 
 Replace `PREFIX` with the path you want to install Mesa at.
-Make sure we do not install Mesa into the system path.
+Make sure to not install Mesa into the system path.
 Adapt the `llvm-config-x.x` to your own machine's llvm (e.g. `llvm-config-6.0`
 if you installed `llvm` with the above command).
 
@@ -80,17 +84,19 @@ and change `MESA_HOME` to your mesa installation path:
    export C_INCLUDE_PATH=$C_INCLUDE_PATH:$MESA_HOME/include/
    export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:$MESA_HOME/include/
 
-Finally, use my fork of PyOpenGL (at least until the main release has
-integrated my patch that supports getting modern contexts):
+Finally, install and use my fork of `PyOpenGL`.
+This fork enables getting modern OpenGL contexts with OSMesa.
+My patch has been included in `PyOpenGL`, but it has not yet been released
+on `pypi`.
 
 .. code-block:: bash
 
    git clone git@github.com:mmatl/PyOpenGL.git
    cd PyOpenGL
-   python setup.py install
+   pip install .
 
-Installling Dependencies
-------------------------
+Running Scripts
+---------------
 Before running any script using the `OffscreenRenderer` object,
 make sure to set the `PYOPENGL_PLATFORM` environment variable to `osmesa`.
 For example:
@@ -107,7 +113,8 @@ Documentation
 
 Building
 """"""""
-Building `pyrender`'s documentation requires a few extra dependencies --
+The online documentation for `pyrender` is automatically built by Read The Docs.
+Building `pyrender`'s documentation locally requires a few extra dependencies --
 specifically, `sphinx`_ and a few plugins.
 
 .. _sphinx: http://www.sphinx-doc.org/en/1.4.8/
@@ -124,16 +131,3 @@ For example, ::
 
 will generate a set of web pages. Any documentation files
 generated in this manner can be found in `docs/build`.
-
-Deploying
-"""""""""
-To deploy documentation to the Github Pages site for the repository,
-simply push any changes to the documentation source to master
-and then run ::
-
-    $ . gh_deploy.sh
-
-from the `docs` folder. This script will automatically checkout the
-``gh-pages`` branch, build the documentation from source, and push it
-to Github.
-
