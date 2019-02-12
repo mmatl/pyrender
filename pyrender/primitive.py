@@ -348,7 +348,9 @@ class Primitive(object):
         ########################################################################
 
         if self.poses is not None:
-            pose_data = np.ascontiguousarray(self.poses.flatten().astype(np.float32))
+            pose_data = np.ascontiguousarray(
+                np.transpose(self.poses, [0,2,1]).flatten().astype(np.float32)
+            )
         else:
             pose_data = np.ascontiguousarray(np.eye(4).flatten().astype(np.float32))
 
@@ -360,7 +362,7 @@ class Primitive(object):
         for i in range(0, 4):
             idx = i + len(attr_sizes)
             glEnableVertexAttribArray(idx)
-            glVertexAttribPointer(idx, 4, GL_FLOAT, GL_FALSE, FLOAT_SZ*4, ctypes.c_void_p(4*FLOAT_SZ*i))
+            glVertexAttribPointer(idx, 4, GL_FLOAT, GL_FALSE, FLOAT_SZ*4*4, ctypes.c_void_p(4*FLOAT_SZ*i))
             glVertexAttribDivisor(idx, 1)
 
         ########################################################################
