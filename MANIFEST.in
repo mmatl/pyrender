@@ -1,2 +1,5 @@
 # Include the license
 include LICENSE
+include README.rst
+include pyrender/fonts/*
+include pyrender/shaders/*
