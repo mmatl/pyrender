@@ -112,18 +112,18 @@ Documentation
 ~~~~~~~~~~~~~
 
 Building
-""""""""
+--------
 The online documentation for `pyrender` is automatically built by Read The Docs.
 Building `pyrender`'s documentation locally requires a few extra dependencies --
 specifically, `sphinx`_ and a few plugins.
 
-.. _sphinx: http://www.sphinx-doc.org/en/1.4.8/
+.. _sphinx: http://www.sphinx-doc.org/en/master/
 
-To install the dependencies required, simply change directories into the `autolab_core` source and run ::
+To install the dependencies required, simply change directories into the `pyrender` source and run ::
 
     $ pip install .[docs]
 
-Then, go to the `docs` directory and run ``make`` with the appropriate target.
+Then, go to the `docs` directory and run `make` with the appropriate target.
 For example, ::
 
     $ cd docs/
