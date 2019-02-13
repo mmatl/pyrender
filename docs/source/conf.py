@@ -41,11 +41,6 @@ extensions = [
     'sphinx_automodapi.smart_resolver'
 ]
 numpydoc_class_members_toctree = False
-autoclass_content = 'class'
-autodoc_member_order = 'bysource'
-autodoc_default_flags = ['members', 'show-inheritance']
-napoleon_include_special_with_doc = True
-napoleon_include_init_with_doc = True
 automodapi_toctreedirnm = 'generated'
 automodsumm_inherited_members = True
 
