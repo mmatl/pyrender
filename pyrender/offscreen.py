@@ -11,7 +11,7 @@ from .constants import RenderFlags
 class OffscreenRenderer(object):
     """A wrapper for offscreen rendering.
 
-    Attributes
+    Parameters
     ----------
     viewport_width : int
         The width of the main viewport, in pixels.
@@ -27,12 +27,32 @@ class OffscreenRenderer(object):
         self._renderer = None
         self._create()
 
+    @property
+    def viewport_width(self):
+        """int : The width of the main viewport, in pixels.
+        """
+        return self._viewport_width
+
+    @viewport_width.setter
+    def viewport_width(self, value):
+        self._viewport_width = value
+
+    @property
+    def viewport_height(self):
+        """int : The height of the main viewport, in pixels.
+        """
+        return self._viewport_height
+
+    @viewport_height.setter
+    def viewport_height(self, value):
+        self._viewport_height = value
+
     def render(self, scene, flags=RenderFlags.NONE):
         """Render a scene with the given set of flags.
 
         Parameters
         ----------
-        scene : :obj:`Scene`
+        scene : :class:`Scene`
             A scene to render.
         flags : int
             A specification from `RenderFlags`. Valid flags include:

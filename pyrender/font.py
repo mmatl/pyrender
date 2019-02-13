@@ -56,7 +56,7 @@ class Character(object):
 class Font(object):
     """A font object.
 
-    Attributes
+    Parameters
     ----------
     font_file : str
         The file to load the font from.
@@ -99,6 +99,26 @@ class Font(object):
 
         self._vbo = None
         self._vao = None
+
+    @property
+    def font_file(self):
+        """str : The file the font was loaded from.
+        """
+        return self._font_file
+
+    @font_file.setter
+    def font_file(self, value):
+        self._font_file = value
+
+    @property
+    def font_pt(self):
+        """int : The height of the font in pixels.
+        """
+        return self._font_pt
+
+    @font_pt.setter
+    def font_pt(self, value):
+        self._font_pt = int(value)
 
     def _add_to_context(self):
 

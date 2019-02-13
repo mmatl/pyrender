@@ -9,5 +9,6 @@ PyOpenGL_accelerate
 six
 trimesh
 sphinx
-sphinxcontrib-napoleon
 sphinx_rtd_theme
+sphinx-automodapi
+

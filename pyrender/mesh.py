@@ -15,11 +15,11 @@ from .material import MetallicRoughnessMaterial
 class Mesh(object):
     """A set of primitives to be rendered.
 
-    Attributes
+    Parameters
     ----------
     name : str
         The user-defined name of this object.	
-    primitives : list of :obj:`Primitive`
+    primitives : list of :class:`Primitive`
         The primitives associated with this mesh.
     weights : (k,) float
         Array of weights to be applied to the Morph Targets.
@@ -34,6 +34,48 @@ class Mesh(object):
         self.is_visible = is_visible
 
         self._bounds = None
+
+    @property
+    def name(self):
+        """str : The user-defined name of this object.
+        """
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        if value is not None:
+            value = str(value)
+        self._name = value
+
+    @property
+    def primitives(self):
+        """list of :class:`Primitive` : The primitives associated with this mesh.
+        """
+        return self._primitives
+
+    @primitives.setter
+    def primitives(self, value):
+        self._primitives = value
+
+    @property
+    def weights(self):
+        """(k,) float : Weights to be applied to morph targets.
+        """
+        return self._weights
+
+    @weights.setter
+    def weights(self, value):
+        self._weights = value
+
+    @property
+    def is_visible(self):
+        """bool : Whether the mesh is visible.
+        """
+        return self._is_visible
+
+    @is_visible.setter
+    def is_visible(self, value):
+        self._is_visible = value
 
     @property
     def bounds(self):
@@ -95,7 +137,7 @@ class Mesh(object):
 
         Returns
         -------
-        mesh : :obj:`Mesh`
+        mesh : :class:`Mesh`
             The created mesh.
         """
         primitive = Primitive(
@@ -111,13 +153,13 @@ class Mesh(object):
 
     @staticmethod
     def from_trimesh(mesh, material=None, texcoords=None, is_visible=True, poses=None, smooth=True):
-        """Create a Mesh from a :obj:`trimesh.Trimesh`.
+        """Create a Mesh from a :class:`~trimesh.base.Trimesh`.
 
         Parameters
         ----------
-        mesh : :obj:`trimesh.Trimesh`
+        mesh : :class:`~trimesh.base.Trimesh`
             A triangular mesh.
-        material : :obj:`Material`
+        material : :class:`Material`
             The material of the object. If not specified, a default grey material
             will be used.
         texcoords : (n, 2) float, optional
@@ -129,7 +171,7 @@ class Mesh(object):
 
         Returns
         -------
-        mesh : :obj:`Mesh`
+        mesh : :class:`Mesh`
             The created mesh.
         """
         positions = None

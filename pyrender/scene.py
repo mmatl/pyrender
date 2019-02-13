@@ -16,11 +16,11 @@ from .utils import format_color_vector
 class Scene(object):
     """A hierarchical scene graph.
 
-    Attributes
+    Parameters
     ----------
     name : str, optional
         The user-defined name of this object.
-    nodes : list of :obj:`Node`
+    nodes : list of :class:`Node`
         The set of all nodes in the scene.
     bg_color : (4,) float, optional
         Background color of scene.
@@ -82,7 +82,31 @@ class Scene(object):
                 self.add_node(node)
 
     @property
+    def name(self):
+        """str : The user-defined name of this object.
+        """
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        if value is not None:
+            value = str(value)
+        self._name = value
+
+    @property
+    def nodes(self):
+        """set of :class:`Node` : Set of nodes in the scene.
+        """
+        return self._nodes
+
+    @nodes.setter
+    def nodes(self, value):
+        self._nodes = value
+
+    @property
     def bg_color(self):
+        """(3,) float : The scene background color.
+        """
         return self._bg_color
 
     @bg_color.setter
@@ -95,6 +119,8 @@ class Scene(object):
 
     @property
     def ambient_light(self):
+        """(3,) float : The ambient light in the scene.
+        """
         return self._ambient_light
 
     @ambient_light.setter
@@ -107,69 +133,79 @@ class Scene(object):
 
     @property
     def meshes(self):
-        """set of :obj:`Mesh` : The meshes in the scene.
+        """set of :class:`Mesh` : The meshes in the scene.
         """
         return set([n.mesh for n in self.mesh_nodes])
 
     @property
     def mesh_nodes(self):
-        """set of :obj:`Node` : The nodes containing meshes in the scene.
+        """set of :class:`Node` : The nodes containing meshes in the scene.
         """
         return self._mesh_nodes
 
     @property
     def lights(self):
+        """set of :class:`Light` : The lights in the scene.
+        """
         return self.point_lights | self.spot_lights | self.directional_lights
 
     @property
     def light_nodes(self):
-        """set of :obj:`Node` : The nodes containing lights in the scene.
+        """set of :class:`Node` : The nodes containing lights in the scene.
         """
         return self.point_light_nodes | self.spot_light_nodes | self.directional_light_nodes
 
     @property
     def point_lights(self):
+        """set of :class:`PointLight` : The point lights in the scene.
+        """
         return set([n.light for n in self.point_light_nodes])
 
     @property
     def point_light_nodes(self):
-        """set of :obj:`Node` : The nodes containing point lights in the scene.
+        """set of :class:`Node` : The nodes containing point lights in the scene.
         """
         return self._point_light_nodes
 
     @property
     def spot_lights(self):
+        """set of :class:`SpotLight` : The spot lights in the scene.
+        """
         return set([n.light for n in self.spot_light_nodes])
 
     @property
     def spot_light_nodes(self):
-        """set of :obj:`Node` : The nodes containing spot lights in the scene.
+        """set of :class:`Node` : The nodes containing spot lights in the scene.
         """
         return self._spot_light_nodes
 
     @property
     def directional_lights(self):
+        """set of :class:`DirectionalLight` : The directional lights in the scene.
+        """
         return set([n.light for n in self.directional_light_nodes])
 
     @property
     def directional_light_nodes(self):
-        """set of :obj:`Node` : The nodes containing directional lights in the scene.
+        """set of :class:`Node` : The nodes containing directional lights in the scene.
         """
         return self._directional_light_nodes
 
     @property
     def cameras(self):
+        """set of :class:`Camera` : The cameras in the scene.
+        """
         return set([n.camera for n in self.camera_nodes])
 
     @property
     def camera_nodes(self):
-        """set of :obj:`Node` : The nodes containing cameras in the scene.
+        """set of :class:`Node` : The nodes containing cameras in the scene.
         """
         return self._camera_nodes
 
     @property
     def main_camera_node(self):
-        """set of :obj:`Node` : The node containing the main camera in the
+        """set of :class:`Node` : The node containing the main camera in the
         scene.
         """
         return self._main_camera_node
@@ -185,13 +221,13 @@ class Scene(object):
 
         Parameters
         ----------
-        obj : :obj:`Mesh`, :obj:`Light`, or :obj:`Camera`
+        obj : :class:`Mesh`, :class:`Light`, or :class:`Camera`
             The object to add to the scene.
         name : str
             A name for the new node to be created.
         pose : (4,4) float
             The local pose of this node relative to its parent node.
-        parent_node : :obj:`Node`
+        parent_node : :class:`Node`
             The parent of this Node. If None, the new node is a root node.
         parent_name : str
             The name of the parent node, can be specified instead of
@@ -199,7 +235,7 @@ class Scene(object):
 
         Returns
         -------
-        node : :obj:`Node`
+        node : :class:`Node`
             The newly-created and inserted node.
         """
         if isinstance(obj, Mesh):
@@ -248,11 +284,11 @@ class Scene(object):
 
         Parameters
         ----------
-        node : :obj:`Node`, optional
+        node : :class:`Node`, optional
             If present, this object is simply returned.
         name : str
             A name for the Node.
-        obj : :obj:`Mesh`, :obj:`Light`, or :obj:`Camera`
+        obj : :class:`Mesh`, :class:`Light`, or :class:`Camera`
             An object that is attached to the node.
         obj_name : str
             The name of an object that is attached to the node.
@@ -270,9 +306,9 @@ class Scene(object):
 
         Parameters
         ----------
-        node : :obj:`Node`
+        node : :class:`Node`
             The node to be added.
-        parent_node : :obj:`Node`
+        parent_node : :class:`Node`
             The parent of this Node. If None, the new node is a root node.
         """
         self.nodes.add(node)
@@ -324,7 +360,7 @@ class Scene(object):
 
         Parameters
         ----------
-        node : :obj:`Node`
+        node : :class:`Node`
             The node to be checked.
 
         Returns
@@ -339,7 +375,7 @@ class Scene(object):
 
         Parameters
         ----------
-        node : :obj:`Node`
+        node : :class:`Node`
             The node to be removed.
         """
         self.nodes.remove(node)
@@ -390,7 +426,7 @@ class Scene(object):
 
         Parameters
         ----------
-        node : :obj:`Node`
+        node : :class:`Node`
             The node to find the pose of.
 
         Returns
@@ -414,7 +450,7 @@ class Scene(object):
 
         Parameters
         ----------
-        node : :obj:`Node`
+        node : :class:`Node`
             The node to set the pose of.
         pose : (4,4) float
             The pose to set the node to.
@@ -468,15 +504,15 @@ class Scene(object):
 
         Parameters
         ----------
-        scene : trimesh.Scene
-            Scene with trimesh.Trimesh, trimesh.PointCloud object
+        scene : :class:`~trimesh.scene.scene.Scene`
+            Scene with trimesh.Trimesh, trimesh.PointCloud objects.
         ambient_light : (3,) float or None
-            Ambient light in the scene
+            Ambient light in the scene.
 
         Returns
-        -----------
-        scene_pr : pyrender.scene.Scene
-        Contains same geometry as trimesh version
+        -------
+        scene_pr : :class:`Scene`
+            A scene containing the same geometry as the trimesh scene.
         """
         # convert trimesh geometries to pyrender geometries
         geometries = {name: Mesh.from_trimesh(geom)

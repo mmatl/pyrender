@@ -13,11 +13,13 @@ from .sampler import Sampler
 class Texture(object):
     """A texture and its sampler.
 
-    Attributes
+    Parameters
     ----------
-    sampler : :obj:`Sampler`
+    name : str, optional
+        The user-defined name of this object.
+    sampler : :class:`Sampler`
         The sampler used by this texture.
-    source : (h,w,c) uint8 or (h,w,c) float or :obj:`PIL.Image.Image`
+    source : (h,w,c) uint8 or (h,w,c) float or :class:`PIL.Image.Image`
         The image used by this texture. If None, the texture is created
         empty and width and height must be specified.
     source_channels : str
@@ -30,6 +32,8 @@ class Texture(object):
         For empty textures, the height of the texture buffer.
     tex_type : int
         Either GL_TEXTURE_2D or GL_TEXTURE_CUBE.
+    data_format : int
+        For now, just GL_FLOAT.
     """
 
     def __init__(self,
@@ -53,7 +57,21 @@ class Texture(object):
         self._texid = None
 
     @property
+    def name(self):
+        """str : The user-defined name of this object.
+        """
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        if value is not None:
+            value = str(value)
+        self._name = value
+
+    @property
     def sampler(self):
+        """:class:`Sampler` : The sampler used by this texture.
+        """
         return self._sampler
 
     @sampler.setter
@@ -64,6 +82,8 @@ class Texture(object):
 
     @property
     def source(self):
+        """(h,w,c) uint8 or float or :class:`PIL.Image.Image` : The image used in this texture.
+        """
         return self._source
 
     @source.setter
@@ -73,7 +93,61 @@ class Texture(object):
         else:
             self._source = format_texture_source(value, self.source_channels)
 
+    @property
+    def source_channels(self):
+        """str : The channels that were extracted from the original source.
+        """
+        return self._source_channels
+
+    @source_channels.setter
+    def source_channels(self, value):
+        self._source_channels = value
+
+    @property
+    def width(self):
+        """int : The width of the texture buffer.
+        """
+        return self._width
+
+    @width.setter
+    def width(self, value):
+        self._width = value
+
+    @property
+    def height(self):
+        """int : The height of the texture buffer.
+        """
+        return self._height
+
+    @height.setter
+    def height(self, value):
+        self._height = value
+
+    @property
+    def tex_type(self):
+        """int : The type of the texture.
+        """
+        return self._tex_type
+
+    @tex_type.setter
+    def tex_type(self, value):
+        self._tex_type = value
+
+    @property
+    def data_format(self):
+        """int : The format of the texture data.
+        """
+        return self._data_format
+
+    @data_format.setter
+    def data_format(self, value):
+        self._data_format = value
+
+    
+
     def delete(self):
+        """Remove this texture from the OpenGL context.
+        """
         self._unbind()
         self._remove_from_context()
 

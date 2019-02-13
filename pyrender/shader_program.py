@@ -23,9 +23,14 @@ class ShaderProgramCache(object):
 
         Parameters
         ----------
-        shader_filenames : list of str
-            Path to shader files that should be compiled into this program.
-            Acceptable file extensions are .vert, .geom, and .frag.
+        vertex_shader : str
+            The vertex shader filename.
+        fragment_shader : str
+            The fragment shader filename.
+        geometry_shader : str
+            The geometry shader filename.
+        defines : dict
+            Defines and their values for the shader.
         """
         shader_names = []
         if defines is None:
@@ -56,11 +61,16 @@ class ShaderProgram(object):
     """A thin wrapper about OpenGL shader programs that supports easy creation,
     binding, and uniform-setting.
 
-    Attributes
+    Parameters
     ----------
-    shader_filenames: list of str
-        Path to shader files that should be compiled into this program.
-        Acceptable file extensions are .vert, .geom, and .frag.
+    vertex_shader : str
+        The vertex shader filename.
+    fragment_shader : str
+        The fragment shader filename.
+    geometry_shader : str
+        The geometry shader filename.
+    defines : dict
+        Defines and their values for the shader.
     """
 
     def __init__(self, vertex_shader, fragment_shader, geometry_shader=None, defines=None):

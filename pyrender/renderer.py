@@ -24,7 +24,7 @@ class Renderer(object):
     This renderer relies on the existence of an OpenGL context and
     does not create one on its own.
 
-    Attributes
+    Parameters
     ----------
     viewport_width : int
         Width of the viewport in pixels.
@@ -66,15 +66,19 @@ class Renderer(object):
 
     @property
     def viewport_width(self):
+        """int : The width of the main viewport, in pixels.
+        """
         return self._viewport_width
-
-    @property
-    def viewport_height(self):
-        return self._viewport_height
 
     @viewport_width.setter
     def viewport_width(self, value):
         self._viewport_width = self.dpscale * value
+
+    @property
+    def viewport_height(self):
+        """int : The height of the main viewport, in pixels.
+        """
+        return self._viewport_height
 
     @viewport_height.setter
     def viewport_height(self, value):
@@ -82,6 +86,8 @@ class Renderer(object):
 
     @property
     def point_size(self):
+        """float : The size of screen-space points, in pixels.
+        """
         return self._point_size
 
     @point_size.setter
@@ -93,16 +99,16 @@ class Renderer(object):
 
         Parameters
         ----------
-        scene : :obj:`Scene`
+        scene : :class:`Scene`
             A scene to render.
         flags : int
             A specification from `RenderFlags`. Valid flags include:
-                - `RenderFlags.NONE`: A normal PBR render
+                - `RenderFlags.NONE`: A normal PBR render.
                 - `RenderFlags.DEPTH_ONLY`: Render the depth buffer alone.
                 - `RenderFlags.OFFSCREEN`: Render offscreen and return the color and depth buffers.
                 - `RenderFlags.FLIP_WIREFRAME`: Invert the status of wireframe rendering for each material.
                 - `RenderFlags.ALL_WIREFRAME`: Render all materials in wireframe mode.
-                - `RenderFlags.ALL_SOLID`: Render all meshes as solids
+                - `RenderFlags.ALL_SOLID`: Render all meshes as solids.
                 - `RenderFlags.SHADOWS_DIRECTIONAL`: Compute shadowing for directional lights.
                 - `RenderFlags.SHADOWS_POINT`: Compute shadowing for point lights.
                 - `RenderFlags.SHADOWS_SPOT`: Compute shadowing for spot lights.

@@ -14,7 +14,6 @@
 
 import sys
 import os
-import sphinx_rtd_theme
 from pyrender import __version__
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -31,13 +30,24 @@ sys.path.insert(0, os.path.abspath('../../'))
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc', 'sphinxcontrib.napoleon'
+    'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.coverage',
+    'sphinx.ext.githubpages',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.napoleon',
+    'sphinx.ext.viewcode',
+    'sphinx_automodapi.automodapi',
+    'sphinx_automodapi.smart_resolver'
 ]
+numpydoc_class_members_toctree = False
 autoclass_content = 'class'
 autodoc_member_order = 'bysource'
 autodoc_default_flags = ['members', 'show-inheritance']
 napoleon_include_special_with_doc = True
 napoleon_include_init_with_doc = True
+automodapi_toctreedirnm = 'generated'
+automodsumm_inherited_members = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -116,6 +126,7 @@ todo_include_todos = False
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
+import sphinx_rtd_theme
 html_theme = 'sphinx_rtd_theme'
 html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
@@ -291,3 +302,12 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+intersphinx_mapping = {
+    'python' : ('https://docs.python.org/', None),
+    'pyrender' : ('https://pyrender.readthedocs.io/en/latest/', None),
+}
+
+# Autosummary fix
+autosummary_generate = True
+

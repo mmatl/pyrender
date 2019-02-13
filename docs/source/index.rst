@@ -27,9 +27,8 @@ It also includes an easy-to-use viewer for visualizing and debugging 3D data.
 .. toctree::
    :maxdepth: 2
    :caption: API Documentation
-   :glob:
 
-   api/*
+   api/index.rst
 
 .. toctree::
     :maxdepth: 2

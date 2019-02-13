@@ -119,12 +119,16 @@ specifically, `sphinx`_ and a few plugins.
 
 .. _sphinx: http://www.sphinx-doc.org/en/master/
 
-To install the dependencies required, simply change directories into the `pyrender` source and run ::
+To install the dependencies required, simply change directories into the `pyrender` source and run
+
+.. code-block:: bash
 
     $ pip install .[docs]
 
 Then, go to the `docs` directory and run `make` with the appropriate target.
-For example, ::
+For example,
+
+.. code-block:: bash
 
     $ cd docs/
     $ make html

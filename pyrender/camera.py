@@ -19,7 +19,7 @@ class Camera(object):
     where the z axis points away from the view direction and the
     x and y axes point to the right and up in the image plane, respectively.
 
-    Attributes
+    Parameters
     ----------
     name : str, optional
         The user-defined name of this object.
@@ -39,7 +39,21 @@ class Camera(object):
         self.zfar = zfar
 
     @property
+    def name(self):
+        """str : The user-defined name of this object.
+        """
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        if value is not None:
+            value = str(value)
+        self._name = value
+
+    @property
     def znear(self):
+        """float : The distance to the near clipping plane.
+        """
         return self._znear
 
     @znear.setter
@@ -50,6 +64,8 @@ class Camera(object):
 
     @property
     def zfar(self):
+        """float : The distance to the far clipping plane.
+        """
         return self._zfar
 
     @zfar.setter
@@ -78,7 +94,7 @@ class Camera(object):
 class PerspectiveCamera(Camera):
     """A perspective camera for perspective projection.
 
-    Attributes
+    Parameters
     ----------
     name : str, optional
         The user-defined name of this object.
@@ -110,6 +126,8 @@ class PerspectiveCamera(Camera):
 
     @property
     def yfov(self):
+        """float : The vertical field of view in radians.
+        """
         return self._yfov
 
     @yfov.setter
@@ -120,6 +138,8 @@ class PerspectiveCamera(Camera):
 
     @property
     def aspectRatio(self):
+        """float : The ratio of the width to the height of the field of view.
+        """
         return self._aspectRatio
 
     @aspectRatio.setter
@@ -169,7 +189,7 @@ class PerspectiveCamera(Camera):
 class OrthographicCamera(Camera):
     """A perspective camera for perspective projection.
 
-    Attributes
+    Parameters
     ----------
     name : str, optional
         The user-defined name of this object.
@@ -201,6 +221,8 @@ class OrthographicCamera(Camera):
 
     @property
     def xmag(self):
+        """float : The horizontal magnification of the view.
+        """
         return self._xmag
 
     @xmag.setter
@@ -211,6 +233,8 @@ class OrthographicCamera(Camera):
 
     @property
     def ymag(self):
+        """float : The vertical magnification of the view.
+        """
         return self._ymag
 
     @ymag.setter

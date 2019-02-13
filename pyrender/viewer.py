@@ -64,9 +64,9 @@ class Viewer(pyglet.window.Window):
     * `w`: Toggles wireframe mode (scene default, flip wireframes, all wireframe, or all solid).
     * `z`: Resets the camera to the initial view.
 
-    Attributes
+    Parameters
     ----------
-    scene : :obj:`Scene`
+    scene : :class:`Scene`
         The scene to visualize.
     viewport_size : (2,) int
         The width and height of the initial viewing window.
@@ -277,10 +277,14 @@ class Viewer(pyglet.window.Window):
 
     @property
     def scene(self):
+        """:class:`Scene` : The scene being visualized.
+        """
         return self._scene
 
     @property
     def viewport_size(self):
+        """(2,) int : The width and height of the viewing window.
+        """
         return self._viewport_size
 
     @property

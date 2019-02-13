@@ -16,7 +16,7 @@ from .utils import format_color_array
 class Primitive(object):
     """A primitive object which can be rendered.
 
-    Attributes
+    Parameters
     ----------
     positions : (n, 3) float
         XYZ vertex positions.
@@ -35,9 +35,9 @@ class Primitive(object):
         Joint information.
     weights_0 : (n, 4) float
         Weight information for morphing.
-    indices : (m, 3) float
+    indices : (m, 3) int
         Face indices for triangle meshes or fans.
-    material : :obj:`Material`
+    material : :class:`Material`
         The material to apply to this primitive when rendering.
     mode : int
         The type of primitives to render, one of the following:
@@ -94,6 +94,8 @@ class Primitive(object):
 
     @property
     def positions(self):
+        """(n,3) float : XYZ vertex positions.
+        """
         return self._positions
 
     @positions.setter
@@ -103,6 +105,8 @@ class Primitive(object):
 
     @property
     def normals(self):
+        """(n,3) float : Normalized XYZ vertex normals.
+        """
         return self._normals
 
     @normals.setter
@@ -115,6 +119,8 @@ class Primitive(object):
 
     @property
     def tangents(self):
+        """(n,4) float : XYZW vertex tangents.
+        """
         return self._tangents
 
     @tangents.setter
@@ -127,6 +133,8 @@ class Primitive(object):
 
     @property
     def texcoord_0(self):
+        """(n,2) float : The first set of UV texture coordinates.
+        """
         return self._texcoord_0
 
     @texcoord_0.setter
@@ -141,6 +149,8 @@ class Primitive(object):
 
     @property
     def texcoord_1(self):
+        """(n,2) float : The second set of UV texture coordinates.
+        """
         return self._texcoord_1
 
     @texcoord_1.setter
@@ -153,6 +163,8 @@ class Primitive(object):
 
     @property
     def color_0(self):
+        """(n,4) float : RGBA vertex colors.
+        """
         return self._color_0
 
     @color_0.setter
@@ -166,6 +178,8 @@ class Primitive(object):
 
     @property
     def joints_0(self):
+        """(n,4) float : Joint information.
+        """
         return self._joints_0
 
     @joints_0.setter
@@ -174,6 +188,8 @@ class Primitive(object):
 
     @property
     def weights_0(self):
+        """(n,4) float : Weight information for morphing.
+        """
         return self._weights_0
 
     @weights_0.setter
@@ -182,6 +198,8 @@ class Primitive(object):
 
     @property
     def indices(self):
+        """(m,3) int : Face indices for triangle meshes or fans.
+        """
         return self._indices
 
     @indices.setter
@@ -192,6 +210,8 @@ class Primitive(object):
 
     @property
     def material(self):
+        """:class:`Material` : The material for this primitive.
+        """
         return self._material
 
     @material.setter
@@ -206,6 +226,8 @@ class Primitive(object):
 
     @property
     def mode(self):
+        """int : The type of primitive to render.
+        """
         return self._mode
 
     @mode.setter
@@ -217,6 +239,8 @@ class Primitive(object):
 
     @property
     def targets(self):
+        """(k,) int : Morph target indices.
+        """
         return self._targets
 
     @targets.setter
@@ -225,6 +249,8 @@ class Primitive(object):
 
     @property
     def poses(self):
+        """(x,4,4) float : Homogenous transforms of instances of this primitive.
+        """
         return self._poses
 
     @poses.setter
@@ -265,12 +291,16 @@ class Primitive(object):
 
     @property
     def buf_flags(self):
+        """int : The flags for the render buffer.
+        """
         if self._buf_flags is None:
             self._buf_flags = self._compute_buf_flags()
         return self._buf_flags
 
     @property
     def tex_flags(self):
+        """int : The flags for the texture buffer.
+        """
         if self._tex_flags is None:
             self._tex_flags = self._compute_tex_flags()
         return self._tex_flags
@@ -281,6 +311,8 @@ class Primitive(object):
 
     @property
     def is_transparent(self):
+        """bool : If True, the mesh is partially-transparent.
+        """
         if self._is_transparent is None:
             self._is_transparent = self._compute_transparency()
         return self._is_transparent

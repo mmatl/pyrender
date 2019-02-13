@@ -16,7 +16,7 @@ from .camera import OrthographicCamera, PerspectiveCamera
 class Light(object):
     """Base class for all light objects.
 
-    Attributes
+    Parameters
     ----------
     name : str, optional
         Name of the light.
@@ -44,7 +44,21 @@ class Light(object):
         self._shadow_texture = None
 
     @property
+    def name(self):
+        """str : The user-defined name of this object.
+        """
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        if value is not None:
+            value = str(value)
+        self._name = value
+
+    @property
     def color(self):
+        """(3,) float : The light's color.
+        """
         return self._color
 
     @color.setter
@@ -53,6 +67,8 @@ class Light(object):
 
     @property
     def intensity(self):
+        """float : The light's intensity in candela or lux.
+        """
         return self._intensity
 
     @intensity.setter
@@ -61,6 +77,8 @@ class Light(object):
 
     @property
     def range(self):
+        """float : The cutoff distance for the light.
+        """
         return self._range
 
     @range.setter
@@ -72,7 +90,7 @@ class Light(object):
 
     @property
     def shadow_texture(self):
-        """:obj:`Texture` : A texture used to hold shadow maps for this light.
+        """:class:`Texture` : A texture used to hold shadow maps for this light.
         """
         return self._shadow_texture
 
@@ -105,7 +123,7 @@ class Light(object):
 
         Returns
         -------
-        camera : :obj:`Camera`
+        camera : :class:`Camera`
             The camera used to render shadowmaps for this light.
         """
         pass
@@ -119,7 +137,7 @@ class DirectionalLight(Light):
     not attenuated. Its intensity is defined in lumens per metre squared,
     or lux (lm/m2).
 
-    Attributes
+    Parameters
     ----------
     name : str, optional
         Name of the light.
@@ -169,7 +187,7 @@ class DirectionalLight(Light):
 
         Returns
         -------
-        camera : :obj:`Camera`
+        camera : :class:`Camera`
             The camera used to render shadowmaps for this light.
         """
         return OrthographicCamera(
@@ -187,7 +205,7 @@ class PointLight(Light):
     brightness goes like the inverse square of the distance). Point light
     intensity is defined in candela, which is lumens per square radian (lm/sr).
 
-    Attributes
+    Parameters
     ----------
     name : str, optional
         Name of the light.
@@ -235,7 +253,7 @@ class PointLight(Light):
 
         Returns
         -------
-        camera : :obj:`Camera`
+        camera : :class:`Camera`
             The camera used to render shadowmaps for this light.
         """
         raise NotImplementedError('Shadows not yet implemented for point lights')
@@ -253,7 +271,7 @@ class SpotLight(Light):
     not affect cone shape, and is ignored except for its effect on position
     and orientation.
 
-    Attributes
+    Parameters
     ----------
     name : str, optional
         Name of the light.
@@ -293,6 +311,8 @@ class SpotLight(Light):
 
     @property
     def innerConeAngle(self):
+        """float : The inner cone angle in radians.
+        """
         return self._innerConeAngle
 
     @innerConeAngle.setter
@@ -303,6 +323,8 @@ class SpotLight(Light):
 
     @property
     def outerConeAngle(self):
+        """float : The outer cone angle in radians.
+        """
         return self._outerConeAngle
 
     @outerConeAngle.setter
@@ -333,7 +355,7 @@ class SpotLight(Light):
 
         Returns
         -------
-        camera : :obj:`Camera`
+        camera : :class:`Camera`
             The camera used to render shadowmaps for this light.
         """
         return PerspectiveCamera(
@@ -342,3 +364,5 @@ class SpotLight(Light):
             yfov=np.clip(2*self.outerConeAngle + np.pi / 16.0, 0.0, np.pi),
             aspectRatio=1.0
         )
+
+__all__ = ['Light', 'DirectionalLight', 'SpotLight', 'PointLight']

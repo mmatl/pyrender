@@ -8,7 +8,7 @@ from .constants import GLTF
 class Sampler(object):
     """Texture sampler properties for filtering and wrapping modes.
 
-    Attributes
+    Parameters
     ----------
     name : str, optional
         The user-defined name of this object.
@@ -47,3 +47,55 @@ class Sampler(object):
         self.minFilter = minFilter
         self.wrapS = wrapS
         self.wrapT = wrapT
+
+    @property
+    def name(self):
+        """str : The user-defined name of this object.
+        """
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        if value is not None:
+            value = str(value)
+        self._name = value
+
+    @property
+    def magFilter(self):
+        """int : Magnification filter type.
+        """
+        return self._magFilter
+
+    @magFilter.setter
+    def magFilter(self, value):
+        self._magFilter = value
+
+    @property
+    def minFilter(self):
+        """int : Minification filter type.
+        """
+        return self._minFilter
+
+    @minFilter.setter
+    def minFilter(self, value):
+        self._minFilter = value
+
+    @property
+    def wrapS(self):
+        """int : S (U) wrapping mode.
+        """
+        return self._wrapS
+
+    @wrapS.setter
+    def wrapS(self, value):
+        self._wrapS = value
+
+    @property
+    def wrapT(self):
+        """int : T (V) wrapping mode.
+        """
+        return self._wrapT
+
+    @wrapT.setter
+    def wrapT(self, value):
+        self._wrapT = value
