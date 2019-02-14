@@ -49,5 +49,6 @@ setup(
             'sphinx_rtd_theme',
             'sphinx-automodapi'
         ],
-    }
+    },
+    include_package_data=True
 )
