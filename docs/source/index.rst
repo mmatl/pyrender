@@ -10,13 +10,13 @@ If is mostly compliant with the glTF 2.0 specification, and it makes it easy
 to render 3D scenes in pure Python. Dependencies are light and all
 pip-installable.
 
-.. image:: scene.png
+.. image:: _static/rotation.gif
 
 Pyrender supports rendering objects with metallic-roughness textures,
 normal maps, ambient occlusion textures, emission textures, and shadows.
 It also includes an easy-to-use viewer for visualizing and debugging 3D data.
 
-.. image:: damaged_helmet.png
+.. image:: _static/damaged_helmet.png
 
 .. toctree::
    :maxdepth: 2

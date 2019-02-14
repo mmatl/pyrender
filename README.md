@@ -14,7 +14,7 @@ you can get started visualizing 3D data instantly.
 Extensive API documentation is provided [here](https://pyrender.readthedocs.io/en/latest/).
 
 <p align="center">
-  <img src="https://github.com/mmatl/pyrender/blob/master/docs/source/rotation.gif?raw=true" alt="GIF of Viewer"/>
+  <img src="https://github.com/mmatl/pyrender/blob/master/docs/source/_static/rotation.gif?raw=true" alt="GIF of Viewer"/>
 </p>
 
 ## Installation
