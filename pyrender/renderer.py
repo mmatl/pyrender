@@ -834,7 +834,8 @@ class Renderer(object):
         geometry_shader = None
         defines = {}
 
-        if bool(program_flags & ProgramFlags.USE_MATERIAL):
+        if (bool(program_flags & ProgramFlags.USE_MATERIAL) and
+                not flags & RenderFlags.DEPTH_ONLY):
             vertex_shader = 'mesh.vert'
             fragment_shader = 'mesh.frag'
         elif bool(program_flags & (ProgramFlags.VERTEX_NORMALS | ProgramFlags.FACE_NORMALS)):

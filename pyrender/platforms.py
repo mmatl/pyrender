@@ -93,7 +93,10 @@ class EGLPlatform(Platform):
                                EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT, EGL_CONFORMANT, \
                                EGL_OPENGL_BIT, EGL_CONFIG_CAVEAT, EGL_NONE,         \
                                EGL_DEFAULT_DISPLAY, EGL_NO_CONTEXT, EGL_WIDTH,      \
-                               EGL_OPENGL_API,                                      \
+                               EGL_OPENGL_API, EGL_CONTEXT_MAJOR_VERSION,           \
+                               EGL_CONTEXT_MINOR_VERSION,                           \
+                               EGL_CONTEXT_OPENGL_PROFILE_MASK,                     \
+                               EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT,                 \
                                eglGetDisplay, eglInitialize, eglChooseConfig,       \
                                eglBindAPI, eglCreatePbufferSurface,                 \
                                eglCreateContext, EGLConfig
@@ -108,6 +111,12 @@ class EGLPlatform(Platform):
             EGL_COLOR_BUFFER_TYPE, EGL_RGB_BUFFER,
             EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
             EGL_CONFORMANT, EGL_OPENGL_BIT,
+            EGL_NONE
+        ])
+        context_attributes = arrays.GLintArray.asArray([
+            EGL_CONTEXT_MAJOR_VERSION, 3,
+            EGL_CONTEXT_MINOR_VERSION, 2,
+            EGL_CONTEXT_OPENGL_PROFILE_MASK, EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT,
             EGL_NONE
         ])
         major, minor = ctypes.c_long(), ctypes.c_long()
@@ -132,10 +141,21 @@ class EGLPlatform(Platform):
 
         # Create a 1x1 EGL pbuffer
         self._egl_surface = eglCreatePbufferSurface(self._egl_display, configs[0],
-                [EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE])
+            [EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE])
 
         # Create an EGL context
-        self._egl_context = eglCreateContext(self._egl_display, configs[0], EGL_NO_CONTEXT, None)
+        self._egl_context = eglCreateContext(self._egl_display, configs[0],
+            EGL_NO_CONTEXT, context_attributes)
+
+        # Make it current
+        self.make_current()
+
+        from OpenGL.EGL import eglQueryContext, EGL_CONTEXT_CLIENT_TYPE, EGL_CONTEXT_CLIENT_VERSION
+        x = ctypes.c_int()
+        eglQueryContext(self._egl_display, self._egl_context, EGL_CONTEXT_CLIENT_TYPE, x)
+        print(x.value)
+        eglQueryContext(self._egl_display, self._egl_context, EGL_CONTEXT_CLIENT_VERSION, x)
+        print(x.value)
 
     def make_current(self):
         from OpenGL.EGL import eglMakeCurrent
