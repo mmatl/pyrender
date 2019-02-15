@@ -25,7 +25,7 @@ from .constants import (OPEN_GL_MAJOR, OPEN_GL_MINOR, TEXT_PADDING,
                         DEFAULT_Z_FAR, DEFAULT_Z_NEAR, RenderFlags, TextAlign)
 from .light import DirectionalLight
 from .node import Node
-from .camera import PerspectiveCamera
+from .camera import PerspectiveCamera, OrthographicCamera
 from .trackball import Trackball
 from .renderer import Renderer
 from .mesh import Mesh
@@ -58,6 +58,7 @@ class Viewer(pyglet.window.Window):
     * `l`: Toggles lighting mode (scene lighting, Raymond lighting, or direct lighting).
     * `m`: Toggles face normal visualization.
     * `n`: Toggles vertex normal visualization.
+    * `o`: Toggles orthographic mode.
     * `q`: Quits the viewer.
     * `r`: Starts recording a GIF, and pressing again stops recording and opens a file dialog.
     * `s`: Opens a file dialog to save the current view as an image.
@@ -113,8 +114,10 @@ class Viewer(pyglet.window.Window):
           to the scene's centroid.
         * `use_raymond_lighting`: `bool`, If `True`, an additional set of three directional lights
           that move with the camera will be added to the scene. Defaults to `False`.
-        * `use_directional_lighting`: `bool`, If `True`, an additional directional light that
+        * `use_direct_lighting`: `bool`, If `True`, an additional directional light that
           moves with the camera and points out of it will be added to the scene. Defaults to `False`.
+        * `use_perspective_cam`: `bool`, If `True, a perspective camera will be used. Otherwise,
+          an orthographic camera is used. Defaults to `True`.
         * `save_directory`: `str`, A directory to open the file dialogs in. Defaults to `None`.
         * `window_title`: `str`, A title for the viewer's application window. Defaults to `"Scene Viewer"`.
         * `refresh_rate`: `float`, A refresh rate for rendering, in Hertz. Defaults to `30.0`.
@@ -165,6 +168,7 @@ class Viewer(pyglet.window.Window):
             'record' : False,
             'use_raymond_lighting' : False,
             'use_direct_lighting' : False,
+            'use_perspective_cam': True,
             'save_directory' : None,
             'window_title' : 'Scene Viewer',
             'refresh_rate': 30.0,
@@ -225,6 +229,8 @@ class Viewer(pyglet.window.Window):
         self._camera_node = None
         self._prior_main_camera_node = None
         self._default_camera_pose = None
+        self._default_persp_cam = None
+        self._default_orth_cam = None
         self._trackball = None
         self._saved_frames = []
 
@@ -232,13 +238,30 @@ class Viewer(pyglet.window.Window):
         if scene.main_camera_node is not None:
             n = scene.main_camera_node
             camera = copy.copy(n.camera)
+            if isinstance(camera, PerspectiveCamera):
+                self._default_persp_cam = camera
+            elif isinstance(camera, OrthographicCamera):
+                self._default_orth_cam = camera
             self._default_camera_pose = scene.get_pose(scene.main_camera_node)
             self._prior_main_camera_node = n
-        else:
+
+        # Set defaults as needed
+        znear = min(scene.scale / 10.0, DEFAULT_Z_NEAR)
+        zfar = max(scene.scale * 10.0, DEFAULT_Z_FAR)
+        if self._default_persp_cam is None:
+            self._default_persp_cam = PerspectiveCamera(yfov=np.pi / 3.0, znear=znear, zfar=zfar)
+        if self._default_orth_cam is None:
+            self._default_orth_cam = OrthographicCamera(
+                xmag=scene.scale, ymag=scene.scale, znear=znear, zfar=zfar
+            )
+        if self._default_camera_pose is None:
             self._default_camera_pose = self._compute_initial_camera_pose()
-            znear = min(scene.scale / 10.0, DEFAULT_Z_NEAR)
-            zfar = max(scene.scale * 10.0, DEFAULT_Z_FAR)
-            camera = PerspectiveCamera(yfov=np.pi / 3.0, znear=znear, zfar=zfar)
+
+        # Pick camera
+        if self.viewer_flags['use_perspective_cam']:
+            camera = self._default_persp_cam
+        else:
+            camera = self._default_orth_cam
 
         self._camera_node = Node(matrix=self._default_camera_pose, camera=camera)
         scene.add_node(self._camera_node)
@@ -325,13 +348,15 @@ class Viewer(pyglet.window.Window):
             * `rotate`: `bool`, If `True`, the scene's camera will rotate about an axis. Defaults to `False`.
             * `rotate_rate`: `float`, The rate of rotation in radians per second. Defaults to `PI / 3.0`.
             * `rotate_axis`: `(3,) float`, The axis in world coordinates to rotate about. Defaults
-            to `[0,0,1]`.
+              to `[0,0,1]`.
             * `view_center`: `(3,) float`, The position to rotate the scene about. Defaults
-            to the scene's centroid.
+              to the scene's centroid.
             * `use_raymond_lighting`: `bool`, If `True`, an additional set of three directional lights
             that move with the camera will be added to the scene. Defaults to `False`.
-            * `use_directional_lighting`: `bool`, If `True`, an additional directional light that
-            moves with the camera and points out of it will be added to the scene. Defaults to `False`.
+            * `use_direct_lighting`: `bool`, If `True`, an additional directional light that
+              moves with the camera and points out of it will be added to the scene. Defaults to `False`.
+            * `use_perspective_cam`: `bool`, If `True, a perspective camera will be used. Otherwise,
+              an orthographic camera is used. Defaults to `True`.
             * `save_directory`: `str`, A directory to open the file dialogs in. Defaults to `None`.
             * `window_title`: `str`, A title for the viewer's application window. Defaults to `"Scene Viewer"`.
             * `refresh_rate`: `float`, A refresh rate for rendering, in Hertz. Defaults to `30.0`.
@@ -489,7 +514,22 @@ class Viewer(pyglet.window.Window):
     def on_mouse_scroll(self, x, y, dx, dy):
         """Record a mouse scroll.
         """
-        self._trackball.scroll(dy)
+        if self.viewer_flags['use_perspective_cam']:
+            self._trackball.scroll(dy)
+        else:
+            spfc = 0.95
+            spbc = 1.0 / 0.95
+            sf = 1.0
+            if dy > 0:
+                sf = spfc * dy
+            elif dy < 0:
+                sf = - spbc * dy
+
+            c = self._camera_node.camera
+            xmag = max(c.xmag * sf, 1e-8)
+            ymag = max(c.ymag * sf, 1e-8 * c.ymag / c.xmag)
+            c.xmag = xmag
+            c.ymag = ymag
 
     def on_key_press(self, symbol, modifiers):
         """Record a key press.
@@ -600,6 +640,23 @@ class Viewer(pyglet.window.Window):
                 self._message_text = 'Vert Normals On'
             else:
                 self._message_text = 'Vert Normals Off'
+
+        # O toggles orthographic camera mode
+        elif symbol == pyglet.window.key.O:
+            self.viewer_flags['use_perspective_cam'] = not self.viewer_flags['use_perspective_cam']
+            if self.viewer_flags['use_perspective_cam']:
+                camera = self._default_persp_cam
+                self._message_text = 'Perspective View'
+            else:
+                camera = self._default_orth_cam
+                self._message_text = 'Orthographic View'
+
+            cam_pose = self._camera_node.matrix.copy()
+            cam_node = Node(matrix=cam_pose, camera=camera)
+            self.scene.remove_node(self._camera_node)
+            self.scene.add_node(cam_node)
+            self.scene.main_camera_node = cam_node
+            self._camera_node = cam_node
 
         # Q quits the viewer
         elif symbol == pyglet.window.key.Q:
