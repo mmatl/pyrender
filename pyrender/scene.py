@@ -352,8 +352,6 @@ class Scene(object):
             The parent of this Node. If None, the new node is a root node.
         """
         self.nodes.add(node)
-        # Create node in graph
-        self._digraph.add_node(node)
 
         # Add node to sets
         if node.name is not None:
@@ -383,9 +381,13 @@ class Scene(object):
             if self._main_camera_node is None:
                 self._main_camera_node = node
 
-        # Connect to parent
         if parent_node is None:
             parent_node = 'world'
+        elif isinstance(parent_node, Node):
+            parent_node.children.append(node)
+
+        # Create node in graph
+        self._digraph.add_node(node)
         self._digraph.add_edge(node, parent_node)
 
         # Iterate over children
@@ -418,10 +420,27 @@ class Scene(object):
         node : :class:`Node`
             The node to be removed.
         """
+        # Disconnect self from parent who is staying in the graph
+        parent = list(self._digraph.neighbors(node))[0]
+        self._remove_node(node)
+        if isinstance(parent, Node):
+            parent.children.remove(node)
+
+    def _remove_node(self, node):
+        """Remove a node and all its children from the scene.
+
+        Parameters
+        ----------
+        node : :class:`Node`
+            The node to be removed.
+        """
+
+        # Remove self from nodes
         self.nodes.remove(node)
+
         # Remove children
         for child in node.children:
-            self.remove_node(child)
+            self._remove_node(child)
         node.children = []
 
         # Remove self from the graph
