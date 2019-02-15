@@ -125,8 +125,10 @@ class Viewer(pyglet.window.Window):
 
     Note
     ----
-    Animations can be accomplished by running the viewer in a separate thread and then
-    modifying the scene in the main thread.
+    Animation can be accomplished by running the viewer with ``run_in_thread`` enabled.
+    Then, just run a loop in your main thread, updating the scene as needed.
+    Before updating the scene, be sure to acquire the `render_lock`, and release it
+    when your update is done.
     """
 
     def __init__(self, scene, viewport_size=None,
@@ -140,8 +142,9 @@ class Viewer(pyglet.window.Window):
             viewport_size = (640, 480)
         self._scene = scene
         self._viewport_size = viewport_size
+        self._render_lock = Lock()
         self._is_active = False
-        self.run_in_thread = run_in_thread
+        self._run_in_thread = run_in_thread
 
         self._default_render_flags = {
             'flip_wireframe' : False,
@@ -170,22 +173,24 @@ class Viewer(pyglet.window.Window):
             'show_mesh_axes': False,
             'caption': None
         }
+        self._render_flags = self._default_render_flags.copy()
+        self._viewer_flags = self._default_viewer_flags.copy()
+        self._viewer_flags['rotate_axis'] = self._default_viewer_flags['rotate_axis'].copy()
 
-        self.render_flags = self._default_render_flags.copy()
-        self.viewer_flags = self._default_viewer_flags.copy()
-        self.viewer_flags['rotate_axis'] = self._default_viewer_flags['rotate_axis'].copy()
         if render_flags is not None:
-            self.render_flags.update(render_flags)
+            self._render_flags.update(render_flags)
         if viewer_flags is not None:
-            self.viewer_flags.update(viewer_flags)
+            self._viewer_flags.update(viewer_flags)
+
         for key in kwargs:
             if key in self.render_flags:
-                self.render_flags[key] = kwargs[key]
+                self._render_flags[key] = kwargs[key]
             elif key in self.viewer_flags:
-                self.viewer_flags[key] = kwargs[key]
+                self._viewer_flags[key] = kwargs[key]
 
+        # TODO MAC OS BUG FOR SHADOWS
         if sys.platform == 'darwin':
-            self.render_flags['shadows'] = False
+            self._render_flags['shadows'] = False
 
         self._registered_keys = {}
         if registered_keys is not None:
@@ -193,44 +198,14 @@ class Viewer(pyglet.window.Window):
                 ord(k.lower()) : registered_keys[k] for k in registered_keys
             }
 
+        ########################################################################
+        # Save internal settings
+        ########################################################################
+
+        # Set up caption stuff
         self._message_text = None
         self._ticks_till_fade = 2.0 / 3.0 * self.viewer_flags['refresh_rate']
         self._message_opac = 1.0 + self._ticks_till_fade
-
-        ########################################################################
-        # Set up camera node
-        ########################################################################
-        self._camera_node = None
-        self._prior_main_camera_node = None
-        self._default_camera_pose = None
-        self._trackball = None
-        self._saved_frames = []
-
-        # Extract main camera from scene and set up our mirrored copy
-        if scene.main_camera_node is not None:
-            n = scene.main_camera_node
-            c = n.camera
-            self._default_camera_pose = scene.get_pose(scene.main_camera_node)
-            self._camera_node = Node(
-                name='__viewer_camera__',
-                matrix=self._default_camera_pose,
-                camera=copy.copy(n.camera)
-            )
-            scene.add_node(self._camera_node)
-            scene.main_camera_node = self._camera_node
-            self._prior_main_camera_node = n
-        else:
-            self._default_camera_pose = self._compute_initial_camera_pose()
-            znear = min(scene.scale / 10.0, DEFAULT_Z_NEAR)
-            zfar = max(scene.scale * 10.0, DEFAULT_Z_FAR)
-            self._camera_node = Node(
-                name='__viewer_camera__',
-                matrix=self._default_camera_pose,
-                camera = PerspectiveCamera(yfov=np.pi / 3.0, znear=znear, zfar=zfar)
-            )
-            scene.add_node(self._camera_node)
-            scene.main_camera_node = self._camera_node
-        self._reset_view()
 
         # Set up raymond lights and direct lights
         self._raymond_lights = self._create_raymond_lights()
@@ -245,35 +220,43 @@ class Viewer(pyglet.window.Window):
                            mesh=self.viewer_flags['show_mesh_axes'])
 
         ########################################################################
+        # Set up camera node
+        ########################################################################
+        self._camera_node = None
+        self._prior_main_camera_node = None
+        self._default_camera_pose = None
+        self._trackball = None
+        self._saved_frames = []
+
+        # Extract main camera from scene and set up our mirrored copy
+        if scene.main_camera_node is not None:
+            n = scene.main_camera_node
+            camera = copy.copy(n.camera)
+            self._default_camera_pose = scene.get_pose(scene.main_camera_node)
+            self._prior_main_camera_node = n
+        else:
+            self._default_camera_pose = self._compute_initial_camera_pose()
+            znear = min(scene.scale / 10.0, DEFAULT_Z_NEAR)
+            zfar = max(scene.scale * 10.0, DEFAULT_Z_FAR)
+            camera = PerspectiveCamera(yfov=np.pi / 3.0, znear=znear, zfar=zfar)
+
+        self._camera_node = Node(matrix=self._default_camera_pose, camera=camera)
+        scene.add_node(self._camera_node)
+        scene.main_camera_node = self._camera_node
+        self._reset_view()
+
+        ########################################################################
         # Initialize OpenGL context and renderer
         ########################################################################
         self._renderer = Renderer(self._viewport_size[0], self._viewport_size[1],
                                   self.render_flags['point_size'])
-
         self._is_active = True
 
         if self.run_in_thread:
-            self.scene_lock = Lock()
             self._thread = Thread(target=self._init_and_start_app)
             self._thread.start()
         else:
             self._init_and_start_app()
-
-    def _init_and_start_app(self):
-        from pyglet.gl import Config
-        conf = Config(sample_buffers=1, samples=4,
-                      depth_size=24, double_buffer=True,
-                      major_version=OPEN_GL_MAJOR,
-                      minor_version=OPEN_GL_MINOR)
-        super(Viewer, self).__init__(config=conf, resizable=True,
-                                     width=self._viewport_size[0],
-                                     height=self._viewport_size[1])
-        if self.context.config.major_version < 3:
-            raise ValueError('Unable to initialize an OpenGL 3+ context')
-        clock.schedule_interval(Viewer.time_event, 1.0/self.viewer_flags['refresh_rate'], self)
-        self.switch_to()
-        self.set_caption(self.viewer_flags['window_title'])
-        pyglet.app.run()
 
     @property
     def scene(self):
@@ -288,10 +271,96 @@ class Viewer(pyglet.window.Window):
         return self._viewport_size
 
     @property
+    def render_lock(self):
+        """:class:`Lock` : If acquired, prevents the viewer from rendering until released.
+
+        Run ``viewer.render_lock.acquire()`` before making updates to the scene
+        in a different thread, and run ``viewer.render_lock.release()`` once you're done
+        to let the viewer continue.
+        """
+        return self._render_lock
+
+    @property
     def is_active(self):
         """bool : `True` if the viewer is active, or `False` if it has been closed.
         """
         return self._is_active
+
+    @property
+    def run_in_thread(self):
+        """bool : Whether the viewer was run in a separate thread.
+        """
+        return self._run_in_thread
+
+    @property
+    def render_flags(self):
+        """dict : Flags for controlling the renderer's behavior.
+
+        The valid keys for `render_flags` are as follows:
+            * `flip_wireframe`: `bool`, If `True`, all objects will have their wireframe modes flipped
+            from what their material indicates. Defaults to `False`.
+            * `all_wireframe`: `bool`, If `True`, all objects will be rendered in wireframe mode.
+            Defaults to `False`.
+            * `all_solid`: `bool`, If `True`, all objects will be rendered in solid mode. Defaults
+            to `False`.
+            * `shadows`: `bool`, If `True`, shadows will be rendered. Defaults to `False`.
+            * `vertex_normals`: `bool`, If `True`, vertex normals will be rendered as blue lines.
+            Defaults to `False`.
+            * `face_normals`: `bool`, If `True`, face normals will be rendered as blue lines.
+            Defaults to `False`.
+            * `cull_faces`: `bool`, If `True`, backfaces will be culled. Defaults to `True`.
+            * `point_size` : float, The point size in pixels. Defaults to 1px.
+        """
+        return self._render_flags
+
+    @render_flags.setter
+    def render_flags(self, value):
+        self._render_flags = value
+
+    @property
+    def viewer_flags(self):
+        """dict : Flags for controlling the viewer's behavior.
+
+        The valid keys for `viewer_flags` are as follows:
+            * `rotate`: `bool`, If `True`, the scene's camera will rotate about an axis. Defaults to `False`.
+            * `rotate_rate`: `float`, The rate of rotation in radians per second. Defaults to `PI / 3.0`.
+            * `rotate_axis`: `(3,) float`, The axis in world coordinates to rotate about. Defaults
+            to `[0,0,1]`.
+            * `view_center`: `(3,) float`, The position to rotate the scene about. Defaults
+            to the scene's centroid.
+            * `use_raymond_lighting`: `bool`, If `True`, an additional set of three directional lights
+            that move with the camera will be added to the scene. Defaults to `False`.
+            * `use_directional_lighting`: `bool`, If `True`, an additional directional light that
+            moves with the camera and points out of it will be added to the scene. Defaults to `False`.
+            * `save_directory`: `str`, A directory to open the file dialogs in. Defaults to `None`.
+            * `window_title`: `str`, A title for the viewer's application window. Defaults to `"Scene Viewer"`.
+            * `refresh_rate`: `float`, A refresh rate for rendering, in Hertz. Defaults to `30.0`.
+            * `fullscreen`: `bool`, Whether to make viewer fullscreen. Defaults to `False`.
+            * `show_world_axis`: `bool`, Whether to show the world axis. Defaults to `False`.
+            * `show_mesh_axes`: `bool`, Whether to show the individual mesh axes. Defaults to `False`.
+            * `caption`: `list of dict`, Text caption(s) to display on the viewer. Defaults to `None`. 
+        """
+        return self._viewer_flags
+
+    @viewer_flags.setter
+    def viewer_flags(self, value):
+        self._viewer_flags = value
+
+    @property
+    def registered_keys(self):
+        """dict : Map from ASCII key character to a handler function.
+
+        This is a map from ASCII key characters to tuples containing:
+            * A function to be called whenever the key is pressed, whose first argument
+              will be the viewer itself.
+            * (Optionally) A list of additional positional arguments to be passed to the function.
+            * (Optionally) A dict of keyword arguments to be passed to the function.
+        """
+        return self._registered_keys
+
+    @registered_keys.setter
+    def registered_keys(self, value):
+        self._registered_keys = value
 
     def on_close(self):
         """Exit the event loop when the window is closed.
@@ -320,11 +389,14 @@ class Viewer(pyglet.window.Window):
         self._renderer = None
 
         # Force clean-up of OpenGL context data
-        OpenGL.contextdata.cleanupContext()
-        self.close()
-        pyglet.app.exit()
-
-        self._is_active = False
+        try:
+            OpenGL.contextdata.cleanupContext()
+            self.close()
+        except:
+            pass
+        finally:
+            pyglet.app.exit()
+            self._is_active = False
 
     def on_draw(self):
         """Redraw the scene into the viewing window.
@@ -333,7 +405,7 @@ class Viewer(pyglet.window.Window):
             return
 
         if self.run_in_thread:
-            self.scene_lock.acquire()
+            self.render_lock.acquire()
 
         # Make OpenGL context current
         self.switch_to()
@@ -367,7 +439,7 @@ class Viewer(pyglet.window.Window):
                 )
 
         if self.run_in_thread:
-            self.scene_lock.release()
+            self.render_lock.release()
 
     def on_resize(self, width, height):
         """Resize the camera and trackball when the window is resized.
@@ -423,8 +495,8 @@ class Viewer(pyglet.window.Window):
         """Record a key press.
         """
         # First, check for registered key callbacks
-        if symbol in self._registered_keys:
-            tup = self._registered_keys[symbol]
+        if symbol in self.registered_keys:
+            tup = self.registered_keys[symbol]
             callback = None
             args = []
             kwargs = {}
@@ -577,6 +649,24 @@ class Viewer(pyglet.window.Window):
         if self._message_text is not None:
             self._message_opac = 1.0 + self._ticks_till_fade
 
+    @staticmethod
+    def time_event(dt, self):
+        if self.viewer_flags['record']:
+            self._record()
+        if self.viewer_flags['rotate'] and not self.viewer_flags['mouse_pressed']:
+            self._rotate()
+
+        # Manage message opacity
+        if self._message_text is not None:
+            if self._message_opac > 1.0:
+                self._message_opac -= 1.0
+            else:
+                self._message_opac *= 0.90
+            if self._message_opac < 0.05:
+                self._message_opac = 1.0 + self._ticks_till_fade
+                self._message_text = None
+        self.on_draw()
+
     def _render(self):
         """Render the scene into the framebuffer and flip.
         """
@@ -724,23 +814,21 @@ class Viewer(pyglet.window.Window):
 
         self._renderer.render(self.scene, flags)
 
-    @staticmethod
-    def time_event(dt, self):
-        if self.viewer_flags['record']:
-            self._record()
-        if self.viewer_flags['rotate'] and not self.viewer_flags['mouse_pressed']:
-            self._rotate()
-
-        # Manage message opacity
-        if self._message_text is not None:
-            if self._message_opac > 1.0:
-                self._message_opac -= 1.0
-            else:
-                self._message_opac *= 0.90
-            if self._message_opac < 0.05:
-                self._message_opac = 1.0 + self._ticks_till_fade
-                self._message_text = None
-        self.on_draw()
+    def _init_and_start_app(self):
+        from pyglet.gl import Config
+        conf = Config(sample_buffers=1, samples=4,
+                      depth_size=24, double_buffer=True,
+                      major_version=OPEN_GL_MAJOR,
+                      minor_version=OPEN_GL_MINOR)
+        super(Viewer, self).__init__(config=conf, resizable=True,
+                                     width=self._viewport_size[0],
+                                     height=self._viewport_size[1])
+        if self.context.config.major_version < 3:
+            raise ValueError('Unable to initialize an OpenGL 3+ context')
+        clock.schedule_interval(Viewer.time_event, 1.0/self.viewer_flags['refresh_rate'], self)
+        self.switch_to()
+        self.set_caption(self.viewer_flags['window_title'])
+        pyglet.app.run()
 
     def _compute_initial_camera_pose(self):
         centroid = self.scene.centroid

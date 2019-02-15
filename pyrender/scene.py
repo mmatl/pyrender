@@ -216,6 +216,46 @@ class Scene(object):
             raise ValueError('New main camera node must already be in scene')
         self._main_camera_node = value
 
+    @property
+    def bounds(self):
+        """(2,3) float : The axis-aligned bounds of the scene.
+        """
+        if self._bounds is None:
+            # Compute corners
+            corners = []
+            for mesh_node in self.mesh_nodes:
+                mesh = mesh_node.mesh
+                pose = self.get_pose(mesh_node)
+                corners_local = trimesh.bounds.corners(mesh.bounds)
+                corners_world = pose[:3,:3].dot(corners_local.T).T + pose[:3,3]
+                corners.append(corners_world)
+            if len(corners) == 0:
+                self._bounds = np.zeros((2,3))
+            else:
+                corners = np.vstack(corners)
+                self._bounds = np.array([np.min(corners, axis=0), np.max(corners, axis=0)])
+        return self._bounds
+
+    @property
+    def centroid(self):
+        """(3,) float : The centroid of the scene's axis-aligned bounding box
+        (AABB).
+        """
+        return np.mean(self.bounds, axis=0)
+
+    @property
+    def extents(self):
+        """(3,) float : The lengths of the axes of the scene's AABB.
+        """
+        return np.diff(self.bounds, axis=0).reshape(-1)
+
+    @property
+    def scale(self):
+        """(3,) float : The length of the diagonal of the scene's AABB.
+        """
+        return np.linalg.norm(self.extents)
+
+
     def add(self, obj, name=None, pose=None, parent_node=None, parent_name=None):
         """Add an object (mesh, light, or camera) to the scene.
 
@@ -434,9 +474,12 @@ class Scene(object):
         pose : (4,4) float
             The transform matrix for this node.
         """
-        # Get path from from_frame to to_frame
-        path = nx.shortest_path(self._digraph, node, 'world')
-        self._path_cache[node] = path
+        if node in self._path_cache:
+            path = self._path_cache[node]
+        else:
+            # Get path from from_frame to to_frame
+            path = nx.shortest_path(self._digraph, node, 'world')
+            self._path_cache[node] = path
 
         # Traverse from from_node to to_node
         pose = np.eye(4)
@@ -459,44 +502,26 @@ class Scene(object):
         if node.mesh is not None:
             self._bounds = None
 
-    @property
-    def bounds(self):
-        """(2,3) float : The axis-aligned bounds of the scene.
+    def clear(self):
+        """Clear out all nodes to form an empty scene.
         """
-        if self._bounds is None:
-            # Compute corners
-            corners = []
-            for mesh_node in self.mesh_nodes:
-                mesh = mesh_node.mesh
-                pose = self.get_pose(mesh_node)
-                corners_local = trimesh.bounds.corners(mesh.bounds)
-                corners_world = pose[:3,:3].dot(corners_local.T).T + pose[:3,3]
-                corners.append(corners_world)
-            if len(corners) == 0:
-                self._bounds = np.zeros((2,3))
-            else:
-                corners = np.vstack(corners)
-                self._bounds = np.array([np.min(corners, axis=0), np.max(corners, axis=0)])
-        return self._bounds
+        self.nodes = set()
 
-    @property
-    def centroid(self):
-        """(3,) float : The centroid of the scene's axis-aligned bounding box
-        (AABB).
-        """
-        return np.mean(self.bounds, axis=0)
+        self._name_to_nodes = {}
+        self._obj_to_nodes = {}
+        self._obj_name_to_nodes = {}
+        self._mesh_nodes = set()
+        self._point_light_nodes = set()
+        self._spot_light_nodes = set()
+        self._directional_light_nodes = set()
+        self._camera_nodes = set()
+        self._main_camera_node = None
+        self._bounds = None
 
-    @property
-    def extents(self):
-        """(3,) float : The lengths of the axes of the scene's AABB.
-        """
-        return np.diff(self.bounds, axis=0).reshape(-1)
-
-    @property
-    def scale(self):
-        """(3,) float : The length of the diagonal of the scene's AABB.
-        """
-        return np.linalg.norm(self.extents)
+        # Transform tree
+        self._digraph = nx.DiGraph()
+        self._digraph.add_node('world')
+        self._path_cache = {}
 
     @staticmethod
     def from_trimesh(self, trimesh_scene, bg_color=None, ambient_light=None):
