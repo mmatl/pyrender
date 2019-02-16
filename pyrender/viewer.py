@@ -3,7 +3,7 @@
 import copy
 import os
 import sys
-from threading import Thread, Lock
+from threading import Thread, RLock
 
 import imageio
 import numpy as np
@@ -145,7 +145,7 @@ class Viewer(pyglet.window.Window):
             viewport_size = (640, 480)
         self._scene = scene
         self._viewport_size = viewport_size
-        self._render_lock = Lock()
+        self._render_lock = RLock()
         self._is_active = False
         self._run_in_thread = run_in_thread
 
@@ -295,7 +295,7 @@ class Viewer(pyglet.window.Window):
 
     @property
     def render_lock(self):
-        """:class:`Lock` : If acquired, prevents the viewer from rendering until released.
+        """:class:`RLock` : If acquired, prevents the viewer from rendering until released.
 
         Run ``viewer.render_lock.acquire()`` before making updates to the scene
         in a different thread, and run ``viewer.render_lock.release()`` once you're done
