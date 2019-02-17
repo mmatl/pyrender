@@ -15,7 +15,7 @@ requirements = [
     'networkx',                     # For the scene graph
     'numpy',                        # Numpy
     'Pillow',                       # For Trimesh texture conversions
-    'pyglet==1.4.0a1',              # For the pyglet viewer
+    'pyglet==1.4.0b1',              # For the pyglet viewer
     'PyOpenGL',                     # For OpenGL
     'PyOpenGL_accelerate',          # For OpenGL
     'six',                          # For Python 2/3 interop
