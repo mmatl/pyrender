@@ -237,7 +237,7 @@ class Renderer(object):
         color_buf = glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE)
 
         # Re-format them into numpy arrays
-        color_im = np.frombuffer(color_buf, dtype=np.uint8).reshape((height, width, 3))
+        color_im = np.frombuffer(color_buf, dtype=np.uint8).reshape((height, width, 4))
         color_im = np.flip(color_im, axis=0)
 
         return color_im

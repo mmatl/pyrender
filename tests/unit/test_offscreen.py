@@ -122,7 +122,7 @@ def test_offscreen_renderer(tmpdir):
     r = OffscreenRenderer(viewport_width=640, viewport_height=480)
     color, depth = r.render(scene)
 
-    assert color.shape == (480, 640, 3)
+    assert color.shape == (480, 640, 4)
     assert depth.shape == (480, 640)
     assert np.max(depth.data) > 0.05
     assert np.count_nonzero(depth.data) > (0.2 * depth.size)
