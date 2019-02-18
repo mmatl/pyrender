@@ -913,6 +913,8 @@ class Viewer(pyglet.window.Window):
 
     def _compute_initial_camera_pose(self):
         centroid = self.scene.centroid
+        if self.viewer_flags['view_center'] is not None:
+            centroid = self.viewer_flags['view_center']
         scale = self.scene.scale
 
         s2 = 1.0/np.sqrt(2.0)
