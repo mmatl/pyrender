@@ -219,6 +219,7 @@ The available keyboard commands are as follows:
 * `l`: Toggles lighting mode (scene lighting, Raymond lighting, or direct lighting).
 * `m`: Toggles face normal visualization.
 * `n`: Toggles vertex normal visualization.
+* `o`: Toggles orthographic camera mode.
 * `q`: Quits the viewer.
 * `r`: Starts recording a GIF, and pressing again stops recording and opens a file dialog.
 * `s`: Opens a file dialog to save the current view as an image.
