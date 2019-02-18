@@ -399,6 +399,31 @@ class Viewer(pyglet.window.Window):
         while self.is_active:
             time.sleep(1.0 / self.viewer_flags['refresh_rate'])
 
+    def save_gif(self, filename=None):
+        """Save the stored GIF frames to a file.
+
+        To use this asynchronously, run the viewer with the ``record``
+        flag and the ``run_in_thread`` flags set.
+        Kill the viewer after your desired time with ``close_external()``,
+        and then call ``save_gif()``.
+
+        Parameters
+        ----------
+        filename : str
+            The file to save the GIF to. If not specified,
+            a file dialog will be opened to ask the user where
+            to save the GIF file.
+        """
+        if filename is None:
+            filename = self._get_save_filename(['gif', 'all'])
+        if filename is not None:
+            self.viewer_flags['save_directory'] = os.path.dirname(filename)
+            imageio.mimwrite(filename, self._saved_frames,
+                             fps=self.viewer_flags['refresh_rate'],
+                             palettesize=128, subrectangles=True)
+        self._saved_frames = []
+
+
     def on_close(self):
         """Exit the event loop when the window is closed.
         """
@@ -678,7 +703,7 @@ class Viewer(pyglet.window.Window):
         # R starts recording frames
         elif symbol == pyglet.window.key.R:
             if self.viewer_flags['record']:
-                self._save_gif()
+                self.save_gif()
                 self.set_caption(self.viewer_flags['window_title'])
             else:
                 self.set_caption('{} (RECORDING)'.format(self.viewer_flags['window_title']))
@@ -834,19 +859,12 @@ class Viewer(pyglet.window.Window):
             self.viewer_flags['save_directory'] = os.path.dirname(filename)
             imageio.imwrite(filename, self._renderer.read_color_buf())
 
-    def _save_gif(self):
-        filename = self._get_save_filename(['gif', 'all'])
-        if filename is not None:
-            self.viewer_flags['save_directory'] = os.path.dirname(filename)
-            imageio.mimwrite(filename, self._saved_frames,
-                             fps=self.viewer_flags['refresh_rate'],
-                             palettesize=128, subrectangles=True)
-        self._saved_frames = []
-
     def _record(self):
         """Save another frame for the GIF.
         """
-        self._saved_frames.append(self._renderer.read_color_buf())
+        data = self._renderer.read_color_buf()
+        if not np.all(data == 0.0):
+            self._saved_frames.append(data)
 
     def _rotate(self):
         """Animate the scene by rotating the camera.
