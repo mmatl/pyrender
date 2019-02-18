@@ -123,13 +123,13 @@ spot_l_node = scene.add(spot_l, pose=cam_pose)
 # Using the viewer with a default camera
 #==============================================================================
 
-v = Viewer(scene, shadows=True)
+#v = Viewer(scene, shadows=True)
 
 #==============================================================================
 # Using the viewer with a pre-specified camera
 #==============================================================================
 cam_node = scene.add(cam, pose=cam_pose)
-v = Viewer(scene, central_node=drill_node)
+#v = Viewer(scene, central_node=drill_node)
 
 #==============================================================================
 # Rendering offscreen from that camera

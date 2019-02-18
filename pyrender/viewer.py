@@ -4,6 +4,7 @@ import copy
 import os
 import sys
 from threading import Thread, RLock
+import time
 
 import imageio
 import numpy as np
@@ -147,6 +148,7 @@ class Viewer(pyglet.window.Window):
         self._viewport_size = viewport_size
         self._render_lock = RLock()
         self._is_active = False
+        self._should_close = False
         self._run_in_thread = run_in_thread
 
         self._default_render_flags = {
@@ -387,6 +389,16 @@ class Viewer(pyglet.window.Window):
     def registered_keys(self, value):
         self._registered_keys = value
 
+    def close_external(self):
+        """Close the viewer from another thread.
+
+        This function will wait for the actual close, so you immediately
+        manipulate the scene afterwards.
+        """
+        self._should_close = True
+        while self.is_active:
+            time.sleep(1.0 / self.viewer_flags['refresh_rate'])
+
     def on_close(self):
         """Exit the event loop when the window is closed.
         """
@@ -417,11 +429,12 @@ class Viewer(pyglet.window.Window):
         try:
             OpenGL.contextdata.cleanupContext()
             self.close()
-        except:
+        except Exception:
             pass
         finally:
-            pyglet.app.exit()
             self._is_active = False
+            super(Viewer, self).on_close()
+            pyglet.app.exit()
 
     def on_draw(self):
         """Redraw the scene into the viewing window.
@@ -708,9 +721,14 @@ class Viewer(pyglet.window.Window):
 
     @staticmethod
     def time_event(dt, self):
+        # Don't run old dead events after we've already closed
+        if not self._is_active:
+            return
+
         if self.viewer_flags['record']:
             self._record()
-        if self.viewer_flags['rotate'] and not self.viewer_flags['mouse_pressed']:
+        if (self.viewer_flags['rotate'] and not
+                self.viewer_flags['mouse_pressed']):
             self._rotate()
 
         # Manage message opacity
@@ -722,7 +740,11 @@ class Viewer(pyglet.window.Window):
             if self._message_opac < 0.05:
                 self._message_opac = 1.0 + self._ticks_till_fade
                 self._message_text = None
-        self.on_draw()
+
+        if self._should_close:
+            self.on_close()
+        else:
+            self.on_draw()
 
     def _render(self):
         """Render the scene into the framebuffer and flip.
@@ -778,7 +800,9 @@ class Viewer(pyglet.window.Window):
             centroid = self.viewer_flags['view_center']
 
         self._camera_node.matrix = self._default_camera_pose
-        self._trackball = Trackball(self._default_camera_pose, self.viewport_size, scale, centroid)
+        self._trackball = Trackball(
+            self._default_camera_pose, self.viewport_size, scale, centroid
+        )
 
     def _get_save_filename(self, file_exts):
         file_types = {
