@@ -227,14 +227,14 @@ class Renderer(object):
 
         Returns
         -------
-        color_im : (h, w, 3) uint8
+        color_im : (h, w, 4) uint8
             The color buffer in RGB byte format.
         """
         # Extract color image from frame buffer
         width, height = self.viewport_width, self.viewport_height
         glBindFramebuffer(GL_READ_FRAMEBUFFER, 0)
         glReadBuffer(GL_FRONT)
-        color_buf = glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE)
+        color_buf = glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE)
 
         # Re-format them into numpy arrays
         color_im = np.frombuffer(color_buf, dtype=np.uint8).reshape((height, width, 3))
@@ -1053,8 +1053,8 @@ class Renderer(object):
             return depth_im
 
         # Read color
-        color_buf = glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE)
-        color_im = np.frombuffer(color_buf, dtype=np.uint8).reshape((height, width, 3))
+        color_buf = glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE)
+        color_im = np.frombuffer(color_buf, dtype=np.uint8).reshape((height, width, 4))
         color_im = np.flip(color_im, axis=0)
 
         return color_im, depth_im

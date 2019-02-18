@@ -19,9 +19,10 @@ class OffscreenRenderer(object):
         The height of the main viewport, in pixels
     """
 
-    def __init__(self, viewport_width, viewport_height):
+    def __init__(self, viewport_width, viewport_height, point_size=1.0):
         self.viewport_width = viewport_width
         self.viewport_height = viewport_height
+        self.point_size = point_size
 
         self._platform = None
         self._renderer = None
@@ -47,6 +48,16 @@ class OffscreenRenderer(object):
     def viewport_height(self, value):
         self._viewport_height = value
 
+    @property
+    def point_size(self):
+        """float : The pixel size of points in point clouds.
+        """
+        return self._point_size
+
+    @point_size.setter
+    def point_size(self, value):
+        self._point_size = value
+
     def render(self, scene, flags=RenderFlags.NONE):
         """Render a scene with the given set of flags.
 
@@ -71,8 +82,8 @@ class OffscreenRenderer(object):
 
         Returns
         -------
-        color_im : (h, w, 3) uint8
-            The color buffer in RGB byte format.
+        color_im : (h, w, 4) uint8
+            The color buffer in RGBA byte format.
         depth_im : (h, w) float32
             The depth buffer in linear units.
         """
@@ -89,6 +100,7 @@ class OffscreenRenderer(object):
         self._platform.make_current()
         self._renderer.viewport_width = self.viewport_width
         self._renderer.viewport_height = self.viewport_height
+        self._renderer.point_size = self.point_size
 
         if self._platform.supports_framebuffers():
             flags |= RenderFlags.OFFSCREEN

@@ -94,7 +94,7 @@ cam_pose = np.array([
 # Scene creation
 #==============================================================================
 
-scene = Scene(ambient_light=np.array([0.02, 0.02, 0.02]))
+scene = Scene(ambient_light=np.array([0.02, 0.02, 0.02, 1.0]))
 
 #==============================================================================
 # Adding objects to the scene
@@ -123,13 +123,13 @@ spot_l_node = scene.add(spot_l, pose=cam_pose)
 # Using the viewer with a default camera
 #==============================================================================
 
-#v = Viewer(scene, shadows=True)
+v = Viewer(scene, shadows=True)
 
 #==============================================================================
 # Using the viewer with a pre-specified camera
 #==============================================================================
 cam_node = scene.add(cam, pose=cam_pose)
-#v = Viewer(scene, central_node=drill_node)
+v = Viewer(scene, central_node=drill_node)
 
 #==============================================================================
 # Rendering offscreen from that camera
