@@ -65,6 +65,6 @@ setup(
     extras_require={
         'dev': dev_requirements,
         'docs': docs_requirements,
-    }
+    },
     include_package_data=True
 )
