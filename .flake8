@@ -1,0 +1,8 @@
+[flake8]
+ignore = E231,W504,F405,F403
+max-line-length = 79
+select = B,C,E,F,W,T4,B9
+exclude = 
+    docs/source/conf.py,
+    __pycache__,
+    examples/*
