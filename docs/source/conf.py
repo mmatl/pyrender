@@ -15,6 +15,7 @@
 import sys
 import os
 from pyrender import __version__
+from sphinx.domains.python import PythonDomain
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -305,4 +306,47 @@ intersphinx_mapping = {
 
 # Autosummary fix
 autosummary_generate = True
+
+# Try to suppress multiple-definition warnings by always taking the shorter
+# path when two or more paths have the same base module
+
+class MyPythonDomain(PythonDomain):
+
+    def find_obj(self, env, modname, classname, name, type, searchmode=0):
+        """Ensures an object always resolves to the desired module
+        if defined there."""
+        orig_matches = PythonDomain.find_obj(
+            self, env, modname, classname, name, type, searchmode
+        )
+
+        if len(orig_matches) <= 1:
+            return orig_matches
+
+        # If multiple matches, try to take the shortest if all the modules are
+        # the same
+        first_match_name_sp = orig_matches[0][0].split('.')
+        base_name = first_match_name_sp[0]
+        min_len = len(first_match_name_sp)
+        best_match = orig_matches[0]
+
+        for match in orig_matches[1:]:
+            match_name = match[0]
+            match_name_sp = match_name.split('.')
+            match_base = match_name_sp[0]
+
+            # If we have mismatched bases, return them all to trigger warnings
+            if match_base != base_name:
+                return orig_matches
+
+            # Otherwise, check and see if it's shorter
+            if len(match_name_sp) < min_len:
+                min_len = len(match_name_sp)
+                best_match = match
+
+        return (best_match,)
+
+
+def setup(sphinx):
+    """Use MyPythonDomain in place of PythonDomain"""
+    sphinx.override_domain(MyPythonDomain)
 

@@ -8,7 +8,7 @@ import os
 
 from OpenGL.GL import *
 
-from .constants import *
+from .constants import TextAlign, FLOAT_SZ
 from .texture import Texture
 from .sampler import Sampler
 

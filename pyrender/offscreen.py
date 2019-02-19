@@ -68,24 +68,13 @@ class OffscreenRenderer(object):
         scene : :class:`Scene`
             A scene to render.
         flags : int
-            A specification from `RenderFlags`. Valid flags include:
-                - `RenderFlags.NONE`: A normal PBR render
-                - `RenderFlags.DEPTH_ONLY`: Render the depth buffer alone.
-                - `RenderFlags.FLIP_WIREFRAME`: Invert the status of wireframe rendering for each material.
-                - `RenderFlags.ALL_WIREFRAME`: Render all materials in wireframe mode.
-                - `RenderFlags.ALL_SOLID`: Render all meshes as solids
-                - `RenderFlags.SHADOWS_DIRECTIONAL`: Compute shadowing for directional lights.
-                - `RenderFlags.SHADOWS_POINT`: Compute shadowing for point lights.
-                - `RenderFlags.SHADOWS_SPOT`: Compute shadowing for spot lights.
-                - `RenderFlags.SHADOWS_ALL`: Compute shadowing for all lights.
-                - `RenderFlags.VERTEX_NORMALS`: Show vertex normals as blue lines.
-                - `RenderFlags.FACE_NORMALS`: Show face normals as blue lines.
-                - `RenderFlags.SKIP_CULL_FACES`: Do not cull back faces.
+            A bitwise or of one or more flags from :class:`.RenderFlags`.
 
         Returns
         -------
         color_im : (h, w, 4) uint8
-            The color buffer in RGBA byte format.
+            The color buffer in RGBA byte format. Not returned if flags
+            includes :attr:`.RenderFlags.DEPTH_ONLY`.
         depth_im : (h, w) float32
             The depth buffer in linear units.
         """
@@ -142,3 +131,5 @@ class OffscreenRenderer(object):
             self.delete()
         except:
             pass
+
+__all__ = ['OffscreenRenderer']

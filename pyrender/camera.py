@@ -262,3 +262,5 @@ class OrthographicCamera(Camera):
         P[2][3] = (f + n) / (n - f)
         P[3][3] = 1.0
         return P
+
+__all__ = ['Camera', 'PerspectiveCamera', 'OrthographicCamera']

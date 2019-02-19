@@ -6,7 +6,9 @@ import sys
 
 import numpy as np
 
-from .constants import *
+from .constants import (RenderFlags, TextAlign, GLTF, BufFlags, TexFlags,
+                        ProgramFlags, DEFAULT_Z_FAR, DEFAULT_Z_NEAR,
+                        SHADOW_TEX_SZ)
 from .shader_program import ShaderProgramCache
 from .material import MetallicRoughnessMaterial, SpecularGlossinessMaterial
 from .light import PointLight, SpotLight, DirectionalLight
@@ -131,9 +133,7 @@ class Renderer(object):
         if not bool(flags & RenderFlags.DEPTH_ONLY):
             for ln in scene.light_nodes:
                 take_pass = False
-                if flags & RenderFlags.SHADOWS_ALL:
-                    take_pass = True
-                elif (isinstance(ln.light, DirectionalLight) and
+                if (isinstance(ln.light, DirectionalLight) and
                       bool(flags & RenderFlags.SHADOWS_DIRECTIONAL)):
                     take_pass = True
                 elif (isinstance(ln.light, SpotLight) and
@@ -588,21 +588,20 @@ class Renderer(object):
             pose = scene.get_pose(n)
             position = pose[:3,3]
             direction = -pose[:3,2]
-            shadow = bool(flags & RenderFlags.SHADOWS_ALL)
 
             if isinstance(l, PointLight):
                 if plc == max_n_lights[2]:
                     continue
                 b = 'point_lights[{}].'.format(plc)
                 plc += 1
-                shadow = shadow or bool(flags & RenderFlags.SHADOWS_POINT)
+                shadow = bool(flags & RenderFlags.SHADOWS_POINT)
                 program.set_uniform(b + 'position', position)
             elif isinstance(l, SpotLight):
                 if slc == max_n_lights[1]:
                     continue
                 b = 'spot_lights[{}].'.format(slc)
                 slc += 1
-                shadow = shadow or bool(flags & RenderFlags.SHADOWS_SPOT)
+                shadow = bool(flags & RenderFlags.SHADOWS_SPOT)
                 las = 1.0 / max(0.001, np.cos(l.innerConeAngle) - np.cos(l.outerConeAngle))
                 lao = -np.cos(l.outerConeAngle) * las
                 program.set_uniform(b + 'direction', direction)
@@ -614,7 +613,7 @@ class Renderer(object):
                     continue
                 b = 'directional_lights[{}].'.format(dlc)
                 dlc += 1
-                shadow = shadow or bool(flags & RenderFlags.SHADOWS_DIRECTIONAL)
+                shadow = bool(flags & RenderFlags.SHADOWS_DIRECTIONAL)
                 program.set_uniform(b + 'direction', direction)
 
             program.set_uniform(b + 'color', l.color)
@@ -700,9 +699,7 @@ class Renderer(object):
         for l in scene.lights:
             # Create if needed
             active = False
-            if flags & RenderFlags.SHADOWS_ALL:
-                active = True
-            elif isinstance(l, DirectionalLight) and flags & RenderFlags.SHADOWS_DIRECTIONAL:
+            if isinstance(l, DirectionalLight) and flags & RenderFlags.SHADOWS_DIRECTIONAL:
                 active = True
             elif isinstance(l, PointLight) and flags & RenderFlags.SHADOWS_POINT:
                 active = True
@@ -806,15 +803,12 @@ class Renderer(object):
         # Distribute textures evenly among lights with shadows, with
         # a preference for directional lights
         n_shadow_types = 0
-        if flags & RenderFlags.SHADOWS_ALL:
-            n_shadow_types = 3
-        else:
-            if flags & RenderFlags.SHADOWS_DIRECTIONAL:
-                n_shadow_types += 1
-            if flags & RenderFlags.SHADOWS_SPOT:
-                n_shadow_types += 1
-            if flags & RenderFlags.SHADOWS_POINT:
-                n_shadow_types += 1
+        if flags & RenderFlags.SHADOWS_DIRECTIONAL:
+            n_shadow_types += 1
+        if flags & RenderFlags.SHADOWS_SPOT:
+            n_shadow_types += 1
+        if flags & RenderFlags.SHADOWS_POINT:
+            n_shadow_types += 1
 
         if n_shadow_types > 0:
             tex_per_light = n_available_textures // n_shadow_types

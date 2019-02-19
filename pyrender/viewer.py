@@ -38,34 +38,6 @@ class Viewer(pyglet.window.Window):
     the parameters of the scene's main view camera and start in the same pose.
     If the scene does not have a camera, a suitable default will be provided.
 
-    The basic commands for moving about the scene are given as follows:
-
-    * To rotate the camera about the center of the scene, hold the left mouse button and drag the cursor.
-    * To rotate the camera about its viewing axis, hold CTRL left mouse button and drag the cursor.
-    * To pan the camera, do one of the following:
-        * Hold SHIFT, then hold the left mouse button and drag the cursor.
-        * Hold the middle mouse button and drag the cursor.
-    * To zoom the camera in or out, do one of the following:
-        * Scroll the mouse wheel.
-        * Hold the right mouse button and drag the cursor.
-
-    Other keyboard commands are as follows:
-
-    * `a`: Toggles rotational animation mode.
-    * `c`: Toggles backface culling.
-    * `f`: Toggles fullscreen mode.
-    * `h`: Toggles shadow rendering.
-    * `i`: Toggles axis display mode (no axes, world axis, mesh axes, all axes).
-    * `l`: Toggles lighting mode (scene lighting, Raymond lighting, or direct lighting).
-    * `m`: Toggles face normal visualization.
-    * `n`: Toggles vertex normal visualization.
-    * `o`: Toggles orthographic mode.
-    * `q`: Quits the viewer.
-    * `r`: Starts recording a GIF, and pressing again stops recording and opens a file dialog.
-    * `s`: Opens a file dialog to save the current view as an image.
-    * `w`: Toggles wireframe mode (scene default, flip wireframes, all wireframe, or all solid).
-    * `z`: Resets the camera to the initial view.
-
     Parameters
     ----------
     scene : :class:`Scene`
@@ -78,60 +50,97 @@ class Viewer(pyglet.window.Window):
         A set of flags for controlling the viewer's behavior. Described in the note below.
     registered_keys : dict
         A map from ASCII key characters to tuples containing:
-            * A function to be called whenever the key is pressed, whose first argument
-              will be the viewer itself.
-            * (Optionally) A list of additional positional arguments to be passed to the function.
-            * (Optionally) A dict of keyword arguments to be passed to the function.
+
+        - A function to be called whenever the key is pressed, whose first argument
+          will be the viewer itself.
+        - (Optionally) A list of additional positional arguments to be passed to the function.
+        - (Optionally) A dict of keyword arguments to be passed to the function.
+
     kwargs : dict
         Any keyword arguments left over will be interpreted as belonging to either the
-        `render_flags` or `viewer_flags` dictionaries. Those flag sets will be updated
-        appropriately.
+        :attr:`.Viewer.render_flags` or :attr:`.Viewer.viewer_flags` dictionaries.
+        Those flag sets will be updated appropriately.
 
     Note
     ----
-    The valid keys for `render_flags` are as follows:
-        * `flip_wireframe`: `bool`, If `True`, all objects will have their wireframe modes flipped
-          from what their material indicates. Defaults to `False`.
-        * `all_wireframe`: `bool`, If `True`, all objects will be rendered in wireframe mode.
-          Defaults to `False`.
-        * `all_solid`: `bool`, If `True`, all objects will be rendered in solid mode. Defaults
-          to `False`.
-        * `shadows`: `bool`, If `True`, shadows will be rendered. Defaults to `False`.
-        * `vertex_normals`: `bool`, If `True`, vertex normals will be rendered as blue lines.
-          Defaults to `False`.
-        * `face_normals`: `bool`, If `True`, face normals will be rendered as blue lines.
-          Defaults to `False`.
-        * `cull_faces`: `bool`, If `True`, backfaces will be culled. Defaults to `True`.
-        * `point_size` : float, The point size in pixels. Defaults to 1px.
+    The basic commands for moving about the scene are given as follows:
+
+    - **Rotating about the scene**: Hold the left mouse button and drag the cursor.
+    - **Rotating about the view axis**: Hold ``CTRL`` and the left mouse button and drag the cursor.
+    - **Panning**:
+
+      - Hold SHIFT, then hold the left mouse button and drag the cursor, or
+      - Hold the middle mouse button and drag the cursor.
+
+    - **Zooming**:
+
+      - Scroll the mouse wheel, or
+      - Hold the right mouse button and drag the cursor.
+
+    Other keyboard commands are as follows:
+
+    - ``a``: Toggles rotational animation mode.
+    - ``c``: Toggles backface culling.
+    - ``f``: Toggles fullscreen mode.
+    - ``h``: Toggles shadow rendering.
+    - ``i``: Toggles axis display mode (no axes, world axis, mesh axes, all axes).
+    - ``l``: Toggles lighting mode (scene lighting, Raymond lighting, or direct lighting).
+    - ``m``: Toggles face normal visualization.
+    - ``n``: Toggles vertex normal visualization.
+    - ``o``: Toggles orthographic mode.
+    - ``q``: Quits the viewer.
+    - ``r``: Starts recording a GIF, and pressing again stops recording and opens a file dialog.
+    - ``s``: Opens a file dialog to save the current view as an image.
+    - ``w``: Toggles wireframe mode (scene default, flip wireframes, all wireframe, or all solid).
+    - ``z``: Resets the camera to the initial view.
 
     Note
     ----
-    The valid keys for `viewer_flags` are as follows:
-        * `rotate`: `bool`, If `True`, the scene's camera will rotate about an axis. Defaults to `False`.
-        * `rotate_rate`: `float`, The rate of rotation in radians per second. Defaults to `PI / 3.0`.
-        * `rotate_axis`: `(3,) float`, The axis in world coordinates to rotate about. Defaults
-          to `[0,0,1]`.
-        * `view_center`: `(3,) float`, The position to rotate the scene about. Defaults
-          to the scene's centroid.
-        * `use_raymond_lighting`: `bool`, If `True`, an additional set of three directional lights
-          that move with the camera will be added to the scene. Defaults to `False`.
-        * `use_direct_lighting`: `bool`, If `True`, an additional directional light that
-          moves with the camera and points out of it will be added to the scene. Defaults to `False`.
-        * `use_perspective_cam`: `bool`, If `True, a perspective camera will be used. Otherwise,
-          an orthographic camera is used. Defaults to `True`.
-        * `save_directory`: `str`, A directory to open the file dialogs in. Defaults to `None`.
-        * `window_title`: `str`, A title for the viewer's application window. Defaults to `"Scene Viewer"`.
-        * `refresh_rate`: `float`, A refresh rate for rendering, in Hertz. Defaults to `30.0`.
-        * `fullscreen`: `bool`, Whether to make viewer fullscreen. Defaults to `False`.
-        * `show_world_axis`: `bool`, Whether to show the world axis. Defaults to `False`.
-        * `show_mesh_axes`: `bool`, Whether to show the individual mesh axes. Defaults to `False`.
-        * `caption`: `list of dict`, Text caption(s) to display on the viewer. Defaults to `None`. 
+    The valid keys for ``render_flags`` are as follows:
+
+    - ``flip_wireframe``: `bool`, If `True`, all objects will have their wireframe modes flipped
+      from what their material indicates. Defaults to `False`.
+    - ``all_wireframe``: `bool`, If `True`, all objects will be rendered in wireframe mode.
+      Defaults to `False`.
+    - ``all_solid``: `bool`, If `True`, all objects will be rendered in solid mode. Defaults
+      to `False`.
+    - ``shadows``: `bool`, If `True`, shadows will be rendered. Defaults to `False`.
+    - ``vertex_normals``: `bool`, If `True`, vertex normals will be rendered as blue lines.
+      Defaults to `False`.
+    - ``face_normals``: `bool`, If `True`, face normals will be rendered as blue lines.
+      Defaults to `False`.
+    - ``cull_faces``: `bool`, If `True`, backfaces will be culled. Defaults to `True`.
+    - ``point_size`` : float, The point size in pixels. Defaults to 1px.
+
+    Note
+    ----
+    The valid keys for ``viewer_flags`` are as follows:
+
+    - ``rotate``: `bool`, If `True`, the scene's camera will rotate about an axis. Defaults to `False`.
+    - ``rotate_rate``: `float`, The rate of rotation in radians per second. Defaults to `PI / 3.0`.
+    - ``rotate_axis``: `(3,) float`, The axis in world coordinates to rotate about. Defaults
+      to `[0,0,1]`.
+    - ``view_center``: `(3,) float`, The position to rotate the scene about. Defaults
+      to the scene's centroid.
+    - ``use_raymond_lighting``: `bool`, If `True`, an additional set of three directional lights
+      that move with the camera will be added to the scene. Defaults to `False`.
+    - ``use_direct_lighting``: `bool`, If `True`, an additional directional light that
+      moves with the camera and points out of it will be added to the scene. Defaults to `False`.
+    - ``use_perspective_cam``: `bool`, If `True`, a perspective camera will be used. Otherwise,
+      an orthographic camera is used. Defaults to `True`.
+    - ``save_directory``: `str`, A directory to open the file dialogs in. Defaults to `None`.
+    - ``window_title``: `str`, A title for the viewer's application window. Defaults to `"Scene Viewer"`.
+    - ``refresh_rate``: `float`, A refresh rate for rendering, in Hertz. Defaults to `30.0`.
+    - ``fullscreen``: `bool`, Whether to make viewer fullscreen. Defaults to `False`.
+    - ``show_world_axis``: `bool`, Whether to show the world axis. Defaults to `False`.
+    - ``show_mesh_axes``: `bool`, Whether to show the individual mesh axes. Defaults to `False`.
+    - ``caption``: `list of dict`, Text caption(s) to display on the viewer. Defaults to `None`. 
 
     Note
     ----
     Animation can be accomplished by running the viewer with ``run_in_thread`` enabled.
     Then, just run a loop in your main thread, updating the scene as needed.
-    Before updating the scene, be sure to acquire the `render_lock`, and release it
+    Before updating the scene, be sure to acquire the :attr:`.Viewer.render_lock`, and release it
     when your update is done.
     """
 
@@ -285,7 +294,7 @@ class Viewer(pyglet.window.Window):
 
     @property
     def scene(self):
-        """:class:`Scene` : The scene being visualized.
+        """:class:`.Scene` : The scene being visualized.
         """
         return self._scene
 
@@ -297,10 +306,10 @@ class Viewer(pyglet.window.Window):
 
     @property
     def render_lock(self):
-        """:class:`RLock` : If acquired, prevents the viewer from rendering until released.
+        """:class:`threading.RLock` : If acquired, prevents the viewer from rendering until released.
 
-        Run ``viewer.render_lock.acquire()`` before making updates to the scene
-        in a different thread, and run ``viewer.render_lock.release()`` once you're done
+        Run :meth:`.Viewer.render_lock.acquire` before making updates to the scene
+        in a different thread, and run :meth:`.Viewer.render_lock.release` once you're done
         to let the viewer continue.
         """
         return self._render_lock
@@ -321,20 +330,20 @@ class Viewer(pyglet.window.Window):
     def render_flags(self):
         """dict : Flags for controlling the renderer's behavior.
 
-        The valid keys for `render_flags` are as follows:
-            * `flip_wireframe`: `bool`, If `True`, all objects will have their wireframe modes flipped
-            from what their material indicates. Defaults to `False`.
-            * `all_wireframe`: `bool`, If `True`, all objects will be rendered in wireframe mode.
-            Defaults to `False`.
-            * `all_solid`: `bool`, If `True`, all objects will be rendered in solid mode. Defaults
-            to `False`.
-            * `shadows`: `bool`, If `True`, shadows will be rendered. Defaults to `False`.
-            * `vertex_normals`: `bool`, If `True`, vertex normals will be rendered as blue lines.
-            Defaults to `False`.
-            * `face_normals`: `bool`, If `True`, face normals will be rendered as blue lines.
-            Defaults to `False`.
-            * `cull_faces`: `bool`, If `True`, backfaces will be culled. Defaults to `True`.
-            * `point_size` : float, The point size in pixels. Defaults to 1px.
+        - ``flip_wireframe``: `bool`, If `True`, all objects will have their wireframe modes flipped
+          from what their material indicates. Defaults to `False`.
+        - ``all_wireframe``: `bool`, If `True`, all objects will be rendered in wireframe mode.
+          Defaults to `False`.
+        - ``all_solid``: `bool`, If `True`, all objects will be rendered in solid mode. Defaults
+          to `False`.
+        - ``shadows``: `bool`, If `True`, shadows will be rendered. Defaults to `False`.
+        - ``vertex_normals``: `bool`, If `True`, vertex normals will be rendered as blue lines.
+          Defaults to `False`.
+        - ``face_normals``: `bool`, If `True`, face normals will be rendered as blue lines.
+          Defaults to `False`.
+        - ``cull_faces``: `bool`, If `True`, backfaces will be culled. Defaults to `True`.
+        - ``point_size`` : float, The point size in pixels. Defaults to 1px.
+
         """
         return self._render_flags
 
@@ -346,26 +355,28 @@ class Viewer(pyglet.window.Window):
     def viewer_flags(self):
         """dict : Flags for controlling the viewer's behavior.
 
-        The valid keys for `viewer_flags` are as follows:
-            * `rotate`: `bool`, If `True`, the scene's camera will rotate about an axis. Defaults to `False`.
-            * `rotate_rate`: `float`, The rate of rotation in radians per second. Defaults to `PI / 3.0`.
-            * `rotate_axis`: `(3,) float`, The axis in world coordinates to rotate about. Defaults
-              to `[0,0,1]`.
-            * `view_center`: `(3,) float`, The position to rotate the scene about. Defaults
-              to the scene's centroid.
-            * `use_raymond_lighting`: `bool`, If `True`, an additional set of three directional lights
-            that move with the camera will be added to the scene. Defaults to `False`.
-            * `use_direct_lighting`: `bool`, If `True`, an additional directional light that
-              moves with the camera and points out of it will be added to the scene. Defaults to `False`.
-            * `use_perspective_cam`: `bool`, If `True, a perspective camera will be used. Otherwise,
-              an orthographic camera is used. Defaults to `True`.
-            * `save_directory`: `str`, A directory to open the file dialogs in. Defaults to `None`.
-            * `window_title`: `str`, A title for the viewer's application window. Defaults to `"Scene Viewer"`.
-            * `refresh_rate`: `float`, A refresh rate for rendering, in Hertz. Defaults to `30.0`.
-            * `fullscreen`: `bool`, Whether to make viewer fullscreen. Defaults to `False`.
-            * `show_world_axis`: `bool`, Whether to show the world axis. Defaults to `False`.
-            * `show_mesh_axes`: `bool`, Whether to show the individual mesh axes. Defaults to `False`.
-            * `caption`: `list of dict`, Text caption(s) to display on the viewer. Defaults to `None`. 
+        The valid keys for ``viewer_flags`` are as follows:
+
+        - ``rotate``: `bool`, If `True`, the scene's camera will rotate about an axis. Defaults to `False`.
+        - ``rotate_rate``: `float`, The rate of rotation in radians per second. Defaults to `PI / 3.0`.
+        - ``rotate_axis``: `(3,) float`, The axis in world coordinates to rotate about. Defaults
+          to `[0,0,1]`.
+        - ``view_center``: `(3,) float`, The position to rotate the scene about. Defaults
+          to the scene's centroid.
+        - ``use_raymond_lighting``: `bool`, If `True`, an additional set of three directional lights
+          that move with the camera will be added to the scene. Defaults to `False`.
+        - ``use_direct_lighting``: `bool`, If `True`, an additional directional light that
+          moves with the camera and points out of it will be added to the scene. Defaults to `False`.
+        - ``use_perspective_cam``: `bool`, If `True`, a perspective camera will be used. Otherwise,
+          an orthographic camera is used. Defaults to `True`.
+        - ``save_directory``: `str`, A directory to open the file dialogs in. Defaults to `None`.
+        - ``window_title``: `str`, A title for the viewer's application window. Defaults to `"Scene Viewer"`.
+        - ``refresh_rate``: `float`, A refresh rate for rendering, in Hertz. Defaults to `30.0`.
+        - ``fullscreen``: `bool`, Whether to make viewer fullscreen. Defaults to `False`.
+        - ``show_world_axis``: `bool`, Whether to show the world axis. Defaults to `False`.
+        - ``show_mesh_axes``: `bool`, Whether to show the individual mesh axes. Defaults to `False`.
+        - ``caption``: `list of dict`, Text caption(s) to display on the viewer. Defaults to `None`. 
+
         """
         return self._viewer_flags
 
@@ -378,10 +389,12 @@ class Viewer(pyglet.window.Window):
         """dict : Map from ASCII key character to a handler function.
 
         This is a map from ASCII key characters to tuples containing:
-            * A function to be called whenever the key is pressed, whose first argument
-              will be the viewer itself.
-            * (Optionally) A list of additional positional arguments to be passed to the function.
-            * (Optionally) A dict of keyword arguments to be passed to the function.
+
+        - A function to be called whenever the key is pressed, whose first argument
+          will be the viewer itself.
+        - (Optionally) A list of additional positional arguments to be passed to the function.
+        - (Optionally) A dict of keyword arguments to be passed to the function.
+
         """
         return self._registered_keys
 
@@ -404,8 +417,8 @@ class Viewer(pyglet.window.Window):
 
         To use this asynchronously, run the viewer with the ``record``
         flag and the ``run_in_thread`` flags set.
-        Kill the viewer after your desired time with ``close_external()``,
-        and then call ``save_gif()``.
+        Kill the viewer after your desired time with :meth:`.Viewer.close_external`,
+        and then call :meth:`.Viewer.save_gif`.
 
         Parameters
         ----------
@@ -745,7 +758,9 @@ class Viewer(pyglet.window.Window):
             self._message_opac = 1.0 + self._ticks_till_fade
 
     @staticmethod
-    def time_event(dt, self):
+    def _time_event(dt, self):
+        """The timer callback.
+        """
         # Don't run old dead events after we've already closed
         if not self._is_active:
             return
@@ -924,7 +939,7 @@ class Viewer(pyglet.window.Window):
                                      height=self._viewport_size[1])
         if self.context.config.major_version < 3:
             raise ValueError('Unable to initialize an OpenGL 3+ context')
-        clock.schedule_interval(Viewer.time_event, 1.0/self.viewer_flags['refresh_rate'], self)
+        clock.schedule_interval(Viewer._time_event, 1.0/self.viewer_flags['refresh_rate'], self)
         self.switch_to()
         self.set_caption(self.viewer_flags['window_title'])
         pyglet.app.run()
@@ -1041,3 +1056,5 @@ class Viewer(pyglet.window.Window):
             return (self.viewport_size[0]-TEXT_PADDING, self.viewport_size[1]-TEXT_PADDING)
         elif location == TextAlign.TOP_CENTER:
             return (self.viewport_size[0]/2.0, self.viewport_size[1]-TEXT_PADDING)
+
+__all__ = ['Viewer']
