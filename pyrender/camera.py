@@ -9,6 +9,7 @@ import six
 
 from .constants import DEFAULT_Z_NEAR, DEFAULT_Z_FAR
 
+
 @six.add_metaclass(abc.ABCMeta)
 class Camera(object):
     """Abstract base class for all cameras.
@@ -27,7 +28,7 @@ class Camera(object):
         The floating-point distance to the near clipping plane.
     zfar : float
         The floating-point distance to the far clipping plane.
-        `zfar` must be greater than `znear`.
+        ``zfar`` must be greater than ``znear``.
     """
 
     def __init__(self,
@@ -91,6 +92,7 @@ class Camera(object):
         """
         pass
 
+
 class PerspectiveCamera(Camera):
     """A perspective camera for perspective projection.
 
@@ -102,7 +104,7 @@ class PerspectiveCamera(Camera):
         The floating-point distance to the near clipping plane.
     zfar : float
         The floating-point distance to the far clipping plane.
-        `zfar` must be greater than `znear`.
+        ``zfar`` must be greater than ``znear``.
     yfov : float
         The floating-point vertical field of view in radians.
     aspectRatio : float
@@ -182,9 +184,10 @@ class PerspectiveCamera(Camera):
             P[2][3] = -2.0 * n
         else:
             P[2][2] = (f + n) / (n - f)
-            P[2][3] = (2*f*n) / (n - f)
+            P[2][3] = (2 * f * n) / (n - f)
 
         return P
+
 
 class OrthographicCamera(Camera):
     """A perspective camera for perspective projection.
@@ -197,7 +200,7 @@ class OrthographicCamera(Camera):
         The floating-point distance to the near clipping plane.
     zfar : float
         The floating-point distance to the far clipping plane.
-        `zfar` must be greater than `znear`.
+        ``zfar`` must be greater than ``znear``.
     xmag : float
         The floating-point horizontal magnification of the view.
     ymag : float
@@ -262,5 +265,6 @@ class OrthographicCamera(Camera):
         P[2][3] = (f + n) / (n - f)
         P[3][3] = 1.0
         return P
+
 
 __all__ = ['Camera', 'PerspectiveCamera', 'OrthographicCamera']

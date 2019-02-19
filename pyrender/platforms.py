@@ -9,6 +9,7 @@ import six
 
 from .constants import OPEN_GL_MAJOR, OPEN_GL_MINOR
 
+
 @six.add_metaclass(abc.ABCMeta)
 class Platform(object):
     """Base class for all OpenGL platforms.
@@ -45,7 +46,6 @@ class Platform(object):
     def viewport_height(self, value):
         self._viewport_height = value
 
-
     @abc.abstractmethod
     def init_context(self):
         """Create an OpenGL context.
@@ -73,8 +73,9 @@ class Platform(object):
     def __del__(self):
         try:
             self.delete_context()
-        except:
+        except Exception:
             pass
+
 
 class EGLPlatform(Platform):
     """Renders using EGL (not currently working on Ubuntu).
@@ -87,19 +88,20 @@ class EGLPlatform(Platform):
         self._egl_context = None
 
     def init_context(self):
-        from OpenGL.EGL import EGL_SURFACE_TYPE, EGL_PBUFFER_BIT, EGL_BLUE_SIZE,    \
-                               EGL_RED_SIZE, EGL_GREEN_SIZE, EGL_DEPTH_SIZE,        \
-                               EGL_COLOR_BUFFER_TYPE, EGL_RGB_BUFFER, EGL_HEIGHT,   \
-                               EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT, EGL_CONFORMANT, \
-                               EGL_OPENGL_BIT, EGL_CONFIG_CAVEAT, EGL_NONE,         \
-                               EGL_DEFAULT_DISPLAY, EGL_NO_CONTEXT, EGL_WIDTH,      \
-                               EGL_OPENGL_API, EGL_CONTEXT_MAJOR_VERSION,           \
-                               EGL_CONTEXT_MINOR_VERSION,                           \
-                               EGL_CONTEXT_OPENGL_PROFILE_MASK,                     \
-                               EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT,                 \
-                               eglGetDisplay, eglInitialize, eglChooseConfig,       \
-                               eglBindAPI, eglCreatePbufferSurface,                 \
-                               eglCreateContext, EGLConfig
+        from OpenGL.EGL import (
+            EGL_SURFACE_TYPE, EGL_PBUFFER_BIT, EGL_BLUE_SIZE,
+            EGL_RED_SIZE, EGL_GREEN_SIZE, EGL_DEPTH_SIZE,
+            EGL_COLOR_BUFFER_TYPE, EGL_RGB_BUFFER, EGL_HEIGHT,
+            EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT, EGL_CONFORMANT,
+            EGL_NONE, EGL_DEFAULT_DISPLAY, EGL_NO_CONTEXT, EGL_WIDTH,
+            EGL_OPENGL_API, EGL_CONTEXT_MAJOR_VERSION,
+            EGL_CONTEXT_MINOR_VERSION,
+            EGL_CONTEXT_OPENGL_PROFILE_MASK,
+            EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT,
+            eglGetDisplay, eglInitialize, eglChooseConfig,
+            eglBindAPI, eglCreatePbufferSurface,
+            eglCreateContext, EGLConfig
+        )
         from OpenGL import arrays
 
         config_attributes = arrays.GLintArray.asArray([
@@ -116,12 +118,13 @@ class EGLPlatform(Platform):
         context_attributes = arrays.GLintArray.asArray([
             EGL_CONTEXT_MAJOR_VERSION, 3,
             EGL_CONTEXT_MINOR_VERSION, 2,
-            EGL_CONTEXT_OPENGL_PROFILE_MASK, EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT,
+            EGL_CONTEXT_OPENGL_PROFILE_MASK,
+            EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT,
             EGL_NONE
         ])
         major, minor = ctypes.c_long(), ctypes.c_long()
         num_configs = ctypes.c_long()
-        configs = (EGLConfig*1)()
+        configs = (EGLConfig * 1)()
 
         # Cache DISPLAY if necessary and get an off-screen EGL display
         orig_dpy = None
@@ -134,35 +137,38 @@ class EGLPlatform(Platform):
 
         # Initialize EGL
         eglInitialize(self._egl_display, major, minor)
-        eglChooseConfig(self._egl_display, config_attributes, configs, 1, num_configs)
+        eglChooseConfig(
+            self._egl_display, config_attributes, configs, 1, num_configs
+        )
 
         # Bind EGL to the OpenGL API
         eglBindAPI(EGL_OPENGL_API)
 
         # Create a 1x1 EGL pbuffer
-        self._egl_surface = eglCreatePbufferSurface(self._egl_display, configs[0],
-            [EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE])
+        self._egl_surface = eglCreatePbufferSurface(
+            self._egl_display, configs[0],
+            [EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE]
+        )
 
         # Create an EGL context
-        self._egl_context = eglCreateContext(self._egl_display, configs[0],
-            EGL_NO_CONTEXT, context_attributes)
+        self._egl_context = eglCreateContext(
+            self._egl_display, configs[0],
+            EGL_NO_CONTEXT, context_attributes
+        )
 
         # Make it current
         self.make_current()
 
-        from OpenGL.EGL import eglQueryContext, EGL_CONTEXT_CLIENT_TYPE, EGL_CONTEXT_CLIENT_VERSION
-        x = ctypes.c_int()
-        eglQueryContext(self._egl_display, self._egl_context, EGL_CONTEXT_CLIENT_TYPE, x)
-        print(x.value)
-        eglQueryContext(self._egl_display, self._egl_context, EGL_CONTEXT_CLIENT_VERSION, x)
-        print(x.value)
-
     def make_current(self):
         from OpenGL.EGL import eglMakeCurrent
-        eglMakeCurrent(self._egl_display, self._egl_surface, self._egl_surface, self._egl_context)
+        eglMakeCurrent(
+            self._egl_display, self._egl_surface, self._egl_surface,
+            self._egl_context
+        )
 
     def delete_context(self):
-        from OpenGL.EGL import eglDestroySurface, eglDestroyContext, eglTerminate
+        from OpenGL.EGL import (eglDestroySurface, eglDestroyContext,
+                                eglTerminate)
         if self._egl_display is not None:
             if self._egl_context is not None:
                 eglDestroyContext(self._egl_display, self._egl_context)
@@ -175,6 +181,7 @@ class EGLPlatform(Platform):
 
     def supports_framebuffers(self):
         return True
+
 
 class PygletPlatform(Platform):
     """Renders on-screen using a 1x1 hidden Pyglet window for getting
@@ -199,12 +206,15 @@ class PygletPlatform(Platform):
         )
         try:
             self._window = pyglet.window.Window(config=conf, visible=False,
-                                                resizable=False, width=1, height=1)
+                                                resizable=False,
+                                                width=1, height=1)
         except Exception as e:
-            raise ValueError('Failed to initialize Pyglet window with an OpenGL >= 3+ context. ' \
-                             'If you\'re logged in via SSH, ensure that you\'re running your script ' \
-                             'with vglrun (i.e. VirtualGL). Otherwise, the internal error message was: ' \
-                             '"{}"'.format(e.message))
+            raise ValueError(
+                'Failed to initialize Pyglet window with an OpenGL >= 3+ '
+                'context. If you\'re logged in via SSH, ensure that you\'re '
+                'running your script with vglrun (i.e. VirtualGL). The '
+                'internal error message was "{}"'.format(e.message)
+            )
 
     def make_current(self):
         if self._window:
@@ -215,12 +225,13 @@ class PygletPlatform(Platform):
             try:
                 self._window.context.destroy()
                 self._window.close()
-            except:
+            except Exception:
                 pass
             self._window = None
 
     def supports_framebuffers(self):
         return True
+
 
 class OSMesaPlatform(Platform):
     """Renders into a software buffer using OSMesa. Requires special versions
@@ -234,10 +245,12 @@ class OSMesaPlatform(Platform):
 
     def init_context(self):
         from OpenGL import arrays
-        from OpenGL.osmesa import OSMesaCreateContextAttribs, OSMESA_FORMAT,\
-                                  OSMESA_RGBA, OSMESA_PROFILE, OSMESA_CORE_PROFILE,\
-                                  OSMESA_CONTEXT_MAJOR_VERSION, OSMESA_CONTEXT_MINOR_VERSION,\
-                                  OSMESA_DEPTH_BITS
+        from OpenGL.osmesa import (
+            OSMesaCreateContextAttribs, OSMESA_FORMAT,
+            OSMESA_RGBA, OSMESA_PROFILE, OSMESA_CORE_PROFILE,
+            OSMESA_CONTEXT_MAJOR_VERSION, OSMESA_CONTEXT_MINOR_VERSION,
+            OSMESA_DEPTH_BITS
+        )
 
         attrs = arrays.GLintArray.asArray([
             OSMESA_FORMAT, OSMESA_RGBA,
@@ -248,13 +261,17 @@ class OSMesaPlatform(Platform):
             0
         ])
         self._context = OSMesaCreateContextAttribs(attrs, None)
-        self._buffer = arrays.GLubyteArray.zeros((self.viewport_height, self.viewport_width, 4))
+        self._buffer = arrays.GLubyteArray.zeros(
+            (self.viewport_height, self.viewport_width, 4)
+        )
 
     def make_current(self):
-        from OpenGL import platform, GL as gl
+        from OpenGL import GL as gl
         from OpenGL.osmesa import OSMesaMakeCurrent
-        assert(OSMesaMakeCurrent(self._context, self._buffer, gl.GL_UNSIGNED_BYTE,
-            self.viewport_width, self.viewport_height))
+        assert(OSMesaMakeCurrent(
+            self._context, self._buffer, gl.GL_UNSIGNED_BYTE,
+            self.viewport_width, self.viewport_height
+        ))
 
     def delete_context(self):
         from OpenGL.osmesa import OSMesaDestroyContext

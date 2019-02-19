@@ -20,21 +20,11 @@ It also includes an easy-to-use viewer for visualizing and debugging 3D data.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Installation Guide
 
-   install/install.rst
-
-.. toctree::
-   :maxdepth: 2
-   :caption: API Documentation
-
+   install/index.rst
+   examples/index.rst
    api/index.rst
 
-.. toctree::
-    :maxdepth: 2
-    :caption: Examples
-
-    examples/example.rst
 
 Indices and tables
 ==================

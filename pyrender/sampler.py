@@ -5,6 +5,7 @@ Author: Matthew Matl
 """
 from .constants import GLTF
 
+
 class Sampler(object):
     """Texture sampler properties for filtering and wrapping modes.
 
@@ -14,26 +15,26 @@ class Sampler(object):
         The user-defined name of this object.
     magFilter : int, optional
         Magnification filter. Valid values:
-            - `GLTF.NEAREST`
-            - `GLTF.LINEAR`
+            - :attr:`.GLTF.NEAREST`
+            - :attr:`.GLTF.LINEAR`
     minFilter : int, optional
         Minification filter. Valid values:
-            - `GLTF.NEAREST`
-            - `GLTF.LINEAR`
-            - `GLTF.NEAREST_MIPMAP_NEAREST`
-            - `GLTF.LINEAR_MIPMAP_NEAREST`
-            - `GLTF.NEAREST_MIPMAP_LINEAR`
-            - `GLTF.LINEAR_MIPMAP_LINEAR`
+            - :attr:`.GLTF.NEAREST`
+            - :attr:`.GLTF.LINEAR`
+            - :attr:`.GLTF.NEAREST_MIPMAP_NEAREST`
+            - :attr:`.GLTF.LINEAR_MIPMAP_NEAREST`
+            - :attr:`.GLTF.NEAREST_MIPMAP_LINEAR`
+            - :attr:`.GLTF.LINEAR_MIPMAP_LINEAR`
     wrapS : int, optional
         S (U) wrapping mode. Valid values:
-            - `GLTF.CLAMP_TO_EDGE`
-            - `GLTF.MIRRORED_REPEAT`
-            - `GLTF.REPEAT`
+            - :attr:`.GLTF.CLAMP_TO_EDGE`
+            - :attr:`.GLTF.MIRRORED_REPEAT`
+            - :attr:`.GLTF.REPEAT`
     wrapT : int, optional
         T (V) wrapping mode. Valid values:
-            - `GLTF.CLAMP_TO_EDGE`
-            - `GLTF.MIRRORED_REPEAT`
-            - `GLTF.REPEAT`
+            - :attr:`.GLTF.CLAMP_TO_EDGE`
+            - :attr:`.GLTF.MIRRORED_REPEAT`
+            - :attr:`.GLTF.REPEAT`
     """
 
     def __init__(self,

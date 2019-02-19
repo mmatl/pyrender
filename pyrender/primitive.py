@@ -3,15 +3,14 @@ https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-pri
 
 Author: Matthew Matl
 """
-import abc
 import numpy as np
-import six
 
 from OpenGL.GL import *
 
 from .material import Material, MetallicRoughnessMaterial
 from .constants import FLOAT_SZ, UINT_SZ, BufFlags, GLTF
 from .utils import format_color_array
+
 
 class Primitive(object):
     """A primitive object which can be rendered.
@@ -41,13 +40,14 @@ class Primitive(object):
         The material to apply to this primitive when rendering.
     mode : int
         The type of primitives to render, one of the following:
-            - `0` POINTS
-            - `1` LINES
-            - `2` LINE_LOOP
-            - `3` LINE_STRIP
-            - `4` TRIANGLES
-            - `5` TRIANGLES_STRIP
-            - `6` TRIANGLES_FAN
+
+        - ``0``: POINTS
+        - ``1``: LINES
+        - ``2``: LINE_LOOP
+        - ``3``: LINE_STRIP
+        - ``4``: TRIANGLES
+        - ``5``: TRIANGLES_STRIP
+        - ``6``: TRIANGLES_FAN
     targets : (k,) int
         Morph target indices.
     poses : (x,4,4), float
@@ -141,7 +141,8 @@ class Primitive(object):
     def texcoord_0(self, value):
         if value is not None:
             value = np.ascontiguousarray(value.astype(np.float32))
-            if value.ndim != 2 or value.shape[0] != self.positions.shape[0] or value.shape[1] < 2:
+            if (value.ndim != 2 or value.shape[0] != self.positions.shape[0] or
+                    value.shape[1] < 2):
                 raise ValueError('Incorrect texture coordinate shape')
             if value.shape[1] > 2:
                 value = value[:,:2]
@@ -157,7 +158,8 @@ class Primitive(object):
     def texcoord_1(self, value):
         if value is not None:
             value = np.ascontiguousarray(value.astype(np.float32))
-            if value.ndim != 2 or value.shape[0] != self.positions.shape[0] or value.shape[1] != 2:
+            if (value.ndim != 2 or value.shape[0] != self.positions.shape[0] or
+                    value.shape[1] != 2):
                 raise ValueError('Incorrect texture coordinate shape')
         self._texcoord_1 = value
 
@@ -170,9 +172,9 @@ class Primitive(object):
     @color_0.setter
     def color_0(self, value):
         if value is not None:
-            value = np.ascontiguousarray(format_color_array(value, 4))
-            if value.shape[0] != self.positions.shape[0]:
-                raise ValueError('Incorrect vertex color shape')
+            value = np.ascontiguousarray(
+                format_color_array(value, shape=(len(self.positions), 4))
+            )
         self._is_transparent = None
         self._color_0 = value
 
@@ -249,7 +251,7 @@ class Primitive(object):
 
     @property
     def poses(self):
-        """(x,4,4) float : Homogenous transforms of instances of this primitive.
+        """(x,4,4) float : Homogenous transforms for instancing this primitive.
         """
         return self._poses
 
@@ -260,7 +262,8 @@ class Primitive(object):
             if value.ndim == 2:
                 value = value[np.newaxis,:,:]
             if value.shape[1] != 4 or value.shape[2] != 4:
-                raise ValueError('Incorrect shape of pose matrices, must be (n,4,4)!')
+                raise ValueError('Pose matrices must be of shape (n,4,4), '
+                                 'got {}'.format(value.shape))
         self._poses = value
         self._bounds = None
 
@@ -272,8 +275,7 @@ class Primitive(object):
 
     @property
     def centroid(self):
-        """(3,) float : The centroid of the primitive's axis-aligned bounding box
-        (AABB).
+        """(3,) float : The centroid of the primitive's AABB.
         """
         return np.mean(self.bounds, axis=0)
 
@@ -325,9 +327,9 @@ class Primitive(object):
         self._vaid = glGenVertexArrays(1)
         glBindVertexArray(self._vaid)
 
-        ########################################################################
+        #######################################################################
         # Fill vertex buffer
-        ########################################################################
+        #######################################################################
 
         # Generate and bind vertex buffer
         vertexbuffer = glGenBuffers(1)
@@ -365,47 +367,63 @@ class Primitive(object):
         # PASS
 
         # Copy data to buffer
-        vertex_data = np.ascontiguousarray(vertex_data.flatten().astype(np.float32))
-        glBufferData(GL_ARRAY_BUFFER, FLOAT_SZ * len(vertex_data), vertex_data, GL_STATIC_DRAW)
+        vertex_data = np.ascontiguousarray(
+            vertex_data.flatten().astype(np.float32)
+        )
+        glBufferData(
+            GL_ARRAY_BUFFER, FLOAT_SZ * len(vertex_data),
+            vertex_data, GL_STATIC_DRAW
+        )
         total_sz = sum(attr_sizes)
         offset = 0
         for i, sz in enumerate(attr_sizes):
-            glVertexAttribPointer(i, sz, GL_FLOAT, GL_FALSE, FLOAT_SZ * total_sz,
-                                  ctypes.c_void_p(FLOAT_SZ * offset))
+            glVertexAttribPointer(
+                i, sz, GL_FLOAT, GL_FALSE, FLOAT_SZ * total_sz,
+                ctypes.c_void_p(FLOAT_SZ * offset)
+            )
             glEnableVertexAttribArray(i)
             offset += sz
 
-        ########################################################################
+        #######################################################################
         # Fill model matrix buffer
-        ########################################################################
+        #######################################################################
 
         if self.poses is not None:
             pose_data = np.ascontiguousarray(
                 np.transpose(self.poses, [0,2,1]).flatten().astype(np.float32)
             )
         else:
-            pose_data = np.ascontiguousarray(np.eye(4).flatten().astype(np.float32))
+            pose_data = np.ascontiguousarray(
+                np.eye(4).flatten().astype(np.float32)
+            )
 
         modelbuffer = glGenBuffers(1)
         self._buffers.append(modelbuffer)
         glBindBuffer(GL_ARRAY_BUFFER, modelbuffer)
-        glBufferData(GL_ARRAY_BUFFER, FLOAT_SZ*len(pose_data), pose_data, GL_STATIC_DRAW)
+        glBufferData(
+            GL_ARRAY_BUFFER, FLOAT_SZ * len(pose_data),
+            pose_data, GL_STATIC_DRAW
+        )
 
         for i in range(0, 4):
             idx = i + len(attr_sizes)
             glEnableVertexAttribArray(idx)
-            glVertexAttribPointer(idx, 4, GL_FLOAT, GL_FALSE, FLOAT_SZ*4*4, ctypes.c_void_p(4*FLOAT_SZ*i))
+            glVertexAttribPointer(
+                idx, 4, GL_FLOAT, GL_FALSE, FLOAT_SZ * 4 * 4,
+                ctypes.c_void_p(4 * FLOAT_SZ * i)
+            )
             glVertexAttribDivisor(idx, 1)
 
-        ########################################################################
+        #######################################################################
         # Fill element buffer
-        ########################################################################
+        #######################################################################
         if self.indices is not None:
             elementbuffer = glGenBuffers(1)
             self._buffers.append(elementbuffer)
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementbuffer)
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, UINT_SZ*self.indices.size,
-                         self.indices.flatten().astype(np.uint32), GL_STATIC_DRAW)
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, UINT_SZ * self.indices.size,
+                         self.indices.flatten().astype(np.uint32),
+                         GL_STATIC_DRAW)
 
         glBindVertexArray(0)
 
@@ -421,7 +439,8 @@ class Primitive(object):
 
     def _bind(self):
         if self._vaid is None:
-            raise ValueError('Cannot bind a Mesh that has not been added to a context')
+            raise ValueError('Cannot bind a Mesh that has not been added '
+                             'to a context')
         glBindVertexArray(self._vaid)
 
     def _unbind(self):

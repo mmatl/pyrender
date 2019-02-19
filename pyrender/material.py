@@ -13,6 +13,7 @@ from .constants import TexFlags
 from .utils import format_color_vector, format_texture_source
 from .texture import Texture
 
+
 @six.add_metaclass(abc.ABCMeta)
 class Material(object):
     """Base for standard glTF 2.0 materials.
@@ -24,24 +25,24 @@ class Material(object):
     normalTexture : (n,n,3) float or :class:`Texture`, optional
         A tangent space normal map. The texture contains RGB components in
         linear space. Each texel represents the XYZ components of a normal
-        vector in tangent space. Red [0 to 255] maps to X [-1 to 1]. Green [0 to
-        255] maps to Y [-1 to 1]. Blue [128 to 255] maps to Z [1/255 to 1]. The
-        normal vectors use OpenGL conventions where +X is right and +Y is up. +Z
-        points toward the viewer.
+        vector in tangent space. Red [0 to 255] maps to X [-1 to 1]. Green
+        [0 to 255] maps to Y [-1 to 1]. Blue [128 to 255] maps to Z
+        [1/255 to 1]. The normal vectors use OpenGL conventions where +X is
+        right and +Y is up. +Z points toward the viewer.
     occlusionTexture : (n,n,1) float or :class:`Texture`, optional
         The occlusion map texture. The occlusion values are sampled from the R
         channel. Higher values indicate areas that should receive full indirect
-        lighting and lower values indicate no indirect lighting. These values are
-        linear. If other channels are present (GBA), they are ignored for occlusion
-        calculations.
+        lighting and lower values indicate no indirect lighting. These values
+        are linear. If other channels are present (GBA), they are ignored for
+        occlusion calculations.
     emissiveTexture : (n,n,3) float or :class:`Texture`, optional
-        The emissive map controls the color and intensity of the light being emitted
-        by the material. This texture contains RGB components in sRGB color space.
-        If a fourth component (A) is present, it is ignored.
+        The emissive map controls the color and intensity of the light being
+        emitted by the material. This texture contains RGB components in sRGB
+        color space. If a fourth component (A) is present, it is ignored.
     emissiveFactor : (3,) float, optional
         The RGB components of the emissive color of the material. These values
-        are linear. If an emissiveTexture is specified, this value is multiplied
-        with the texel values.
+        are linear. If an emissiveTexture is specified, this value is
+        multiplied with the texel values.
     alphaMode : str, optional
         The material's alpha rendering mode enumeration specifying the
         interpretation of the alpha value of the main factor and texture.
@@ -59,17 +60,17 @@ class Material(object):
 
     alphaCutoff : float, optional
         Specifies the cutoff threshold when in MASK mode. If the alpha value is
-        greater than or equal to this value then it is rendered as fully opaque,
-        otherwise, it is rendered as fully transparent. A value greater than 1.0
-        will render the entire material as fully transparent. This value is ignored
-        for other modes.
+        greater than or equal to this value then it is rendered as fully
+        opaque, otherwise, it is rendered as fully transparent.
+        A value greater than 1.0 will render the entire material as fully
+        transparent. This value is ignored for other modes.
     doubleSided : bool, optional
-        Specifies whether the material is double sided. When this value is false,
-        back-face culling is enabled. When this value is true, back-face culling is
-        disabled and double sided lighting is enabled.
+        Specifies whether the material is double sided. When this value is
+        false, back-face culling is enabled. When this value is true,
+        back-face culling is disabled and double sided lighting is enabled.
     smooth : bool, optional
-        If True, the material is rendered smoothly by using only one normal per vertex
-        and face indexing.
+        If True, the material is rendered smoothly by using only one normal
+        per vertex and face indexing.
     wireframe : bool, optional
         If True, the material is rendered in wireframe mode.
     """
@@ -208,7 +209,8 @@ class Material(object):
 
     @property
     def smooth(self):
-        """bool : Whether to render the mesh smoothly by interpolating vertex normals.
+        """bool : Whether to render the mesh smoothly by
+        interpolating vertex normals.
         """
         return self._smooth
 
@@ -266,7 +268,9 @@ class Material(object):
         return tex_flags
 
     def _compute_textures(self):
-        all_textures = [self.normalTexture, self.occlusionTexture, self.emissiveTexture]
+        all_textures = [
+            self.normalTexture, self.occlusionTexture, self.emissiveTexture
+        ]
         textures = set([t for t in all_textures if t is not None])
         return textures
 
@@ -279,6 +283,7 @@ class Material(object):
             source = format_texture_source(texture, target_channels)
             return Texture(source=source, source_channels=target_channels)
 
+
 class MetallicRoughnessMaterial(Material):
     """A material based on the metallic-roughness material model from
     Physically-Based Rendering (PBR) methodology.
@@ -290,24 +295,24 @@ class MetallicRoughnessMaterial(Material):
     normalTexture : (n,n,3) float or :class:`Texture`, optional
         A tangent space normal map. The texture contains RGB components in
         linear space. Each texel represents the XYZ components of a normal
-        vector in tangent space. Red [0 to 255] maps to X [-1 to 1]. Green [0 to
-        255] maps to Y [-1 to 1]. Blue [128 to 255] maps to Z [1/255 to 1]. The
-        normal vectors use OpenGL conventions where +X is right and +Y is up. +Z
-        points toward the viewer.
+        vector in tangent space. Red [0 to 255] maps to X [-1 to 1]. Green
+        [0 to 255] maps to Y [-1 to 1]. Blue [128 to 255] maps to Z
+        [1/255 to 1]. The normal vectors use OpenGL conventions where +X is
+        right and +Y is up. +Z points toward the viewer.
     occlusionTexture : (n,n,1) float or :class:`Texture`, optional
         The occlusion map texture. The occlusion values are sampled from the R
         channel. Higher values indicate areas that should receive full indirect
-        lighting and lower values indicate no indirect lighting. These values are
-        linear. If other channels are present (GBA), they are ignored for occlusion
-        calculations.
+        lighting and lower values indicate no indirect lighting. These values
+        are linear. If other channels are present (GBA), they are ignored for
+        occlusion calculations.
     emissiveTexture : (n,n,3) float or :class:`Texture`, optional
-        The emissive map controls the color and intensity of the light being emitted
-        by the material. This texture contains RGB components in sRGB color space.
-        If a fourth component (A) is present, it is ignored.
+        The emissive map controls the color and intensity of the light being
+        emitted by the material. This texture contains RGB components in sRGB
+        color space. If a fourth component (A) is present, it is ignored.
     emissiveFactor : (3,) float, optional
         The RGB components of the emissive color of the material. These values
-        are linear. If an emissiveTexture is specified, this value is multiplied
-        with the texel values.
+        are linear. If an emissiveTexture is specified, this value is
+        multiplied with the texel values.
     alphaMode : str, optional
         The material's alpha rendering mode enumeration specifying the
         interpretation of the alpha value of the main factor and texture.
@@ -325,32 +330,32 @@ class MetallicRoughnessMaterial(Material):
 
     alphaCutoff : float, optional
         Specifies the cutoff threshold when in MASK mode. If the alpha value is
-        greater than or equal to this value then it is rendered as fully opaque,
-        otherwise, it is rendered as fully transparent. A value greater than 1.0
-        will render the entire material as fully transparent. This value is ignored
-        for other modes.
+        greater than or equal to this value then it is rendered as fully
+        opaque, otherwise, it is rendered as fully transparent.
+        A value greater than 1.0 will render the entire material as fully
+        transparent. This value is ignored for other modes.
     doubleSided : bool, optional
-        Specifies whether the material is double sided. When this value is false,
-        back-face culling is enabled. When this value is true, back-face culling is
-        disabled and double sided lighting is enabled.
+        Specifies whether the material is double sided. When this value is
+        false, back-face culling is enabled. When this value is true,
+        back-face culling is disabled and double sided lighting is enabled.
     smooth : bool, optional
-        If True, the material is rendered smoothly by using only one normal per vertex
-        and face indexing.
+        If True, the material is rendered smoothly by using only one normal
+        per vertex and face indexing.
     wireframe : bool, optional
         If True, the material is rendered in wireframe mode.
     baseColorFactor : (4,) float, optional
         The RGBA components of the base color of the material. The fourth
         component (A) is the alpha coverage of the material. The alphaMode
-        property specifies how alpha is interpreted. These values are linear. If
-        a baseColorTexture is specified, this value is multiplied with the texel
-        values.
-    baseColorTexture : (n,n,4) float or :class:`Texture`, optional 
+        property specifies how alpha is interpreted. These values are linear.
+        If a baseColorTexture is specified, this value is multiplied with the
+        texel values.
+    baseColorTexture : (n,n,4) float or :class:`Texture`, optional
         The base color texture. This texture contains RGB(A) components in sRGB
-        color space. The first three components (RGB) specify the base color of the
-        material. If the fourth component (A) is present, it represents the alpha
-        coverage of the material. Otherwise, an alpha of 1.0 is assumed. The
-        alphaMode property specifies how alpha is interpreted. The stored texels
-        must not be premultiplied.
+        color space. The first three components (RGB) specify the base color of
+        the material. If the fourth component (A) is present, it represents the
+        alpha coverage of the material. Otherwise, an alpha of 1.0 is assumed.
+        The alphaMode property specifies how alpha is interpreted.
+        The stored texels must not be premultiplied.
     metallicFactor : float
         The metalness of the material. A value of 1.0 means the material is a
         metal. A value of 0.0 means the material is a dielectric. Values in
@@ -511,24 +516,24 @@ class SpecularGlossinessMaterial(Material):
     normalTexture : (n,n,3) float or :class:`Texture`, optional
         A tangent space normal map. The texture contains RGB components in
         linear space. Each texel represents the XYZ components of a normal
-        vector in tangent space. Red [0 to 255] maps to X [-1 to 1]. Green [0 to
-        255] maps to Y [-1 to 1]. Blue [128 to 255] maps to Z [1/255 to 1]. The
-        normal vectors use OpenGL conventions where +X is right and +Y is up. +Z
-        points toward the viewer.
+        vector in tangent space. Red [0 to 255] maps to X [-1 to 1]. Green
+        [0 to 255] maps to Y [-1 to 1]. Blue [128 to 255] maps to Z
+        [1/255 to 1]. The normal vectors use OpenGL conventions where +X is
+        right and +Y is up. +Z points toward the viewer.
     occlusionTexture : (n,n,1) float or :class:`Texture`, optional
         The occlusion map texture. The occlusion values are sampled from the R
         channel. Higher values indicate areas that should receive full indirect
-        lighting and lower values indicate no indirect lighting. These values are
-        linear. If other channels are present (GBA), they are ignored for occlusion
-        calculations.
+        lighting and lower values indicate no indirect lighting. These values
+        are linear. If other channels are present (GBA), they are ignored for
+        occlusion calculations.
     emissiveTexture : (n,n,3) float or :class:`Texture`, optional
-        The emissive map controls the color and intensity of the light being emitted
-        by the material. This texture contains RGB components in sRGB color space.
-        If a fourth component (A) is present, it is ignored.
+        The emissive map controls the color and intensity of the light being
+        emitted by the material. This texture contains RGB components in sRGB
+        color space. If a fourth component (A) is present, it is ignored.
     emissiveFactor : (3,) float, optional
         The RGB components of the emissive color of the material. These values
-        are linear. If an emissiveTexture is specified, this value is multiplied
-        with the texel values.
+        are linear. If an emissiveTexture is specified, this value is
+        multiplied with the texel values.
     alphaMode : str, optional
         The material's alpha rendering mode enumeration specifying the
         interpretation of the alpha value of the main factor and texture.
@@ -546,30 +551,30 @@ class SpecularGlossinessMaterial(Material):
 
     alphaCutoff : float, optional
         Specifies the cutoff threshold when in MASK mode. If the alpha value is
-        greater than or equal to this value then it is rendered as fully opaque,
-        otherwise, it is rendered as fully transparent. A value greater than 1.0
-        will render the entire material as fully transparent. This value is ignored
-        for other modes.
+        greater than or equal to this value then it is rendered as fully
+        opaque, otherwise, it is rendered as fully transparent.
+        A value greater than 1.0 will render the entire material as fully
+        transparent. This value is ignored for other modes.
     doubleSided : bool, optional
-        Specifies whether the material is double sided. When this value is false,
-        back-face culling is enabled. When this value is true, back-face culling is
-        disabled and double sided lighting is enabled.
+        Specifies whether the material is double sided. When this value is
+        false, back-face culling is enabled. When this value is true,
+        back-face culling is disabled and double sided lighting is enabled.
     smooth : bool, optional
-        If True, the material is rendered smoothly by using only one normal per vertex
-        and face indexing.
+        If True, the material is rendered smoothly by using only one normal
+        per vertex and face indexing.
     wireframe : bool, optional
         If True, the material is rendered in wireframe mode.
     diffuseFactor : (4,) float
         The RGBA components of the reflected diffuse color of the material.
-        Metals have a diffuse value of [0.0, 0.0, 0.0]. The fourth component (A)
-        is the opacity of the material. The values are linear.
+        Metals have a diffuse value of [0.0, 0.0, 0.0]. The fourth component
+        (A) is the opacity of the material. The values are linear.
     diffuseTexture : (n,n,4) float or :class:`Texture`, optional
         The diffuse texture. This texture contains RGB(A) components of the
         reflected diffuse color of the material in sRGB color space. If the
-        fourth component (A) is present, it represents the alpha coverage of the
-        material. Otherwise, an alpha of 1.0 is assumed. The alphaMode property
-        specifies how alpha is interpreted. The stored texels must not be
-        premultiplied.
+        fourth component (A) is present, it represents the alpha coverage of
+        the material. Otherwise, an alpha of 1.0 is assumed.
+        The alphaMode property specifies how alpha is interpreted.
+        The stored texels must not be premultiplied.
     specularFactor : (3,) float
         The specular RGB color of the material. This value is linear.
     glossinessFactor : float
@@ -681,12 +686,12 @@ class SpecularGlossinessMaterial(Material):
         self._tex_flags = None
 
     def _compute_tex_flags(self):
-        tex_flags = super(SpecularGlossinessMaterial, self)._compute_tex_flags()
+        flags = super(SpecularGlossinessMaterial, self)._compute_flags()
         if self.diffuseTexture is not None:
-            tex_flags |= TexFlags.DIFFUSE
+            flags |= TexFlags.DIFFUSE
         if self.specularGlossinessTexture is not None:
-            tex_flags |= TexFlags.SPECULAR_GLOSSINESS
-        return tex_flags
+            flags |= TexFlags.SPECULAR_GLOSSINESS
+        return flags
 
     def _compute_transparency(self):
         if self.alphaMode == 'OPAQUE':

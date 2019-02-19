@@ -10,6 +10,7 @@ from OpenGL.GL import *
 from .utils import format_texture_source
 from .sampler import Sampler
 
+
 class Texture(object):
     """A texture and its sampler.
 
@@ -82,7 +83,8 @@ class Texture(object):
 
     @property
     def source(self):
-        """(h,w,c) uint8 or float or :class:`PIL.Image.Image` : The image used in this texture.
+        """(h,w,c) uint8 or float or :class:`PIL.Image.Image` : The image
+        used in this texture.
         """
         return self._source
 
@@ -143,8 +145,6 @@ class Texture(object):
     def data_format(self, value):
         self._data_format = value
 
-    
-
     def delete(self):
         """Remove this texture from the OpenGL context.
         """
@@ -182,21 +182,32 @@ class Texture(object):
             height = self.source.shape[0]
 
         # Bind texture and generate mipmaps
-        glTexImage2D(self.tex_type, 0, fmt, width, height, 0, fmt, self.data_format, data)
+        glTexImage2D(
+            self.tex_type, 0, fmt, width, height, 0, fmt,
+            self.data_format, data
+        )
         if self.source is not None:
             glGenerateMipmap(self.tex_type)
 
         if self.sampler.magFilter is not None:
-            glTexParameteri(self.tex_type, GL_TEXTURE_MAG_FILTER, self.sampler.magFilter)
+            glTexParameteri(
+                self.tex_type, GL_TEXTURE_MAG_FILTER, self.sampler.magFilter
+            )
         else:
             glTexParameteri(self.tex_type, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
         if self.sampler.minFilter is not None:
-            glTexParameteri(self.tex_type, GL_TEXTURE_MIN_FILTER, self.sampler.minFilter)
+            glTexParameteri(
+                self.tex_type, GL_TEXTURE_MIN_FILTER, self.sampler.minFilter
+            )
         else:
             glTexParameteri(self.tex_type, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+
         glTexParameteri(self.tex_type, GL_TEXTURE_WRAP_S, self.sampler.wrapS)
         glTexParameteri(self.tex_type, GL_TEXTURE_WRAP_T, self.sampler.wrapT)
-        glTexParameterfv(self.tex_type, GL_TEXTURE_BORDER_COLOR, np.ones(4).astype(np.float32))
+        glTexParameterfv(
+            self.tex_type, GL_TEXTURE_BORDER_COLOR,
+            np.ones(4).astype(np.float32)
+        )
 
         # Unbind texture
         glBindTexture(self.tex_type, 0)
@@ -204,7 +215,7 @@ class Texture(object):
     def _remove_from_context(self):
         if self._texid is not None:
             # TODO OPENGL BUG?
-            #glDeleteTextures(1, [self._texid])
+            # glDeleteTextures(1, [self._texid])
             glDeleteTextures([self._texid])
             self._texid = None
 
@@ -219,8 +230,9 @@ class Texture(object):
         glBindTexture(self.tex_type, 0)
 
     def _bind_as_depth_attachment(self):
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, self.tex_type, self._texid, 0)
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                               self.tex_type, self._texid, 0)
 
     def _bind_as_color_attachment(self):
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, self.tex_type, self._texid, 0)
-
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                               self.tex_type, self._texid, 0)

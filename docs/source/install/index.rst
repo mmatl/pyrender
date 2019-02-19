@@ -1,5 +1,8 @@
+Installation Guide
+==================
+
 Python Installation
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
 This package is available via ``pip``.
 
@@ -18,7 +21,7 @@ my change that enables OpenGL contexts on MacOS.
    pip install .
 
 Getting Pyrender Working with OSMesa
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------------
 If you want to render scenes offscreen but don't want to have to
 install a display manager or deal with the pains of trying to get
 OpenGL to work over SSH, you may consider using OSMesa,
@@ -30,7 +33,7 @@ a screen, but you'll need to rebuild and re-install Mesa with support
 for fast offscreen rendering and OpenGL 3+ contexts.
 
 Installing Dependencies
------------------------
+~~~~~~~~~~~~~~~~~~~~~~~
 
 First, install build dependencies via `apt` or your system's package manager.
 
@@ -101,7 +104,7 @@ on PyPI.
    pip install .
 
 Running Scripts
----------------
+~~~~~~~~~~~~~~~
 Before running any script using the :class:`OffscreenRenderer` object,
 make sure to set the ``PYOPENGL_PLATFORM`` environment variable to ``osmesa``.
 For example:
@@ -113,11 +116,9 @@ For example:
 If you do this, you won't be able to use the :class:`Viewer`, but you will be able do
 do offscreen rendering without a display and even over SSH.
 
-Documentation
-~~~~~~~~~~~~~
+Building Documentation
+----------------------
 
-Building
---------
 The online documentation for ``pyrender`` is automatically built by Read The Docs.
 Building ``pyrender``'s documentation locally requires a few extra dependencies --
 specifically, `sphinx`_ and a few plugins.

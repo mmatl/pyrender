@@ -1,7 +1,10 @@
 import numpy as np
 from PIL import Image
 
+
 def format_color_vector(value, length):
+    """Format a color vector.
+    """
     if isinstance(value, int):
         value = value / 255.0
     if isinstance(value, float):
@@ -23,14 +26,25 @@ def format_color_vector(value, length):
 
     return value.squeeze().astype(np.float32)
 
-def format_color_array(value, n_channels):
+
+def format_color_array(value, shape):
+    """Format an array of colors.
+    """
+    # Convert uint8 to floating
+    value = np.asanyarray(value)
     if np.issubdtype(value.dtype, np.integer):
         value = (value / 255.0).astype(np.float32)
-    if value.shape[1] < n_channels:
-        value = np.concatenate((value,
-                                np.ones((value.shape[0], n_channels - value.shape[1]))), axis=1)
-    value = value[:,:n_channels].astype(np.float32)
-    return value
+
+    # Match up shapes
+    if value.ndim == 1:
+        value = np.tile(value, (shape[0],1))
+    if value.shape[1] < shape[1]:
+        nc = shape[1] - value.shape[1]
+        value = np.column_stack((value, np.ones((value.shape[0], nc))))
+    elif value.shape[1] > shape[1]:
+        value = value[:,:shape[1]]
+    return value.astype(np.float32)
+
 
 def format_texture_source(texture, target_channels='RGB'):
     """Format a texture as a float32 np array.
@@ -51,7 +65,9 @@ def format_texture_source(texture, target_channels='RGB'):
         elif np.issubdtype(texture.dtype, np.floating):
             texture = texture.astype(np.float32)
         else:
-            raise TypeError('Invalid type {} for texture'.format(type(texture)))
+            raise TypeError('Invalid type {} for texture'.format(
+                type(texture)
+            ))
 
         # Format array by picking out correct texture channels or padding
         if texture.ndim == 2:
@@ -74,7 +90,7 @@ def format_texture_source(texture, target_channels='RGB'):
             if texture.shape[2] == 1:
                 texture = np.repeat(texture, 3, axis=2)
             elif texture.shape[2] == 2:
-                raise ValueError('Cannot reformat texture with 2 channels into RGB')
+                raise ValueError('Cannot reformat 2-channel texture into RGB')
             else:
                 texture = texture[:,:,(0,1,2)]
         elif target_channels == 'RGBA':
@@ -82,14 +98,15 @@ def format_texture_source(texture, target_channels='RGB'):
                 texture = np.repeat(texture, 4, axis=2)
                 texture[:,:,3] = 1.0
             elif texture.shape[2] == 2:
-                raise ValueError('Cannot reformat texture with 2 channels into RGBA')
+                raise ValueError('Cannot reformat 2-channel texture into RGBA')
             elif texture.shape[2] == 3:
-                texture = np.concatenate((texture,
-                                            np.ones((texture.shape[0],
-                                                    texture.shape[1],
-                                                    1))), axis=2)
+                texture = np.concatenate((
+                    texture,
+                    np.ones((texture.shape[0], texture.shape[1], 1))
+                ), axis=2)
         else:
-            raise ValueError('Invalid texture channel specification: {}'.format(target_channels))
+            raise ValueError('Invalid texture channel specification: {}'
+                             .format(target_channels))
     else:
         raise TypeError('Invalid type {} for texture'.format(type(texture)))
 

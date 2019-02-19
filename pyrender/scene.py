@@ -13,6 +13,7 @@ from .light import Light, PointLight, DirectionalLight, SpotLight
 from .node import Node
 from .utils import format_color_vector
 
+
 class Scene(object):
     """A hierarchical scene graph.
 
@@ -68,13 +69,15 @@ class Scene(object):
 
         # Find root nodes and add them
         if len(nodes) > 0:
-            node_parent_map = { n : None for n in nodes }
+            node_parent_map = {n: None for n in nodes}
             for node in nodes:
                 for child in node.children:
                     if node_parent_map[child] is not None:
-                        raise ValueError('Nodes may not have more than one parent')
+                        raise ValueError('Nodes may not have more than '
+                                         'one parent')
                     node_parent_map[child] = node
-            root_nodes = [n for n in parent_node_map if parent_node_map[n] is None]
+            root_nodes = [n for n in node_parent_map if
+                          node_parent_map[n] is None]
             if len(root_nodes) == 0:
                 raise ValueError('Need at least one root node in scene')
 
@@ -139,7 +142,7 @@ class Scene(object):
 
     @property
     def mesh_nodes(self):
-        """set of :class:`Node` : The nodes containing meshes in the scene.
+        """set of :class:`Node` : The nodes containing meshes.
         """
         return self._mesh_nodes
 
@@ -151,9 +154,10 @@ class Scene(object):
 
     @property
     def light_nodes(self):
-        """set of :class:`Node` : The nodes containing lights in the scene.
+        """set of :class:`Node` : The nodes containing lights.
         """
-        return self.point_light_nodes | self.spot_light_nodes | self.directional_light_nodes
+        return (self.point_light_nodes | self.spot_light_nodes |
+                self.directional_light_nodes)
 
     @property
     def point_lights(self):
@@ -163,7 +167,7 @@ class Scene(object):
 
     @property
     def point_light_nodes(self):
-        """set of :class:`Node` : The nodes containing point lights in the scene.
+        """set of :class:`Node` : The nodes containing point lights.
         """
         return self._point_light_nodes
 
@@ -175,19 +179,20 @@ class Scene(object):
 
     @property
     def spot_light_nodes(self):
-        """set of :class:`Node` : The nodes containing spot lights in the scene.
+        """set of :class:`Node` : The nodes containing spot lights.
         """
         return self._spot_light_nodes
 
     @property
     def directional_lights(self):
-        """set of :class:`DirectionalLight` : The directional lights in the scene.
+        """set of :class:`DirectionalLight` : The directional lights in
+        the scene.
         """
         return set([n.light for n in self.directional_light_nodes])
 
     @property
     def directional_light_nodes(self):
-        """set of :class:`Node` : The nodes containing directional lights in the scene.
+        """set of :class:`Node` : The nodes containing directional lights.
         """
         return self._directional_light_nodes
 
@@ -233,7 +238,8 @@ class Scene(object):
                 self._bounds = np.zeros((2,3))
             else:
                 corners = np.vstack(corners)
-                self._bounds = np.array([np.min(corners, axis=0), np.max(corners, axis=0)])
+                self._bounds = np.array([np.min(corners, axis=0),
+                                         np.max(corners, axis=0)])
         return self._bounds
 
     @property
@@ -255,8 +261,8 @@ class Scene(object):
         """
         return np.linalg.norm(self.extents)
 
-
-    def add(self, obj, name=None, pose=None, parent_node=None, parent_name=None):
+    def add(self, obj, name=None, pose=None,
+            parent_node=None, parent_name=None):
         """Add an object (mesh, light, or camera) to the scene.
 
         Parameters
@@ -333,7 +339,9 @@ class Scene(object):
         obj_name : str
             The name of an object that is attached to the node.
         """
-        nodes = list(self._get_nodes(node=node, name=name, obj=obj, obj_name=obj_name))
+        nodes = list(
+            self._get_nodes(node=node, name=name, obj=obj, obj_name=obj_name)
+        )
         if len(nodes) == 0:
             return None
         elif len(nodes) > 1:
@@ -543,13 +551,16 @@ class Scene(object):
         self._path_cache = {}
 
     @staticmethod
-    def from_trimesh(self, trimesh_scene, bg_color=None, ambient_light=None):
-        """Create a `pyrender` scene from a `trimesh` scene.
+    def from_trimesh_scene(self, trimesh_scene,
+                           bg_color=None, ambient_light=None):
+        """Create a :class:`.Scene` from a :class:`trimesh.scene.scene.Scene`.
 
         Parameters
         ----------
-        scene : :class:`~trimesh.scene.scene.Scene`
-            Scene with trimesh.Trimesh, trimesh.PointCloud objects.
+        trimesh_scene : :class:`trimesh.scene.scene.Scene`
+            Scene with :class:~`trimesh.base.Trimesh` objects.
+        bg_color : (4,) float
+            Background color for the created scene.
         ambient_light : (3,) float or None
             Ambient light in the scene.
 
@@ -560,14 +571,14 @@ class Scene(object):
         """
         # convert trimesh geometries to pyrender geometries
         geometries = {name: Mesh.from_trimesh(geom)
-                      for name, geom in scene.geometry.items()}
+                      for name, geom in trimesh_scene.geometry.items()}
 
         # create the pyrender scene object
         scene_pr = Scene(bg_color=bg_color, ambient_light=ambient_light)
 
         # add every node with geometry to the pyrender scene
-        for node in scene.graph.nodes_geometry:
-            pose, geom_name = scene.graph[node]
+        for node in trimesh_scene.graph.nodes_geometry:
+            pose, geom_name = trimesh_scene.graph[node]
             scene_pr.add(geometries[geom_name], pose=pose)
 
         return scene_pr

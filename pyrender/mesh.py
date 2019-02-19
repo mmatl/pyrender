@@ -3,14 +3,13 @@ https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-mes
 
 Author: Matthew Matl
 """
-import abc
 import numpy as np
-import six
 import trimesh
 
 from .primitive import Primitive
 from .constants import GLTF
 from .material import MetallicRoughnessMaterial
+
 
 class Mesh(object):
     """A set of primitives to be rendered.
@@ -18,7 +17,7 @@ class Mesh(object):
     Parameters
     ----------
     name : str
-        The user-defined name of this object.	
+        The user-defined name of this object.
     primitives : list of :class:`Primitive`
         The primitives associated with this mesh.
     weights : (k,) float
@@ -49,7 +48,8 @@ class Mesh(object):
 
     @property
     def primitives(self):
-        """list of :class:`Primitive` : The primitives associated with this mesh.
+        """list of :class:`Primitive` : The primitives associated
+        with this mesh.
         """
         return self._primitives
 
@@ -119,7 +119,8 @@ class Mesh(object):
         return False
 
     @staticmethod
-    def from_points(points, colors=None, normals=None, is_visible=True, poses=None):
+    def from_points(points, colors=None, normals=None,
+                    is_visible=True, poses=None):
         """Create a Mesh from a set of points.
 
         Parameters
@@ -150,108 +151,145 @@ class Mesh(object):
         mesh = Mesh(primitives=[primitive], is_visible=is_visible)
         return mesh
 
-
     @staticmethod
-    def from_trimesh(mesh, material=None, texcoords=None, is_visible=True, poses=None, smooth=True):
+    def from_trimesh(mesh, material=None, is_visible=True,
+                     poses=None, smooth=True):
         """Create a Mesh from a :class:`~trimesh.base.Trimesh`.
 
         Parameters
         ----------
-        mesh : :class:`~trimesh.base.Trimesh`
-            A triangular mesh.
+        mesh : :class:`~trimesh.base.Trimesh` or list of them
+            A triangular mesh or a list of meshes.
         material : :class:`Material`
-            The material of the object. If not specified, a default grey material
+            The material of the object. Overrides any mesh material.
+            If not specified and the mesh has no material, a default material
             will be used.
-        texcoords : (n, 2) float, optional
-            Texture coordinates for positions, if needed.
         is_visible : bool
             If False, the mesh will not be rendered.
         poses : (n,4,4) float
             Array of 4x4 transformation matrices for instancing this object.
+        smooth : bool
+            If `True`, the mesh will be rendered with interpolated vertex
+            normals. Otherwise, the mesh edges will stay sharp.
 
         Returns
         -------
         mesh : :class:`Mesh`
             The created mesh.
         """
-        positions = None
-        normals = None
-        color_0 = None
-        texcoord_0 = texcoords
-        indices = None
-        mode = GLTF.TRIANGLES
 
-        def get_material(tm_material):
-            material = None
-
-            # Simple material
-            if isinstance(tm_material, trimesh.visual.texture.SimpleMaterial):
-                material = MetallicRoughnessMaterial(
-                    alphaMode='BLEND',
-                    baseColorTexture=tm_material.image
-                )
-
-            # PBRMaterial
-            elif isinstance(tm_material, trimesh.visual.texture.PBRMaterial):
-                material = MetallicRoughnessMaterial(
-                    normalTexture=tm_material.normalTexture,
-                    occlusionTexture=tm_material.occlusionTexture,
-                    emissiveTexture=tm_material.emissiveTexture,
-                    emissiveFactor=tm_material.emissiveFactor,
-                    alphaMode='BLEND',
-                    baseColorFactor=tm_material.baseColorFactor,
-                    baseColorTexture=tm_material.baseColorTexture,
-                    metallicFactor=tm_material.metallicFactor,
-                    metallicRoughnessTexture=tm_material.metallicRoughnessTexture
-                )
-            return material
-
-        if material is None:
-            material = MetallicRoughnessMaterial(
-                alphaMode='BLEND', baseColorFactor=np.array([0.3, 0.3, 0.3, 1.0]),
-                metallicFactor=0.2, roughnessFactor=0.8
-            )
-
-        # Compute positions, normals, texture coordinates, colors, and indices
-        if smooth:
-            positions = mesh.vertices.copy()
-            normals = mesh.vertex_normals.copy()
-            indices = mesh.faces.copy()
-            if mesh.visual.defined:
-                if mesh.visual.kind == 'vertex':
-                    color_0 = mesh.visual.vertex_colors.copy()
-                elif mesh.visual.kind == 'face':
-                    raise ValueError('Cannot use face colors with smooth mesh')
-                elif mesh.visual.kind == 'texture':
-                    if mesh.visual.uv is not None:
-                        texcoord_0 = mesh.visual.uv.copy()
-                    material = get_material(mesh.visual.material)
+        if isinstance(mesh, (list, tuple, set)):
+            meshes = list(mesh)
+        elif isinstance(mesh, trimesh.Trimesh):
+            meshes = [mesh]
         else:
-            positions = mesh.vertices[mesh.faces].reshape((3*len(mesh.faces), 3))
-            normals = np.repeat(mesh.face_normals, 3, axis=0)
-            if mesh.visual.defined:
-                if mesh.visual.kind == 'vertex':
-                    color_0 = mesh.visual.vertex_colors[mesh.faces].\
-                        reshape(3*len(mesh.faces), mesh.visual.vertex_colors.shape[1])
-                elif mesh.visual.kind == 'face':
-                    color_0 = np.repeat(mesh.visual.face_colors, 3, axis=0)
-                elif mesh.visual.kind == 'texture':
-                    if mesh.visual.uv is not None:
-                        texcoord_0 = mesh.visual.uv[mesh.faces].reshape(
-                                (3*len(mesh.faces), mesh.visual.uv.shape[1]))
-                    material = get_material(mesh.visual.material)
+            raise ValueError('Expected a Trimesh or a list, got a {}'
+                             .format(type(mesh)))
 
-        primitive = Primitive(
-            positions=positions,
-            normals=normals,
-            texcoord_0=texcoord_0,
-            color_0=color_0,
-            indices=indices,
-            material=material,
-            mode=mode,
-            poses=poses
-        )
+        primitives = []
+        for m in meshes:
+            positions = None
+            normals = None
+            indices = None
 
-        mesh = Mesh(primitives=[primitive], is_visible=is_visible)
+            # Compute positions, normals, and indices
+            if smooth:
+                positions = m.vertices.copy()
+                normals = m.vertex_normals.copy()
+                indices = m.faces.copy()
+            else:
+                positions = m.vertices[m.faces].reshape((3 * len(m.faces), 3))
+                normals = np.repeat(m.face_normals, 3, axis=0)
 
-        return mesh
+            # Compute colors, texture coords, and material properties
+            ret = Mesh._get_trimesh_props(m, smooth=smooth)
+            color_0 = ret[0]
+            texcoord_0 = ret[1]
+            if material is None:
+                material = ret[2]
+
+            # Replace material with default if needed
+            if material is None:
+                material = MetallicRoughnessMaterial(
+                    alphaMode='BLEND',
+                    baseColorFactor=[0.3, 0.3, 0.3, 1.0],
+                    metallicFactor=0.2,
+                    roughnessFactor=0.8
+                )
+
+            # Create the primitive
+            primitives.append(Primitive(
+                positions=positions,
+                normals=normals,
+                texcoord_0=texcoord_0,
+                color_0=color_0,
+                indices=indices,
+                material=material,
+                mode=GLTF.TRIANGLES,
+                poses=poses
+            ))
+
+        return Mesh(primitives=primitives, is_visible=is_visible)
+
+    @staticmethod
+    def _get_trimesh_props(mesh, smooth=False):
+        """Gets the vertex colors, texture coordinates, and material properties
+        from a :class:`~trimesh.base.Trimesh`.
+        """
+        colors = None
+        texcoords = None
+        material = None
+
+        # If the trimesh visual is undefined, return none for both
+        if not mesh.visual.defined:
+            return colors, texcoords, material
+
+        # Process vertex colors
+        if mesh.visual.kind == 'vertex':
+            vc = mesh.visual.vertex_colors.copy()
+            if smooth:
+                colors = vc
+            else:
+                colors = vc[mesh.faces].reshape(
+                    (3 * len(mesh.faces), vc.shape[1])
+                )
+        # Process face colors
+        elif mesh.visual.kind == 'face':
+            if smooth:
+                raise ValueError('Cannot use face colors with a smooth mesh')
+            else:
+                colors = np.repeat(mesh.visual.face_colors, 3, axis=0)
+        # Process texture colors
+        elif mesh.visual.kind == 'texture':
+            # Configure UV coordinates
+            uv = mesh.visual.uv.copy()
+            if uv is not None:
+                if smooth:
+                    texcoords = uv
+                else:
+                    texcoords = uv[mesh.faces].reshape(
+                        (3 * len(mesh.faces), uv.shape[1])
+                    )
+
+            # Configure mesh material
+            mat = mesh.visual.material
+
+            if isinstance(mat, trimesh.visual.texture.SimpleMaterial):
+                material = MetallicRoughnessMaterial(
+                    alphaMode='BLEND',
+                    baseColorTexture=mat.image
+                )
+            elif isinstance(mat, trimesh.visual.texture.PBRMaterial):
+                material = MetallicRoughnessMaterial(
+                    normalTexture=mat.normalTexture,
+                    occlusionTexture=mat.occlusionTexture,
+                    emissiveTexture=mat.emissiveTexture,
+                    emissiveFactor=mat.emissiveFactor,
+                    alphaMode='BLEND',
+                    baseColorFactor=mat.baseColorFactor,
+                    baseColorTexture=mat.baseColorTexture,
+                    metallicFactor=mat.metallicFactor,
+                    metallicRoughnessTexture=mat.metallicRoughnessTexture
+                )
+
+        return colors, texcoords, material

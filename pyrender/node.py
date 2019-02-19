@@ -5,7 +5,8 @@ Author: Matthew Matl
 """
 import numpy as np
 
-from . import transformations
+import trimesh.transformations as transformations
+
 
 class Node(object):
     """A node in the node hierarchy.

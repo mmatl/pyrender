@@ -12,6 +12,7 @@ from .texture import Texture
 from .constants import DEFAULT_Z_NEAR, SHADOW_TEX_SZ
 from .camera import OrthographicCamera, PerspectiveCamera
 
+
 @six.add_metaclass(abc.ABCMeta)
 class Light(object):
     """Base class for all light objects.
@@ -23,13 +24,13 @@ class Light(object):
     color : (3,) float
         RGB value for the light's color in linear space.
     intensity : float
-        Brightness of light. The units that this is defined in depend on the type of light.
-        point and spot lights use luminous intensity in candela (lm/sr),
-        while directional lights use illuminance in lux (lm/m2).
+        Brightness of light. The units that this is defined in depend on the
+        type of light. Point and spot lights use luminous intensity in candela
+        (lm/sr), while directional lights use illuminance in lux (lm/m2).
     range : float
         Cutoff distance at which light's intensity may be considered to
-        have reached zero. Supported only for point and spot lights, must be > 0.
-        If None, the range is assumed to be infinite.
+        have reached zero. Supported only for point and spot lights,
+        must be > 0. If None, the range is assumed to be infinite.
     """
     def __init__(self,
                  name=None,
@@ -90,7 +91,7 @@ class Light(object):
 
     @property
     def shadow_texture(self):
-        """:class:`Texture` : A texture used to hold shadow maps for this light.
+        """:class:`.Texture` : A texture used to hold shadow maps for this light.
         """
         return self._shadow_texture
 
@@ -102,7 +103,7 @@ class Light(object):
         self._shadow_texture = value
 
     @abc.abstractmethod
-    def generate_shadow_texture(self, size=None):
+    def _generate_shadow_texture(self, size=None):
         """Generate a shadow texture for this light.
 
         Parameters
@@ -113,7 +114,7 @@ class Light(object):
         pass
 
     @abc.abstractmethod
-    def get_shadow_camera(self, scene_scale):
+    def _get_shadow_camera(self, scene_scale):
         """Generate and return a shadow mapping camera for this light.
 
         Parameters
@@ -123,10 +124,11 @@ class Light(object):
 
         Returns
         -------
-        camera : :class:`Camera`
+        camera : :class:`.Camera`
             The camera used to render shadowmaps for this light.
         """
         pass
+
 
 class DirectionalLight(Light):
     """Directional lights are light sources that act as though they are
@@ -144,13 +146,13 @@ class DirectionalLight(Light):
     color : (3,) float
         RGB value for the light's color in linear space.
     intensity : float
-        Brightness of light. The units that this is defined in depend on the type of light.
-        point and spot lights use luminous intensity in candela (lm/sr),
-        while directional lights use illuminance in lux (lm/m2).
+        Brightness of light. The units that this is defined in depend on the
+        type of light. Point and spot lights use luminous intensity in candela
+        (lm/sr), while directional lights use illuminance in lux (lm/m2).
     range : float
         Cutoff distance at which light's intensity may be considered to
-        have reached zero. Supported only for point and spot lights, must be > 0.
-        If None, the range is assumed to be infinite.
+        have reached zero. Supported only for point and spot lights,
+        must be > 0. If None, the range is assumed to be infinite.
     """
 
     def __init__(self,
@@ -165,7 +167,7 @@ class DirectionalLight(Light):
             range=range
         )
 
-    def generate_shadow_texture(self, size=None):
+    def _generate_shadow_texture(self, size=None):
         """Generate a shadow texture for this light.
 
         Parameters
@@ -175,9 +177,10 @@ class DirectionalLight(Light):
         """
         if size is None:
             size = SHADOW_TEX_SZ
-        self._shadow_texture = Texture(width=size, height=size, source_channels='D')
+        self._shadow_texture = Texture(width=size, height=size,
+                                       source_channels='D')
 
-    def get_shadow_camera(self, scene_scale):
+    def _get_shadow_camera(self, scene_scale):
         """Generate and return a shadow mapping camera for this light.
 
         Parameters
@@ -187,15 +190,16 @@ class DirectionalLight(Light):
 
         Returns
         -------
-        camera : :class:`Camera`
+        camera : :class:`.Camera`
             The camera used to render shadowmaps for this light.
         """
         return OrthographicCamera(
             znear=DEFAULT_Z_NEAR,
-            zfar=10*scene_scale,
+            zfar=10 * scene_scale,
             xmag=scene_scale,
             ymag=scene_scale
         )
+
 
 class PointLight(Light):
     """Point lights emit light in all directions from their position in space;
@@ -212,13 +216,13 @@ class PointLight(Light):
     color : (3,) float
         RGB value for the light's color in linear space.
     intensity : float
-        Brightness of light. The units that this is defined in depend on the type of light.
-        point and spot lights use luminous intensity in candela (lm/sr),
-        while directional lights use illuminance in lux (lm/m2).
+        Brightness of light. The units that this is defined in depend on the
+        type of light. Point and spot lights use luminous intensity in candela
+        (lm/sr), while directional lights use illuminance in lux (lm/m2).
     range : float
         Cutoff distance at which light's intensity may be considered to
-        have reached zero. Supported only for point and spot lights, must be > 0.
-        If None, the range is assumed to be infinite.
+        have reached zero. Supported only for point and spot lights,
+        must be > 0. If None, the range is assumed to be infinite.
     """
 
     def __init__(self,
@@ -233,7 +237,7 @@ class PointLight(Light):
             range=range
         )
 
-    def generate_shadow_texture(self):
+    def _generate_shadow_texture(self):
         """Generate a shadow texture for this light.
 
         Parameters
@@ -241,9 +245,9 @@ class PointLight(Light):
         size : int, optional
             Size of texture map. Must be a positive power of two.
         """
-        raise NotImplementedError('Shadows not yet implemented for point lights')
+        raise NotImplementedError('Shadows not implemented for point lights')
 
-    def get_shadow_camera(self, scene_scale):
+    def _get_shadow_camera(self, scene_scale):
         """Generate and return a shadow mapping camera for this light.
 
         Parameters
@@ -253,19 +257,21 @@ class PointLight(Light):
 
         Returns
         -------
-        camera : :class:`Camera`
+        camera : :class:`.Camera`
             The camera used to render shadowmaps for this light.
         """
-        raise NotImplementedError('Shadows not yet implemented for point lights')
+        raise NotImplementedError('Shadows not implemented for point lights')
+
 
 class SpotLight(Light):
     """Spot lights emit light in a cone in the direction of the local -z axis.
     The angle and falloff of the cone is defined using two numbers, the
-    `innerConeAngle` and `outerConeAngle`. As with point lights, the brightness
+    ``innerConeAngle`` and ``outerConeAngle``.
+    As with point lights, the brightness
     also attenuates in a physically correct manner as distance increases from
     the light's position (i.e. brightness goes like the inverse square of the
-    distance). Spot light intensity refers to the brightness inside the 
-    `innerConeAngle` (and at the location of the light) and is defined in
+    distance). Spot light intensity refers to the brightness inside the
+    ``innerConeAngle`` (and at the location of the light) and is defined in
     candela, which is lumens per square radian (lm/sr). A spot light's position
     and orientation are inherited from its node transform. Inherited scale does
     not affect cone shape, and is ignored except for its effect on position
@@ -278,19 +284,21 @@ class SpotLight(Light):
     color : (3,) float
         RGB value for the light's color in linear space.
     intensity : float
-        Brightness of light. The units that this is defined in depend on the type of light.
-        point and spot lights use luminous intensity in candela (lm/sr),
-        while directional lights use illuminance in lux (lm/m2).
+        Brightness of light. The units that this is defined in depend on the
+        type of light. Point and spot lights use luminous intensity in candela
+        (lm/sr), while directional lights use illuminance in lux (lm/m2).
     range : float
         Cutoff distance at which light's intensity may be considered to
-        have reached zero. Supported only for point and spot lights, must be > 0.
-        If None, the range is assumed to be infinite.
+        have reached zero. Supported only for point and spot lights,
+        must be > 0. If None, the range is assumed to be infinite.
     innerConeAngle : float
         Angle, in radians, from centre of spotlight where falloff begins.
-        Must be greater than or equal to `0` and less than `outerConeAngle`.
+        Must be greater than or equal to ``0`` and less
+        than ``outerConeAngle``.
     outerConeAngle : float
         Angle, in radians, from centre of spotlight where falloff ends.
-        Must be greater than `innerConeAngle` and less than or equal to `PI / 2.0`.
+        Must be greater than ``innerConeAngle`` and less than or equal to
+        ``PI / 2.0``.
     """
 
     def __init__(self,
@@ -299,7 +307,7 @@ class SpotLight(Light):
                  intensity=None,
                  range=None,
                  innerConeAngle=0.0,
-                 outerConeAngle=np.pi/4.0):
+                 outerConeAngle=(np.pi / 4.0)):
         super(SpotLight, self).__init__(
             name=name,
             color=color,
@@ -333,7 +341,7 @@ class SpotLight(Light):
             raise ValueError('Invalid value for outer cone angle')
         self._outerConeAngle = float(value)
 
-    def generate_shadow_texture(self, size=None):
+    def _generate_shadow_texture(self, size=None):
         """Generate a shadow texture for this light.
 
         Parameters
@@ -343,9 +351,10 @@ class SpotLight(Light):
         """
         if size is None:
             size = SHADOW_TEX_SZ
-        self._shadow_texture = Texture(width=size, height=size, source_channels='D')
+        self._shadow_texture = Texture(width=size, height=size,
+                                       source_channels='D')
 
-    def get_shadow_camera(self, scene_scale):
+    def _get_shadow_camera(self, scene_scale):
         """Generate and return a shadow mapping camera for this light.
 
         Parameters
@@ -355,14 +364,15 @@ class SpotLight(Light):
 
         Returns
         -------
-        camera : :class:`Camera`
+        camera : :class:`.Camera`
             The camera used to render shadowmaps for this light.
         """
         return PerspectiveCamera(
             znear=DEFAULT_Z_NEAR,
-            zfar=10*scene_scale,
-            yfov=np.clip(2*self.outerConeAngle + np.pi / 16.0, 0.0, np.pi),
+            zfar=10 * scene_scale,
+            yfov=np.clip(2 * self.outerConeAngle + np.pi / 16.0, 0.0, np.pi),
             aspectRatio=1.0
         )
+
 
 __all__ = ['Light', 'DirectionalLight', 'SpotLight', 'PointLight']

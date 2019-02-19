@@ -8,6 +8,7 @@ from .renderer import Renderer
 from .platforms import EGLPlatform, OSMesaPlatform, PygletPlatform
 from .constants import RenderFlags
 
+
 class OffscreenRenderer(object):
     """A wrapper for offscreen rendering.
 
@@ -84,7 +85,7 @@ class OffscreenRenderer(object):
         # If platform does not support dynamically-resizing framebuffers,
         # destroy it and restart it
         if (self._platform.viewport_height != self.viewport_height or
-            self._platform.viewport_width != self.viewport_width):
+                self._platform.viewport_width != self.viewport_width):
             if not self._platform.supports_framebuffers():
                 self.delete()
                 self._create()
@@ -112,12 +113,15 @@ class OffscreenRenderer(object):
         self._platform.delete_context()
 
     def _create(self):
-        if not 'PYOPENGL_PLATFORM' in os.environ:
-            self._platform = PygletPlatform(self.viewport_width, self.viewport_height)
+        if 'PYOPENGL_PLATFORM' not in os.environ:
+            self._platform = PygletPlatform(self.viewport_width,
+                                            self.viewport_height)
         elif os.environ['PYOPENGL_PLATFORM'] == 'egl':
-            self._platform = EGLPlatform(self.viewport_width, self.viewport_height)
+            self._platform = EGLPlatform(self.viewport_width,
+                                         self.viewport_height)
         elif os.environ['PYOPENGL_PLATFORM'] == 'osmesa':
-            self._platform = OSMesaPlatform(self.viewport_width, self.viewport_height)
+            self._platform = OSMesaPlatform(self.viewport_width,
+                                            self.viewport_height)
         else:
             raise ValueError('Unsupported PyOpenGL platform: {}'.format(
                 os.environ['PYOPENGL_PLATFORM']
@@ -126,11 +130,11 @@ class OffscreenRenderer(object):
         self._platform.make_current()
         self._renderer = Renderer(self.viewport_width, self.viewport_height)
 
-
     def __del__(self):
         try:
             self.delete()
-        except:
+        except Exception:
             pass
+
 
 __all__ = ['OffscreenRenderer']

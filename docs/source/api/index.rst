@@ -46,11 +46,3 @@ Off-Screen Rendering
    :no-inheritance-diagram:
    :no-main-docstr:
    :no-heading:
-
-All Classes
------------
-.. automodapi:: pyrender
-   :no-inheritance-diagram:
-   :no-main-docstr:
-   :no-heading:
-
