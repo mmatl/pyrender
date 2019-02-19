@@ -72,9 +72,10 @@ class OffscreenRenderer(object):
 
         Returns
         -------
-        color_im : (h, w, 4) uint8
-            The color buffer in RGBA byte format. Not returned if flags
-            includes :attr:`.RenderFlags.DEPTH_ONLY`.
+        color_im : (h, w, 3) uint8 or (h, w, 4) uint8
+            The color buffer in RGB format, or in RGBA format if
+            :attr:`.RenderFlags.RGBA` is set.
+            Not returned if flags includes :attr:`.RenderFlags.DEPTH_ONLY`.
         depth_im : (h, w) float32
             The depth buffer in linear units.
         """

@@ -104,25 +104,14 @@ class Renderer(object):
         scene : :class:`Scene`
             A scene to render.
         flags : int
-            A specification from `RenderFlags`. Valid flags include:
-                - `RenderFlags.NONE`: A normal PBR render.
-                - `RenderFlags.DEPTH_ONLY`: Render the depth buffer alone.
-                - `RenderFlags.OFFSCREEN`: Render offscreen and return the color and depth buffers.
-                - `RenderFlags.FLIP_WIREFRAME`: Invert the status of wireframe rendering for each material.
-                - `RenderFlags.ALL_WIREFRAME`: Render all materials in wireframe mode.
-                - `RenderFlags.ALL_SOLID`: Render all meshes as solids.
-                - `RenderFlags.SHADOWS_DIRECTIONAL`: Compute shadowing for directional lights.
-                - `RenderFlags.SHADOWS_POINT`: Compute shadowing for point lights.
-                - `RenderFlags.SHADOWS_SPOT`: Compute shadowing for spot lights.
-                - `RenderFlags.SHADOWS_ALL`: Compute shadowing for all lights.
-                - `RenderFlags.VERTEX_NORMALS`: Show vertex normals as blue lines.
-                - `RenderFlags.FACE_NORMALS`: Show face normals as blue lines.
-                - `RenderFlags.SKIP_CULL_FACES`: Do not cull back faces.
+            A specification from :class:`.RenderFlags`.
 
         Returns
         -------
-        color_im : (h, w, 3) uint8
-            If `RenderFlags.OFFSCREEN` is set, the color buffer in RGB byte format.
+        color_im : (h, w, 3) uint8 or (h, w, 4) uint8
+            If `RenderFlags.OFFSCREEN` is set, the color buffer. This is normally
+            an RGB buffer, but if :attr:`.RenderFlags.RGBA` is set, the color
+            buffer will be a full RGBA buffer.
         depth_im : (h, w) float32
             If `RenderFlags.OFFSCREEN` is set, the depth buffer in linear units.
         """
@@ -225,19 +214,21 @@ class Renderer(object):
     def read_color_buf(self):
         """Read and return the current viewport's color buffer.
 
+        Alpha cannot be computed for an on-screen buffer.
+
         Returns
         -------
-        color_im : (h, w, 4) uint8
+        color_im : (h, w, 3) uint8
             The color buffer in RGB byte format.
         """
         # Extract color image from frame buffer
         width, height = self.viewport_width, self.viewport_height
         glBindFramebuffer(GL_READ_FRAMEBUFFER, 0)
         glReadBuffer(GL_FRONT)
-        color_buf = glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE)
+        color_buf = glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE)
 
         # Re-format them into numpy arrays
-        color_im = np.frombuffer(color_buf, dtype=np.uint8).reshape((height, width, 4))
+        color_im = np.frombuffer(color_buf, dtype=np.uint8).reshape((height, width, 3))
         color_im = np.flip(color_im, axis=0)
 
         return color_im
@@ -1047,8 +1038,12 @@ class Renderer(object):
             return depth_im
 
         # Read color
-        color_buf = glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE)
-        color_im = np.frombuffer(color_buf, dtype=np.uint8).reshape((height, width, 4))
+        if flags & RenderFlags.RGBA:
+            color_buf = glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE)
+            color_im = np.frombuffer(color_buf, dtype=np.uint8).reshape((height, width, 4))
+        else:
+            color_buf = glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE)
+            color_im = np.frombuffer(color_buf, dtype=np.uint8).reshape((height, width, 3))
         color_im = np.flip(color_im, axis=0)
 
         return color_im, depth_im

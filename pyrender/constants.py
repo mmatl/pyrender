@@ -45,6 +45,8 @@ class RenderFlags(object):
     """Render face normals."""
     SKIP_CULL_FACES = 1024      # Do not cull back faces
     """Do not cull back faces."""
+    RGBA = 2048
+    """Render the color buffer with the alpha channel enabled."""
 
 class TextAlign:
     """Text alignment options for captions.
