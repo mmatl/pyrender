@@ -38,7 +38,7 @@ class OffscreenRenderer(object):
 
     @viewport_width.setter
     def viewport_width(self, value):
-        self._viewport_width = value
+        self._viewport_width = int(value)
 
     @property
     def viewport_height(self):
@@ -48,7 +48,7 @@ class OffscreenRenderer(object):
 
     @viewport_height.setter
     def viewport_height(self, value):
-        self._viewport_height = value
+        self._viewport_height = int(value)
 
     @property
     def point_size(self):
@@ -58,7 +58,7 @@ class OffscreenRenderer(object):
 
     @point_size.setter
     def point_size(self, value):
-        self._point_size = value
+        self._point_size = float(value)
 
     def render(self, scene, flags=RenderFlags.NONE):
         """Render a scene with the given set of flags.
