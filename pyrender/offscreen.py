@@ -16,7 +16,9 @@ class OffscreenRenderer(object):
     viewport_width : int
         The width of the main viewport, in pixels.
     viewport_height : int
-        The height of the main viewport, in pixels
+        The height of the main viewport, in pixels.
+    point_size : float
+        The size of screen-space points in pixels.
     """
 
     def __init__(self, viewport_width, viewport_height, point_size=1.0):
