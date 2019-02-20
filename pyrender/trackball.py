@@ -171,10 +171,16 @@ class Trackball(object):
         target = self._target
         ratio = 0.90
 
+        mult = 1.0
+        if clicks > 0:
+            mult = ratio**clicks
+        elif clicks < 0:
+            mult = (1.0 / ratio)**abs(clicks)
+
         z_axis = self._n_pose[:3,2].flatten()
         eye = self._n_pose[:3,3].flatten()
         radius = np.linalg.norm(eye - target)
-        translation = -clicks * (1 - ratio) * radius * z_axis
+        translation = (mult * radius - radius) * z_axis
         t_tf = np.eye(4)
         t_tf[:3,3] = translation
         self._n_pose = t_tf.dot(self._n_pose)
@@ -182,7 +188,7 @@ class Trackball(object):
         z_axis = self._pose[:3,2].flatten()
         eye = self._pose[:3,3].flatten()
         radius = np.linalg.norm(eye - target)
-        translation = -clicks * (1 - ratio) * radius * z_axis
+        translation = (mult * radius - radius) * z_axis
         t_tf = np.eye(4)
         t_tf[:3,3] = translation
         self._pose = t_tf.dot(self._pose)

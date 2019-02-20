@@ -262,8 +262,8 @@ class Mesh(object):
         # Process texture colors
         elif mesh.visual.kind == 'texture':
             # Configure UV coordinates
-            uv = mesh.visual.uv.copy()
-            if uv is not None:
+            if mesh.visual.uv is not None:
+                uv = mesh.visual.uv.copy()
                 if smooth:
                     texcoords = uv
                 else:
