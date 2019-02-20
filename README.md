@@ -4,7 +4,7 @@
 [![Documentation Status](https://readthedocs.org/projects/pyrender/badge/?version=latest)](https://pyrender.readthedocs.io/en/latest/?badge=latest)
 [![Coverage Status](https://coveralls.io/repos/github/mmatl/pyrender/badge.svg?branch=master)](https://coveralls.io/github/mmatl/pyrender?branch=master)
 
-Pyrender is a pure Python (2.7 - 3.3+) library for visualizing and rendering
+Pyrender is a pure Python (2.7, 3.4, 3.5, 3.6) library for visualizing and rendering
 3D scenes using OpenGL and physically-based rendering (PBR).
 It is designed around the [glTF 2.0 specification from
 Khronos](https://www.khronos.org/gltf/) and is mostly compliant with that
