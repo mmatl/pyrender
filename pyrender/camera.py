@@ -290,11 +290,18 @@ class OrthographicCamera(Camera):
             Height of the current viewport, in pixels.
             Unused in this function.
         """
+        xmag = self.xmag
+        ymag = self.ymag
+
+        # If screen width/height defined, rescale xmag
+        if width is not None and height is not None:
+            xmag = width / height * ymag
+
         n = self.znear
         f = self.zfar
         P = np.zeros((4,4))
-        P[0][0] = 1.0 / self.xmag
-        P[1][1] = 1.0 / self.ymag
+        P[0][0] = 1.0 / xmag
+        P[1][1] = 1.0 / ymag
         P[2][2] = 2.0 / (n - f)
         P[2][3] = (f + n) / (n - f)
         P[3][3] = 1.0

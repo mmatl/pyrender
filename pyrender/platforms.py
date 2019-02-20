@@ -213,7 +213,7 @@ class PygletPlatform(Platform):
                 'Failed to initialize Pyglet window with an OpenGL >= 3+ '
                 'context. If you\'re logged in via SSH, ensure that you\'re '
                 'running your script with vglrun (i.e. VirtualGL). The '
-                'internal error message was "{}"'.format(e.message)
+                'internal error message was "{}"'.format(e)
             )
 
     def make_current(self):
