@@ -12,7 +12,9 @@ specification.
 Pyrender is designed to lightweight, easy to install, and simple to use so that
 you can get started visualizing 3D data instantly.
 
-Extensive API documentation is provided [here](https://pyrender.readthedocs.io/en/latest/).
+Extensive documentation, including a quickstart guide, is provided [here](https://pyrender.readthedocs.io/en/latest/).
+
+Check out a minimial working example of offscreen rendering in a Google CoLab Notebook [here](https://colab.research.google.com/drive/1Z71mHIc-Sqval92nK290vAsHZRUkCjUx#scrollTo=02aJu2LKtoE6).
 
 <p align="center">
   <img src="https://github.com/mmatl/pyrender/blob/master/docs/source/_static/rotation.gif?raw=true" alt="GIF of Viewer"/>
