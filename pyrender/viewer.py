@@ -145,7 +145,7 @@ class Viewer(pyglet.window.Window):
       light that moves with the camera and points out of it will be added to
       the scene. Defaults to `False`.
     - ``lighting_intensity``: `float`, The overall intensity of the
-      viewer's additional lights (when they're in use). Defaults to 5.0.
+      viewer's additional lights (when they're in use). Defaults to 3.0.
     - ``use_perspective_cam``: `bool`, If `True`, a perspective camera will
       be used. Otherwise, an orthographic camera is used. Defaults to `True`.
     - ``save_directory``: `str`, A directory to open the file dialogs in.
@@ -206,7 +206,7 @@ class Viewer(pyglet.window.Window):
             'record': False,
             'use_raymond_lighting': False,
             'use_direct_lighting': False,
-            'lighting_intensity': 10.0,
+            'lighting_intensity': 3.0,
             'use_perspective_cam': True,
             'save_directory': None,
             'window_title': 'Scene Viewer',
@@ -415,7 +415,7 @@ class Viewer(pyglet.window.Window):
           light that moves with the camera and points out of it will be
           added to the scene. Defaults to `False`.
         - ``lighting_intensity``: `float`, The overall intensity of the
-          viewer's additional lights (when they're in use). Defaults to 5.0.
+          viewer's additional lights (when they're in use). Defaults to 3.0.
         - ``use_perspective_cam``: `bool`, If `True`, a perspective camera will
           be used. Otherwise, an orthographic camera is used. Defaults to
           `True`.
