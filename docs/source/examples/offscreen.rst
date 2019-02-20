@@ -2,6 +2,11 @@
 
 Offscreen Rendering
 ===================
+
+.. note::
+   If you're using a headless server, make sure that you followed the guide
+   for installing OSMesa. See :ref:`osmesa`.
+
 Once you have a scene set up with its geometry, cameras, and lights,
 you can render it using the :class:`.OffscreenRenderer`.
 

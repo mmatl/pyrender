@@ -22,13 +22,17 @@ in pyrender.
 
 Minimal Example for Offscreen Rendering
 ---------------------------------------
+.. note::
+   If you're using a headless server, make sure that you followed the guide
+   for installing OSMesa. See :ref:`osmesa`.
+
 Here is a minimal example of rendering a mesh model offscreen in pyrender.
 The only additional necessities are that you need to add lighting and a camera.
 
 >>> import numpy
->>> import PIL
 >>> import trimesh
 >>> import pyrender
+>>> import matplotlib.pyplot as plt
 
 >>> fuze_trimesh = trimesh.load('examples/models/fuze.obj')
 >>> mesh = pyrender.Mesh.from_trimesh(fuze_trimesh)
@@ -49,8 +53,14 @@ The only additional necessities are that you need to add lighting and a camera.
 >>> scene.add(light, pose=camera_pose)
 >>> r = pyrender.OffscreenRenderer(400, 400)
 >>> color, depth = r.render(scene)
->>> (PIL.Image.fromarray(color)).save('color.png')
->>> np.save('depth.npy', depth)
+>>> plt.figure()
+>>> plt.subplot(1,2,1)
+>>> plt.axis('off')
+>>> plt.imshow(color)
+>>> plt.subplot(1,2,2)
+>>> plt.axis('off')
+>>> plt.imshow(depth, cmap=plt.cm.gray_r)
+>>> plt.show()
 
 .. image:: /_static/minexcolor.png
    :width: 45%

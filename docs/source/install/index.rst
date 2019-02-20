@@ -20,6 +20,8 @@ my change that enables OpenGL contexts on MacOS.
    cd pyglet
    pip install .
 
+.. _osmesa:
+
 Getting Pyrender Working with OSMesa
 ------------------------------------
 If you want to render scenes offscreen but don't want to have to
@@ -28,12 +30,40 @@ OpenGL to work over SSH, you may consider using OSMesa,
 a software-based offscreen renderer that is included with any Mesa
 install.
 
+If you want to do this, you'll need to complete three steps:
+
+- :ref:`installmesa`
+- :ref:`installpyopengl`
+- :ref:`configurescripts`
+
 Pyrender supports using OSMesa for creating OpenGL contexts without
 a screen, but you'll need to rebuild and re-install Mesa with support
 for fast offscreen rendering and OpenGL 3+ contexts.
+I'd recommend installing from source, but you can also try my ``.deb``
+for Ubuntu 16.04 and up.
 
-Installing Dependencies
-~~~~~~~~~~~~~~~~~~~~~~~
+.. _installmesa:
+
+Installing OSMesa
+*****************
+
+Installing from a Debian Package
+********************************
+
+If you're running Ubuntu 16.04 or newer, you should be able to install the
+required version of Mesa from my ``.deb`` file.
+
+.. code-block:: bash
+
+   sudo apt update
+   sudo wget https://github.com/mmatl/travis_debs/raw/master/xenial/mesa_18.3.3-0.deb
+   sudo dpkg -i ./mesa_18.3.3-0.deb || true
+   sudo apt install -f
+
+If this doesn't work, try building from source.
+
+Building From Source
+********************
 
 First, install build dependencies via `apt` or your system's package manager.
 
@@ -92,19 +122,25 @@ changing ``MESA_HOME`` to your mesa installation path (i.e. what you used as
    export C_INCLUDE_PATH=$C_INCLUDE_PATH:$MESA_HOME/include/
    export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH:$MESA_HOME/include/
 
-Finally, install and use my fork of ``PyOpenGL``.
+.. _installpyopengl:
+
+Installing a Compatible Fork of PyOpenGL
+****************************************
+
+Next, install and use my fork of ``PyOpenGL``.
 This fork enables getting modern OpenGL contexts with OSMesa.
 My patch has been included in ``PyOpenGL``, but it has not yet been released
 on PyPI.
 
 .. code-block:: bash
 
-   git clone git@github.com:mmatl/PyOpenGL.git
-   cd PyOpenGL
-   pip install .
+   git clone git@github.com:mmatl/pyopengl.git
+   pip install ./pyopengl
 
-Running Scripts
-~~~~~~~~~~~~~~~
+.. _configurescripts:
+
+Configuring Offscreen Rendering Scripts
+***************************************
 Before running any script using the :class:`OffscreenRenderer` object,
 make sure to set the ``PYOPENGL_PLATFORM`` environment variable to ``osmesa``.
 For example:
@@ -113,8 +149,17 @@ For example:
 
    PYOPENGL_PLATFORM=osmesa python run_rendering_script.py
 
-If you do this, you won't be able to use the :class:`Viewer`, but you will be able do
-do offscreen rendering without a display and even over SSH.
+Alternatively, you can just add ese two lines of code to the top of any script
+that you want to do offscreen rendering in. Be sure to add them before
+importing any other packages.
+
+.. code-block:: python
+
+   import os
+   os.environ['PYOPENGL_PLATFORM'] = 'osmesa'
+
+If you do this, you won't be able to use the :class:`Viewer`,
+but you will be able do do offscreen rendering without a display.
 
 Building Documentation
 ----------------------

@@ -371,20 +371,20 @@ class Viewer(pyglet.window.Window):
         """dict : Flags for controlling the renderer's behavior.
 
         - ``flip_wireframe``: `bool`, If `True`, all objects will have their
-        wireframe modes flipped from what their material indicates.
-        Defaults to `False`.
+          wireframe modes flipped from what their material indicates.
+          Defaults to `False`.
         - ``all_wireframe``: `bool`, If `True`, all objects will be rendered
-        in wireframe mode. Defaults to `False`.
+          in wireframe mode. Defaults to `False`.
         - ``all_solid``: `bool`, If `True`, all objects will be rendered in
-        solid mode. Defaults to `False`.
+          solid mode. Defaults to `False`.
         - ``shadows``: `bool`, If `True`, shadows will be rendered.
-        Defaults to `False`.
+          Defaults to `False`.
         - ``vertex_normals``: `bool`, If `True`, vertex normals will be
-        rendered as blue lines. Defaults to `False`.
+          rendered as blue lines. Defaults to `False`.
         - ``face_normals``: `bool`, If `True`, face normals will be rendered as
-        blue lines. Defaults to `False`.
+          blue lines. Defaults to `False`.
         - ``cull_faces``: `bool`, If `True`, backfaces will be culled.
-        Defaults to `True`.
+          Defaults to `True`.
         - ``point_size`` : float, The point size in pixels. Defaults to 1px.
 
         """
