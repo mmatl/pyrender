@@ -5,6 +5,7 @@ Author: Matthew Matl
 import sys
 
 import numpy as np
+import PIL
 
 from .constants import (RenderFlags, TextAlign, GLTF, BufFlags, TexFlags,
                         ProgramFlags, DEFAULT_Z_FAR, DEFAULT_Z_NEAR,
@@ -234,6 +235,10 @@ class Renderer(object):
         color_im = color_im.reshape((height, width, 3))
         color_im = np.flip(color_im, axis=0)
 
+        # Resize for macos if needed
+        if sys.platform == 'darwin':
+            color_im = self._resize_image(color_im, True)
+
         return color_im
 
     def read_depth_buf(self):
@@ -264,6 +269,10 @@ class Renderer(object):
             depth_im = ((2.0 * z_near * z_far) /
                         (z_far + z_near - depth_im * (z_far - z_near)))
         depth_im[inf_inds] = 0.0
+
+        # Resize for macos if needed
+        if sys.platform == 'darwin':
+            depth_im = self._resize_image(depth_im)
 
         return depth_im
 
@@ -1113,6 +1122,10 @@ class Renderer(object):
                         (z_far + z_near - depth_im * (z_far - z_near)))
         depth_im[inf_inds] = 0.0
 
+        # Resize for macos if needed
+        if sys.platform == 'darwin':
+            depth_im = self._resize_image(depth_im)
+
         if flags & RenderFlags.DEPTH_ONLY:
             return depth_im
 
@@ -1131,7 +1144,22 @@ class Renderer(object):
             color_im = color_im.reshape((height, width, 3))
         color_im = np.flip(color_im, axis=0)
 
+        # Resize for macos if needed
+        if sys.platform == 'darwin':
+            color_im = self._resize_image(color_im, True)
+
         return color_im, depth_im
+
+    def _resize_image(self, value, antialias=False):
+        """If needed, rescale the render for MacOS."""
+        img = PIL.Image.fromarray(value)
+        resample = PIL.Image.NEAREST
+        if antialias:
+            resample = PIL.Image.BILINEAR
+        size = (self.viewport_width // self.dpscale,
+                self.viewport_height // self.dpscale)
+        img = img.resize(size, resample=resample)
+        return np.array(img)
 
     ###########################################################################
     # Shadowmap Debugging
