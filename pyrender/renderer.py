@@ -258,8 +258,11 @@ class Renderer(object):
         inf_inds = (depth_im == 1.0)
         depth_im = 2.0 * depth_im - 1.0
         z_near, z_far = self._latest_znear, self._latest_zfar
-        depth_im = ((2.0 * z_near * z_far) /
-                    (z_far + z_near - depth_im * (z_far - z_near)))
+        if z_far is None:
+            depth_im = (2.0 * z_near) / (z_near + depth_im * z_near)
+        else:
+            depth_im = ((2.0 * z_near * z_far) /
+                        (z_far + z_near - depth_im * (z_far - z_near)))
         depth_im[inf_inds] = 0.0
 
         return depth_im
@@ -1103,8 +1106,11 @@ class Renderer(object):
         depth_im = 2.0 * depth_im - 1.0
         z_near = scene.main_camera_node.camera.znear
         z_far = scene.main_camera_node.camera.zfar
-        depth_im = ((2.0 * z_near * z_far) /
-                    (z_far + z_near - depth_im * (z_far - z_near)))
+        if z_far is None:
+            depth_im = (2.0 * z_near) / (z_near + depth_im * z_near)
+        else:
+            depth_im = ((2.0 * z_near * z_far) /
+                        (z_far + z_near - depth_im * (z_far - z_near)))
         depth_im[inf_inds] = 0.0
 
         if flags & RenderFlags.DEPTH_ONLY:

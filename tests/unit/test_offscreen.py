@@ -40,7 +40,11 @@ def test_offscreen_renderer(tmpdir):
     boxf_trimesh = trimesh.creation.box(extents=0.1 * np.ones(3))
     boxf_face_colors = np.random.uniform(size=boxf_trimesh.faces.shape)
     boxf_trimesh.visual.face_colors = boxf_face_colors
-    boxf_mesh = Mesh.from_trimesh(boxf_trimesh, smooth=False)
+    # Instanced
+    poses = np.tile(np.eye(4), (2,1,1))
+    poses[0,:3,3] = np.array([-0.1, -0.10, 0.05])
+    poses[1,:3,3] = np.array([-0.15, -0.10, 0.05])
+    boxf_mesh = Mesh.from_trimesh(boxf_trimesh, poses=poses, smooth=False)
 
     points = trimesh.creation.icosphere(radius=0.05).vertices
     point_colors = np.random.uniform(size=points.shape)
@@ -66,7 +70,7 @@ def test_offscreen_renderer(tmpdir):
     scene.add_node(fuze_node)
     boxv_node = Node(mesh=boxv_mesh, translation=np.array([-0.1, 0.10, 0.05]))
     scene.add_node(boxv_node)
-    boxf_node = Node(mesh=boxf_mesh, translation=np.array([-0.1, -0.10, 0.05]))
+    boxf_node = Node(mesh=boxf_mesh)
     scene.add_node(boxf_node)
 
     _ = scene.add(drill_mesh, pose=drill_pose)

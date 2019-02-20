@@ -108,7 +108,6 @@ class Material(object):
         self.smooth = smooth
         self.wireframe = wireframe
 
-        self._is_transparent = None
         self._tex_flags = None
 
     @property
@@ -180,7 +179,6 @@ class Material(object):
         if value not in set(['OPAQUE', 'MASK', 'BLEND']):
             raise ValueError('Invalid alpha mode {}'.format(value))
         self._alphaMode = value
-        self._is_transparent = None
 
     @property
     def alphaCutoff(self):
@@ -193,7 +191,6 @@ class Material(object):
         if value < 0 or value > 1:
             raise ValueError('Alpha cutoff must be in range [0,1]')
         self._alphaCutoff = float(value)
-        self._is_transparent = None
 
     @property
     def doubleSided(self):
@@ -236,9 +233,7 @@ class Material(object):
     def is_transparent(self):
         """bool : If True, the object is partially transparent.
         """
-        if self._is_transparent is None:
-            self._is_transparent = self._compute_transparency()
-        return self._is_transparent
+        return self._compute_transparency()
 
     @property
     def tex_flags(self):
@@ -250,7 +245,8 @@ class Material(object):
 
     @property
     def textures(self):
-        """list of :class:`Texture` : The textures associated with this material.
+        """list of :class:`Texture` : The textures associated with this
+        material.
         """
         return self._compute_textures()
 
@@ -424,7 +420,6 @@ class MetallicRoughnessMaterial(Material):
         if value is None:
             value = np.ones(4)
         self._baseColorFactor = format_color_vector(value, 4)
-        self._is_transparent = None
 
     @property
     def baseColorTexture(self):
@@ -435,7 +430,6 @@ class MetallicRoughnessMaterial(Material):
     @baseColorTexture.setter
     def baseColorTexture(self, value):
         self._baseColorTexture = self._format_texture(value, 'RGBA')
-        self._is_transparent = None
         self._tex_flags = None
 
     @property
@@ -493,7 +487,8 @@ class MetallicRoughnessMaterial(Material):
             cutoff = 1.0
         if self.baseColorFactor[3] < cutoff:
             return True
-        if np.any(self.baseColorFactor < cutoff):
+        if (self.baseColorTexture is not None and
+                self.baseColorTexture.is_transparent(cutoff)):
             return True
         return False
 
@@ -638,7 +633,6 @@ class SpecularGlossinessMaterial(Material):
     @diffuseFactor.setter
     def diffuseFactor(self, value):
         self._diffuseFactor = format_color_vector(value, 4)
-        self._is_transparent = None
 
     @property
     def diffuseTexture(self):
@@ -649,7 +643,6 @@ class SpecularGlossinessMaterial(Material):
     @diffuseTexture.setter
     def diffuseTexture(self, value):
         self._diffuseTexture = self._format_texture(value, 'RGBA')
-        self._is_transparent = None
         self._tex_flags = None
 
     @property
@@ -701,7 +694,8 @@ class SpecularGlossinessMaterial(Material):
             cutoff = 1.0
         if self.diffuseFactor[3] < cutoff:
             return True
-        if np.any(self.diffuseFactor < cutoff):
+        if (self.diffuseTexture is not None and
+                self.diffuseTexture.is_transparent(cutoff)):
             return True
         return False
 

@@ -178,13 +178,13 @@ class Mesh(object):
             The created mesh.
         """
 
-        if isinstance(mesh, (list, tuple, set)):
+        if isinstance(mesh, (list, tuple, set, np.ndarray)):
             meshes = list(mesh)
         elif isinstance(mesh, trimesh.Trimesh):
             meshes = [mesh]
         else:
-            raise ValueError('Expected a Trimesh or a list, got a {}'
-                             .format(type(mesh)))
+            raise TypeError('Expected a Trimesh or a list, got a {}'
+                            .format(type(mesh)))
 
         primitives = []
         for m in meshes:
@@ -274,12 +274,7 @@ class Mesh(object):
             # Configure mesh material
             mat = mesh.visual.material
 
-            if isinstance(mat, trimesh.visual.texture.SimpleMaterial):
-                material = MetallicRoughnessMaterial(
-                    alphaMode='BLEND',
-                    baseColorTexture=mat.image
-                )
-            elif isinstance(mat, trimesh.visual.texture.PBRMaterial):
+            if isinstance(mat, trimesh.visual.texture.PBRMaterial):
                 material = MetallicRoughnessMaterial(
                     normalTexture=mat.normalTexture,
                     occlusionTexture=mat.occlusionTexture,
@@ -290,6 +285,11 @@ class Mesh(object):
                     baseColorTexture=mat.baseColorTexture,
                     metallicFactor=mat.metallicFactor,
                     metallicRoughnessTexture=mat.metallicRoughnessTexture
+                )
+            elif isinstance(mat, trimesh.visual.texture.SimpleMaterial):
+                material = MetallicRoughnessMaterial(
+                    alphaMode='BLEND',
+                    baseColorTexture=mat.image
                 )
 
         return colors, texcoords, material

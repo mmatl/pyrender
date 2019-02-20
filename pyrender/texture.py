@@ -56,6 +56,7 @@ class Texture(object):
         self.data_format = data_format
 
         self._texid = None
+        self._is_transparent = False
 
     @property
     def name(self):
@@ -94,6 +95,7 @@ class Texture(object):
             self._source = None
         else:
             self._source = format_texture_source(value, self.source_channels)
+        self._is_transparent = False
 
     @property
     def source_channels(self):
@@ -144,6 +146,16 @@ class Texture(object):
     @data_format.setter
     def data_format(self, value):
         self._data_format = value
+
+    def is_transparent(self, cutoff=1.0):
+        """bool : If True, the texture is partially transparent.
+        """
+        if self._is_transparent is None:
+            self._is_transparent = False
+            if self.source_channels == 'RGBA' and self.source is not None:
+                if np.any(self.source[:,:,3] < cutoff):
+                    self._is_transparent = True
+        return self._is_transparent
 
     def delete(self):
         """Remove this texture from the OpenGL context.

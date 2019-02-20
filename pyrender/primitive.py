@@ -100,7 +100,8 @@ class Primitive(object):
 
     @positions.setter
     def positions(self, value):
-        self._positions = np.ascontiguousarray(value.astype(np.float32))
+        value = np.asanyarray(value, dtype=np.float32)
+        self._positions = np.ascontiguousarray(value)
         self._bounds = None
 
     @property
@@ -112,7 +113,8 @@ class Primitive(object):
     @normals.setter
     def normals(self, value):
         if value is not None:
-            value = np.ascontiguousarray(value.astype(np.float32))
+            value = np.asanyarray(value, dtype=np.float32)
+            value = np.ascontiguousarray(value)
             if value.shape != self.positions.shape:
                 raise ValueError('Incorrect normals shape')
         self._normals = value
@@ -126,7 +128,8 @@ class Primitive(object):
     @tangents.setter
     def tangents(self, value):
         if value is not None:
-            value = np.ascontiguousarray(value.astype(np.float32))
+            value = np.asanyarray(value, dtype=np.float32)
+            value = np.ascontiguousarray(value)
             if value.shape != (self.positions.shape[0], 4):
                 raise ValueError('Incorrect tangent shape')
         self._tangents = value
@@ -140,7 +143,8 @@ class Primitive(object):
     @texcoord_0.setter
     def texcoord_0(self, value):
         if value is not None:
-            value = np.ascontiguousarray(value.astype(np.float32))
+            value = np.asanyarray(value, dtype=np.float32)
+            value = np.ascontiguousarray(value)
             if (value.ndim != 2 or value.shape[0] != self.positions.shape[0] or
                     value.shape[1] < 2):
                 raise ValueError('Incorrect texture coordinate shape')
@@ -157,7 +161,8 @@ class Primitive(object):
     @texcoord_1.setter
     def texcoord_1(self, value):
         if value is not None:
-            value = np.ascontiguousarray(value.astype(np.float32))
+            value = np.asanyarray(value, dtype=np.float32)
+            value = np.ascontiguousarray(value)
             if (value.ndim != 2 or value.shape[0] != self.positions.shape[0] or
                     value.shape[1] != 2):
                 raise ValueError('Incorrect texture coordinate shape')
@@ -207,7 +212,8 @@ class Primitive(object):
     @indices.setter
     def indices(self, value):
         if value is not None:
-            value = np.ascontiguousarray(value.astype(np.uint32))
+            value = np.asanyarray(value, dtype=np.float32)
+            value = np.ascontiguousarray(value)
         self._indices = value
 
     @property
@@ -223,7 +229,7 @@ class Primitive(object):
             value = MetallicRoughnessMaterial()
         else:
             if not isinstance(value, Material):
-                raise ValueError('Object material must be of type Material')
+                raise TypeError('Object material must be of type Material')
         self._material = value
 
     @property
@@ -258,7 +264,8 @@ class Primitive(object):
     @poses.setter
     def poses(self, value):
         if value is not None:
-            value = np.ascontiguousarray(value.astype(np.float32))
+            value = np.asanyarray(value, dtype=np.float32)
+            value = np.ascontiguousarray(value)
             if value.ndim == 2:
                 value = value[np.newaxis,:,:]
             if value.shape[1] != 4 or value.shape[2] != 4:
@@ -299,14 +306,6 @@ class Primitive(object):
             self._buf_flags = self._compute_buf_flags()
         return self._buf_flags
 
-    @property
-    def tex_flags(self):
-        """int : The flags for the texture buffer.
-        """
-        if self._tex_flags is None:
-            self._tex_flags = self._compute_tex_flags()
-        return self._tex_flags
-
     def delete(self):
         self._unbind()
         self._remove_from_context()
@@ -315,9 +314,7 @@ class Primitive(object):
     def is_transparent(self):
         """bool : If True, the mesh is partially-transparent.
         """
-        if self._is_transparent is None:
-            self._is_transparent = self._compute_transparency()
-        return self._is_transparent
+        return self._compute_transparency()
 
     def _add_to_context(self):
         if self._vaid is not None:
@@ -462,14 +459,14 @@ class Primitive(object):
     def _compute_transparency(self):
         """Compute whether or not this object is transparent.
         """
-        if self.color_0 is not None:
-            if np.any(self._color_0[:,3] != 1.0):
-                return True
-
         if self.material.is_transparent:
             return True
-
-        return False
+        if self._is_transparent is None:
+            self._is_transparent = False
+            if self.color_0 is not None:
+                if np.any(self._color_0[:,3] != 1.0):
+                    self._is_transparent = True
+        return self._is_transparent
 
     def _compute_buf_flags(self):
         buf_flags = BufFlags.POSITION

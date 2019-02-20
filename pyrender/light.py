@@ -9,7 +9,7 @@ import six
 
 from .utils import format_color_vector
 from .texture import Texture
-from .constants import DEFAULT_Z_NEAR, SHADOW_TEX_SZ
+from .constants import SHADOW_TEX_SZ
 from .camera import OrthographicCamera, PerspectiveCamera
 
 
@@ -19,28 +19,28 @@ class Light(object):
 
     Parameters
     ----------
-    name : str, optional
-        Name of the light.
     color : (3,) float
         RGB value for the light's color in linear space.
     intensity : float
         Brightness of light. The units that this is defined in depend on the
         type of light. Point and spot lights use luminous intensity in candela
         (lm/sr), while directional lights use illuminance in lux (lm/m2).
-    range : float
-        Cutoff distance at which light's intensity may be considered to
-        have reached zero. Supported only for point and spot lights,
-        must be > 0. If None, the range is assumed to be infinite.
+    name : str, optional
+        Name of the light.
     """
     def __init__(self,
-                 name=None,
                  color=None,
                  intensity=None,
-                 range=None):
+                 name=None):
+
+        if color is None:
+            color = np.ones(3)
+        if intensity is None:
+            intensity = 1.0
+
         self.name = name
         self.color = color
         self.intensity = intensity
-        self.range = range
         self._shadow_camera = None
         self._shadow_texture = None
 
@@ -75,19 +75,6 @@ class Light(object):
     @intensity.setter
     def intensity(self, value):
         self._intensity = float(value)
-
-    @property
-    def range(self):
-        """float : The cutoff distance for the light.
-        """
-        return self._range
-
-    @range.setter
-    def range(self, value):
-        if value is None or value < 0.0:
-            self._range = value
-        else:
-            self._range = float(value)
 
     @property
     def shadow_texture(self):
@@ -141,30 +128,23 @@ class DirectionalLight(Light):
 
     Parameters
     ----------
+    color : (3,) float, optional
+        RGB value for the light's color in linear space. Defaults to white
+        (i.e. [1.0, 1.0, 1.0]).
+    intensity : float, optional
+        Brightness of light, in lux (lm/m^2). Defaults to 1.0
     name : str, optional
         Name of the light.
-    color : (3,) float
-        RGB value for the light's color in linear space.
-    intensity : float
-        Brightness of light. The units that this is defined in depend on the
-        type of light. Point and spot lights use luminous intensity in candela
-        (lm/sr), while directional lights use illuminance in lux (lm/m2).
-    range : float
-        Cutoff distance at which light's intensity may be considered to
-        have reached zero. Supported only for point and spot lights,
-        must be > 0. If None, the range is assumed to be infinite.
     """
 
     def __init__(self,
-                 name=None,
                  color=None,
                  intensity=None,
-                 range=None):
+                 name=None):
         super(DirectionalLight, self).__init__(
-            name=name,
             color=color,
             intensity=intensity,
-            range=range
+            name=name,
         )
 
     def _generate_shadow_texture(self, size=None):
@@ -177,8 +157,8 @@ class DirectionalLight(Light):
         """
         if size is None:
             size = SHADOW_TEX_SZ
-        self._shadow_texture = Texture(width=size, height=size,
-                                       source_channels='D')
+        self.shadow_texture = Texture(width=size, height=size,
+                                      source_channels='D')
 
     def _get_shadow_camera(self, scene_scale):
         """Generate and return a shadow mapping camera for this light.
@@ -194,7 +174,7 @@ class DirectionalLight(Light):
             The camera used to render shadowmaps for this light.
         """
         return OrthographicCamera(
-            znear=DEFAULT_Z_NEAR,
+            znear=0.01 * scene_scale,
             zfar=10 * scene_scale,
             xmag=scene_scale,
             ymag=scene_scale
@@ -211,33 +191,45 @@ class PointLight(Light):
 
     Parameters
     ----------
-    name : str, optional
-        Name of the light.
     color : (3,) float
         RGB value for the light's color in linear space.
     intensity : float
-        Brightness of light. The units that this is defined in depend on the
-        type of light. Point and spot lights use luminous intensity in candela
-        (lm/sr), while directional lights use illuminance in lux (lm/m2).
+        Brightness of light in candela (lm/sr).
     range : float
         Cutoff distance at which light's intensity may be considered to
-        have reached zero. Supported only for point and spot lights,
-        must be > 0. If None, the range is assumed to be infinite.
+        have reached zero. If None, the range is assumed to be infinite.
+    name : str, optional
+        Name of the light.
     """
 
     def __init__(self,
-                 name=None,
                  color=None,
                  intensity=None,
-                 range=None):
+                 range=None,
+                 name=None):
         super(PointLight, self).__init__(
-            name=name,
             color=color,
             intensity=intensity,
-            range=range
+            name=name,
         )
+        self.range = range
 
-    def _generate_shadow_texture(self):
+    @property
+    def range(self):
+        """float : The cutoff distance for the light.
+        """
+        return self._range
+
+    @range.setter
+    def range(self, value):
+        if value is not None:
+            value = float(value)
+            if value <= 0:
+                raise ValueError('Range must be > 0')
+            self._range = value
+        self._range = value
+
+    def _generate_shadow_texture(self, size=None):
         """Generate a shadow texture for this light.
 
         Parameters
@@ -279,43 +271,40 @@ class SpotLight(Light):
 
     Parameters
     ----------
-    name : str, optional
-        Name of the light.
     color : (3,) float
         RGB value for the light's color in linear space.
     intensity : float
-        Brightness of light. The units that this is defined in depend on the
-        type of light. Point and spot lights use luminous intensity in candela
-        (lm/sr), while directional lights use illuminance in lux (lm/m2).
+        Brightness of light in candela (lm/sr).
     range : float
         Cutoff distance at which light's intensity may be considered to
-        have reached zero. Supported only for point and spot lights,
-        must be > 0. If None, the range is assumed to be infinite.
+        have reached zero. If None, the range is assumed to be infinite.
     innerConeAngle : float
         Angle, in radians, from centre of spotlight where falloff begins.
         Must be greater than or equal to ``0`` and less
-        than ``outerConeAngle``.
+        than ``outerConeAngle``. Defaults to ``0``.
     outerConeAngle : float
         Angle, in radians, from centre of spotlight where falloff ends.
         Must be greater than ``innerConeAngle`` and less than or equal to
-        ``PI / 2.0``.
+        ``PI / 2.0``. Defaults to ``PI / 4.0``.
+    name : str, optional
+        Name of the light.
     """
 
     def __init__(self,
-                 name=None,
                  color=None,
                  intensity=None,
                  range=None,
                  innerConeAngle=0.0,
-                 outerConeAngle=(np.pi / 4.0)):
+                 outerConeAngle=(np.pi / 4.0),
+                 name=None):
         super(SpotLight, self).__init__(
             name=name,
             color=color,
             intensity=intensity,
-            range=range
         )
         self.outerConeAngle = outerConeAngle
         self.innerConeAngle = innerConeAngle
+        self.range = range
 
     @property
     def innerConeAngle(self):
@@ -341,6 +330,21 @@ class SpotLight(Light):
             raise ValueError('Invalid value for outer cone angle')
         self._outerConeAngle = float(value)
 
+    @property
+    def range(self):
+        """float : The cutoff distance for the light.
+        """
+        return self._range
+
+    @range.setter
+    def range(self, value):
+        if value is not None:
+            value = float(value)
+            if value <= 0:
+                raise ValueError('Range must be > 0')
+            self._range = value
+        self._range = value
+
     def _generate_shadow_texture(self, size=None):
         """Generate a shadow texture for this light.
 
@@ -351,8 +355,8 @@ class SpotLight(Light):
         """
         if size is None:
             size = SHADOW_TEX_SZ
-        self._shadow_texture = Texture(width=size, height=size,
-                                       source_channels='D')
+        self.shadow_texture = Texture(width=size, height=size,
+                                      source_channels='D')
 
     def _get_shadow_camera(self, scene_scale):
         """Generate and return a shadow mapping camera for this light.
@@ -368,7 +372,7 @@ class SpotLight(Light):
             The camera used to render shadowmaps for this light.
         """
         return PerspectiveCamera(
-            znear=DEFAULT_Z_NEAR,
+            znear=0.01 * scene_scale,
             zfar=10 * scene_scale,
             yfov=np.clip(2 * self.outerConeAngle + np.pi / 16.0, 0.0, np.pi),
             aspectRatio=1.0

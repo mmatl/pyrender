@@ -22,19 +22,19 @@ class Camera(object):
 
     Parameters
     ----------
-    name : str, optional
-        The user-defined name of this object.
     znear : float
         The floating-point distance to the near clipping plane.
     zfar : float
         The floating-point distance to the far clipping plane.
         ``zfar`` must be greater than ``znear``.
+    name : str, optional
+        The user-defined name of this object.
     """
 
     def __init__(self,
-                 name=None,
                  znear=DEFAULT_Z_NEAR,
-                 zfar=DEFAULT_Z_FAR):
+                 zfar=DEFAULT_Z_FAR,
+                 name=None):
         self.name = name
         self.znear = znear
         self.zfar = zfar
@@ -59,9 +59,10 @@ class Camera(object):
 
     @znear.setter
     def znear(self, value):
+        value = float(value)
         if value < 0:
             raise ValueError('z-near must be >= 0.0')
-        self._znear = float(value)
+        self._znear = value
 
     @property
     def zfar(self):
@@ -71,12 +72,9 @@ class Camera(object):
 
     @zfar.setter
     def zfar(self, value):
-        if value is not None:
-            if value <= 0 or value <= self.znear:
-                raise ValueError('zfar must be >0 and >znear')
-            else:
-                value = float(value)
-
+        value = float(value)
+        if value <= 0 or value <= self.znear:
+            raise ValueError('zfar must be >0 and >znear')
         self._zfar = value
 
     @abc.abstractmethod
@@ -98,29 +96,32 @@ class PerspectiveCamera(Camera):
 
     Parameters
     ----------
-    name : str, optional
-        The user-defined name of this object.
-    znear : float
-        The floating-point distance to the near clipping plane.
-    zfar : float
-        The floating-point distance to the far clipping plane.
-        ``zfar`` must be greater than ``znear``.
     yfov : float
         The floating-point vertical field of view in radians.
-    aspectRatio : float
+    znear : float
+        The floating-point distance to the near clipping plane.
+        If not specified, defaults to 0.05.
+    zfar : float, optional
+        The floating-point distance to the far clipping plane.
+        ``zfar`` must be greater than ``znear``.
+        If None, the camera uses an infinite projection matrix.
+    aspectRatio : float, optional
         The floating-point aspect ratio of the field of view.
+        If not specified, the camera uses the viewport's aspect ratio.
+    name : str, optional
+        The user-defined name of this object.
     """
 
     def __init__(self,
-                 name=None,
+                 yfov,
                  znear=DEFAULT_Z_NEAR,
-                 zfar=DEFAULT_Z_FAR,
-                 yfov=None,
-                 aspectRatio=None):
+                 zfar=None,
+                 aspectRatio=None,
+                 name=None):
         super(PerspectiveCamera, self).__init__(
-            name=name,
             znear=znear,
             zfar=zfar,
+            name=name,
         )
 
         self.yfov = yfov
@@ -134,9 +135,24 @@ class PerspectiveCamera(Camera):
 
     @yfov.setter
     def yfov(self, value):
+        value = float(value)
         if value <= 0.0:
             raise ValueError('Field of view must be positive')
-        self._yfov = float(value)
+        self._yfov = value
+
+    @property
+    def zfar(self):
+        """float : The distance to the far clipping plane.
+        """
+        return self._zfar
+
+    @zfar.setter
+    def zfar(self, value):
+        if value is not None:
+            value = float(value)
+            if value <= 0 or value <= self.znear:
+                raise ValueError('zfar must be >0 and >znear')
+        self._zfar = value
 
     @property
     def aspectRatio(self):
@@ -146,12 +162,11 @@ class PerspectiveCamera(Camera):
 
     @aspectRatio.setter
     def aspectRatio(self, value):
-        if value is None:
-            self._aspectRatio = None
-            return
-        if value <= 0.0:
-            raise ValueError('Aspect ratio must be positive')
-        self._aspectRatio = float(value)
+        if value is not None:
+            value = float(value)
+            if value <= 0.0:
+                raise ValueError('Aspect ratio must be positive')
+        self._aspectRatio = value
 
     def get_projection_matrix(self, width=None, height=None):
         """Return the OpenGL projection matrix for this camera.
@@ -194,29 +209,31 @@ class OrthographicCamera(Camera):
 
     Parameters
     ----------
-    name : str, optional
-        The user-defined name of this object.
-    znear : float
-        The floating-point distance to the near clipping plane.
-    zfar : float
-        The floating-point distance to the far clipping plane.
-        ``zfar`` must be greater than ``znear``.
     xmag : float
         The floating-point horizontal magnification of the view.
     ymag : float
         The floating-point vertical magnification of the view.
+    znear : float
+        The floating-point distance to the near clipping plane.
+        If not specified, defaults to 0.05.
+    zfar : float
+        The floating-point distance to the far clipping plane.
+        ``zfar`` must be greater than ``znear``.
+        If not specified, defaults to 100.0.
+    name : str, optional
+        The user-defined name of this object.
     """
 
     def __init__(self,
-                 name=None,
+                 xmag,
+                 ymag,
                  znear=DEFAULT_Z_NEAR,
                  zfar=DEFAULT_Z_FAR,
-                 xmag=None,
-                 ymag=None):
+                 name=None):
         super(OrthographicCamera, self).__init__(
-            name=name,
             znear=znear,
-            zfar=zfar
+            zfar=zfar,
+            name=name,
         )
 
         self.xmag = xmag
@@ -230,9 +247,10 @@ class OrthographicCamera(Camera):
 
     @xmag.setter
     def xmag(self, value):
+        value = float(value)
         if value <= 0.0:
             raise ValueError('X magnification must be positive')
-        self._xmag = float(value)
+        self._xmag = value
 
     @property
     def ymag(self):
@@ -242,9 +260,23 @@ class OrthographicCamera(Camera):
 
     @ymag.setter
     def ymag(self, value):
+        value = float(value)
         if value <= 0.0:
             raise ValueError('Y magnification must be positive')
-        self._ymag = float(value)
+        self._ymag = value
+
+    @property
+    def znear(self):
+        """float : The distance to the near clipping plane.
+        """
+        return self._znear
+
+    @znear.setter
+    def znear(self, value):
+        value = float(value)
+        if value <= 0:
+            raise ValueError('z-near must be > 0.0')
+        self._znear = value
 
     def get_projection_matrix(self, width=None, height=None):
         """Return the OpenGL projection matrix for this camera.
@@ -253,8 +285,10 @@ class OrthographicCamera(Camera):
         ----------
         width : int
             Width of the current viewport, in pixels.
+            Unused in this function.
         height : int
             Height of the current viewport, in pixels.
+            Unused in this function.
         """
         n = self.znear
         f = self.zfar

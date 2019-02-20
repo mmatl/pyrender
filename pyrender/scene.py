@@ -19,21 +19,21 @@ class Scene(object):
 
     Parameters
     ----------
-    name : str, optional
-        The user-defined name of this object.
     nodes : list of :class:`Node`
         The set of all nodes in the scene.
     bg_color : (4,) float, optional
         Background color of scene.
     ambient_light : (3,) float, optional
         Color of ambient light. Defaults to no ambient light.
+    name : str, optional
+        The user-defined name of this object.
     """
 
     def __init__(self,
-                 name=None,
                  nodes=None,
                  bg_color=None,
-                 ambient_light=None):
+                 ambient_light=None,
+                 name=None):
 
         if bg_color is None:
             bg_color = np.ones(4)
@@ -44,12 +44,12 @@ class Scene(object):
             ambient_light = np.zeros(3)
 
         if nodes is None:
-            nodes = []
+            nodes = set()
+        self._nodes = set()  # Will be added at the end of this function
 
-        self.name = name
-        self.nodes = set(nodes)
         self.bg_color = bg_color
         self.ambient_light = ambient_light
+        self.name = name
 
         self._name_to_nodes = {}
         self._obj_to_nodes = {}
@@ -76,13 +76,9 @@ class Scene(object):
                         raise ValueError('Nodes may not have more than '
                                          'one parent')
                     node_parent_map[child] = node
-            root_nodes = [n for n in node_parent_map if
-                          node_parent_map[n] is None]
-            if len(root_nodes) == 0:
-                raise ValueError('Need at least one root node in scene')
-
-            for node in root_nodes:
-                self.add_node(node)
+            for node in node_parent_map:
+                if node_parent_map[node] is None:
+                    self.add_node(node)
 
     @property
     def name(self):
@@ -101,10 +97,6 @@ class Scene(object):
         """set of :class:`Node` : Set of nodes in the scene.
         """
         return self._nodes
-
-    @nodes.setter
-    def nodes(self, value):
-        self._nodes = value
 
     @property
     def bg_color(self):
@@ -129,9 +121,9 @@ class Scene(object):
     @ambient_light.setter
     def ambient_light(self, value):
         if value is None:
-            value = np.ones(4)
+            value = np.zeros(3)
         else:
-            value = format_color_vector(value, 4)
+            value = format_color_vector(value, 3)
         self._ambient_light = value
 
     @property
@@ -290,21 +282,48 @@ class Scene(object):
             node = Node(name=name, matrix=pose, light=obj)
         elif isinstance(obj, Camera):
             node = Node(name=name, matrix=pose, camera=obj)
-            if self._main_camera_node is None:
-                self._main_camera_node = node
         else:
             raise TypeError('Unrecognized object type')
 
         if parent_node is None and parent_name is not None:
-            parent_node = self.get_node(name=parent_name)
+            parent_nodes = self.get_nodes(name=parent_name)
+            if len(parent_nodes) == 0:
+                raise ValueError('No parent node with name {} found'
+                                 .format(parent_name))
+            elif len(parent_nodes) > 1:
+                raise ValueError('More than one parent node with name {} found'
+                                 .format(parent_name))
+            parent_node = list(parent_nodes)[0]
 
         self.add_node(node, parent_node=parent_node)
 
         return node
 
-    def _get_nodes(self, node=None, name=None, obj=None, obj_name=None):
+    def get_nodes(self, node=None, name=None, obj=None, obj_name=None):
+        """Search for existing nodes. Only nodes matching all specified
+        parameters is returned, or None if no such node exists.
+
+        Parameters
+        ----------
+        node : :class:`Node`, optional
+            If present, returns this node if it is in the scene.
+        name : str
+            A name for the Node.
+        obj : :class:`Mesh`, :class:`Light`, or :class:`Camera`
+            An object that is attached to the node.
+        obj_name : str
+            The name of an object that is attached to the node.
+
+        Returns
+        -------
+        nodes : set of :class:`.Node`
+            The nodes that match all query terms.
+        """
         if node is not None:
-            return set([node])
+            if node in self.nodes:
+                return set([node])
+            else:
+                return set()
         nodes = set(self.nodes)
         if name is not None:
             matches = set()
@@ -324,31 +343,6 @@ class Scene(object):
 
         return nodes
 
-    def get_node(self, node=None, name=None, obj=None, obj_name=None):
-        """Search for an existing node. Only a node matching all specified
-        parameters is returned, or None if no such node exists.
-
-        Parameters
-        ----------
-        node : :class:`Node`, optional
-            If present, this object is simply returned.
-        name : str
-            A name for the Node.
-        obj : :class:`Mesh`, :class:`Light`, or :class:`Camera`
-            An object that is attached to the node.
-        obj_name : str
-            The name of an object that is attached to the node.
-        """
-        nodes = list(
-            self._get_nodes(node=node, name=name, obj=obj, obj_name=obj_name)
-        )
-        if len(nodes) == 0:
-            return None
-        elif len(nodes) > 1:
-            raise ValueError('Non-unique node query')
-        else:
-            return nodes[0]
-
     def add_node(self, node, parent_node=None):
         """Add a Node to the scene.
 
@@ -359,6 +353,8 @@ class Scene(object):
         parent_node : :class:`Node`
             The parent of this Node. If None, the new node is a root node.
         """
+        if node in self.nodes:
+            raise ValueError('Node already in scene')
         self.nodes.add(node)
 
         # Add node to sets
@@ -391,7 +387,9 @@ class Scene(object):
 
         if parent_node is None:
             parent_node = 'world'
-        elif isinstance(parent_node, Node):
+        elif parent_node not in self.nodes:
+            raise ValueError('Parent node must already be in scene')
+        elif node not in parent_node.children:
             parent_node.children.append(node)
 
         # Create node in graph
@@ -433,6 +431,74 @@ class Scene(object):
         self._remove_node(node)
         if isinstance(parent, Node):
             parent.children.remove(node)
+        self._path_cache = {}
+        self._bounds = None
+
+    def get_pose(self, node):
+        """Get the world-frame pose of a node in the scene.
+
+        Parameters
+        ----------
+        node : :class:`Node`
+            The node to find the pose of.
+
+        Returns
+        -------
+        pose : (4,4) float
+            The transform matrix for this node.
+        """
+        if node not in self.nodes:
+            raise ValueError('Node must already be in scene')
+        if node in self._path_cache:
+            path = self._path_cache[node]
+        else:
+            # Get path from from_frame to to_frame
+            path = nx.shortest_path(self._digraph, node, 'world')
+            self._path_cache[node] = path
+
+        # Traverse from from_node to to_node
+        pose = np.eye(4)
+        for n in path[:-1]:
+            pose = np.dot(n.matrix, pose)
+
+        return pose
+
+    def set_pose(self, node, pose):
+        """Get the local-frame pose of a node in the scene.
+
+        Parameters
+        ----------
+        node : :class:`Node`
+            The node to set the pose of.
+        pose : (4,4) float
+            The pose to set the node to.
+        """
+        if node not in self.nodes:
+            raise ValueError('Node must already be in scene')
+        node.matrix = pose
+        if node.mesh is not None:
+            self._bounds = None
+
+    def clear(self):
+        """Clear out all nodes to form an empty scene.
+        """
+        self._nodes = set()
+
+        self._name_to_nodes = {}
+        self._obj_to_nodes = {}
+        self._obj_name_to_nodes = {}
+        self._mesh_nodes = set()
+        self._point_light_nodes = set()
+        self._spot_light_nodes = set()
+        self._directional_light_nodes = set()
+        self._camera_nodes = set()
+        self._main_camera_node = None
+        self._bounds = None
+
+        # Transform tree
+        self._digraph = nx.DiGraph()
+        self._digraph.add_node('world')
+        self._path_cache = {}
 
     def _remove_node(self, node):
         """Remove a node and all its children from the scene.
@@ -449,7 +515,6 @@ class Scene(object):
         # Remove children
         for child in node.children:
             self._remove_node(child)
-        node.children = []
 
         # Remove self from the graph
         self._digraph.remove_node(node)
@@ -486,72 +551,8 @@ class Scene(object):
                 else:
                     self._main_camera_node = None
 
-        self._path_cache = {}
-
-    def get_pose(self, node):
-        """Get the world-frame pose of a node in the scene.
-
-        Parameters
-        ----------
-        node : :class:`Node`
-            The node to find the pose of.
-
-        Returns
-        -------
-        pose : (4,4) float
-            The transform matrix for this node.
-        """
-        if node in self._path_cache:
-            path = self._path_cache[node]
-        else:
-            # Get path from from_frame to to_frame
-            path = nx.shortest_path(self._digraph, node, 'world')
-            self._path_cache[node] = path
-
-        # Traverse from from_node to to_node
-        pose = np.eye(4)
-        for n in path[:-1]:
-            pose = np.dot(n.matrix, pose)
-
-        return pose
-
-    def set_pose(self, node, pose):
-        """Get the local-frame pose of a node in the scene.
-
-        Parameters
-        ----------
-        node : :class:`Node`
-            The node to set the pose of.
-        pose : (4,4) float
-            The pose to set the node to.
-        """
-        node.matrix = pose
-        if node.mesh is not None:
-            self._bounds = None
-
-    def clear(self):
-        """Clear out all nodes to form an empty scene.
-        """
-        self.nodes = set()
-
-        self._name_to_nodes = {}
-        self._obj_to_nodes = {}
-        self._obj_name_to_nodes = {}
-        self._mesh_nodes = set()
-        self._point_light_nodes = set()
-        self._spot_light_nodes = set()
-        self._directional_light_nodes = set()
-        self._camera_nodes = set()
-        self._main_camera_node = None
-        self._bounds = None
-
-        # Transform tree
-        self._digraph = nx.DiGraph()
-        self._digraph.add_node('world')
-        self._path_cache = {}
-
     @staticmethod
-    def from_trimesh_scene(self, trimesh_scene,
+    def from_trimesh_scene(trimesh_scene,
                            bg_color=None, ambient_light=None):
         """Create a :class:`.Scene` from a :class:`trimesh.scene.scene.Scene`.
 
