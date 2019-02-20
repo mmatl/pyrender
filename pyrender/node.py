@@ -176,7 +176,7 @@ class Node(object):
 
     @property
     def matrix(self):
-        """(4,4) flato : The homogenous transform matrix for this node.
+        """(4,4) float : The homogenous transform matrix for this node.
         """
         return self._matrix
 
@@ -210,7 +210,7 @@ class Node(object):
         s[1,1] = self.scale[1]
         s[2,2] = self.scale[2]
 
-        r = transformations.quaternion_matrix(self.rotation)
+        r = transformations.quaternion_matrix(np.roll(self.rotation, 1))
 
         t = transformations.translation_matrix(self.translation)
 
