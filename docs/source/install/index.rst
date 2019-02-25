@@ -26,26 +26,33 @@ Getting Pyrender Working with OSMesa
 ------------------------------------
 If you want to render scenes offscreen but don't want to have to
 install a display manager or deal with the pains of trying to get
-OpenGL to work over SSH, you may consider using OSMesa,
+OpenGL to work over SSH, you have two options.
+
+The first (and preferred) option is using EGL, which enables you to perform
+GPU-accelerated rendering on headless servers.
+However, you'll need EGL 1.5 to get modern OpenGL contexts.
+This comes packaged with NVIDIA's current drivers, but if you are having issues
+getting EGL to work with your hardware, you can try using OSMesa,
 a software-based offscreen renderer that is included with any Mesa
 install.
 
-If you want to do this, you'll need to complete three steps:
+If you want to use OSMesa with pyrender, you'll have to perform two additional
+installation steps:
 
 - :ref:`installmesa`
 - :ref:`installpyopengl`
-- :ref:`configurescripts`
 
-Pyrender supports using OSMesa for creating OpenGL contexts without
-a screen, but you'll need to rebuild and re-install Mesa with support
-for fast offscreen rendering and OpenGL 3+ contexts.
-I'd recommend installing from source, but you can also try my ``.deb``
-for Ubuntu 16.04 and up.
+Then, read the offscreen rendering tutorial. See :ref:`offscreen_guide`.
 
 .. _installmesa:
 
 Installing OSMesa
 *****************
+
+As a first step, you'll need to rebuild and re-install Mesa with support
+for fast offscreen rendering and OpenGL 3+ contexts.
+I'd recommend installing from source, but you can also try my ``.deb``
+for Ubuntu 16.04 and up.
 
 Installing from a Debian Package
 ********************************
@@ -137,29 +144,6 @@ on PyPI.
    git clone git@github.com:mmatl/pyopengl.git
    pip install ./pyopengl
 
-.. _configurescripts:
-
-Configuring Offscreen Rendering Scripts
-***************************************
-Before running any script using the :class:`OffscreenRenderer` object,
-make sure to set the ``PYOPENGL_PLATFORM`` environment variable to ``osmesa``.
-For example:
-
-.. code-block:: bash
-
-   PYOPENGL_PLATFORM=osmesa python run_rendering_script.py
-
-Alternatively, you can just add ese two lines of code to the top of any script
-that you want to do offscreen rendering in. Be sure to add them before
-importing any other packages.
-
-.. code-block:: python
-
-   import os
-   os.environ['PYOPENGL_PLATFORM'] = 'osmesa'
-
-If you do this, you won't be able to use the :class:`Viewer`,
-but you will be able do do offscreen rendering without a display.
 
 Building Documentation
 ----------------------

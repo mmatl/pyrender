@@ -5,16 +5,22 @@
 
 Pyrender Documentation
 ========================
-Pyrender is a Python 2/3 implementation of Physically-Based Rendering (PBR).
-If is mostly compliant with the glTF 2.0 specification, and it makes it easy
-to render 3D scenes in pure Python. Dependencies are light and all
-pip-installable.
+Pyrender is a pure Python (2.7, 3.4, 3.5, 3.6) library for physically-based
+rendering and visualization.
+It is designed to meet the glTF 2.0 specification_ from Khronos
+
+.. _specification: https://www.khronos.org/gltf/
+
+Pyrender is lightweight, easy to install, and simple to use.
+It comes packaged with both an intuitive scene viewer and a headache-free
+offscreen renderer with support for GPU-accelerated rendering on headless
+servers, which makes it perfect for machine learning applications.
+Check out the :ref:`guide` for a full tutorial, or fork me on
+Github_.
+
+.. _Github: https://github.com/mmatl/pyrender
 
 .. image:: _static/rotation.gif
-
-Pyrender supports rendering objects with metallic-roughness textures,
-normal maps, ambient occlusion textures, emission textures, and shadows.
-It also includes an easy-to-use viewer for visualizing and debugging 3D data.
 
 .. image:: _static/damaged_helmet.png
 
