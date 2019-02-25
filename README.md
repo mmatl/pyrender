@@ -18,6 +18,7 @@ Extensive documentation, including a quickstart guide, is provided [here](https:
 
 For a minimal working example of offscreen rendering using OSMesa,
 check out the [OSMesa Google CoLab Notebook](https://colab.research.google.com/drive/1Z71mHIc-Sqval92nK290vAsHZRUkCjUx).
+
 For a minimal working example of GPU-accelerated offscreen rendering using EGL,
 check out the [EGL Google CoLab Notebook](https://colab.research.google.com/drive/1rTLHk0qxh4dn8KNe-mCnN8HAWdd2_BEh).
 
