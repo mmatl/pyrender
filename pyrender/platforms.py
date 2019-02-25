@@ -84,23 +84,21 @@ class EGLPlatform(Platform):
     def __init__(self, viewport_width, viewport_height):
         super(EGLPlatform, self).__init__(viewport_width, viewport_height)
         self._egl_display = None
-        self._egl_surface = None
         self._egl_context = None
 
     def init_context(self):
         from OpenGL.EGL import (
             EGL_SURFACE_TYPE, EGL_PBUFFER_BIT, EGL_BLUE_SIZE,
             EGL_RED_SIZE, EGL_GREEN_SIZE, EGL_DEPTH_SIZE,
-            EGL_COLOR_BUFFER_TYPE, EGL_RGB_BUFFER, EGL_HEIGHT,
+            EGL_COLOR_BUFFER_TYPE, EGL_RGB_BUFFER,
             EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT, EGL_CONFORMANT,
-            EGL_NONE, EGL_DEFAULT_DISPLAY, EGL_NO_CONTEXT, EGL_WIDTH,
+            EGL_NONE, EGL_DEFAULT_DISPLAY, EGL_NO_CONTEXT,
             EGL_OPENGL_API, EGL_CONTEXT_MAJOR_VERSION,
             EGL_CONTEXT_MINOR_VERSION,
             EGL_CONTEXT_OPENGL_PROFILE_MASK,
             EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT,
             eglGetDisplay, eglInitialize, eglChooseConfig,
-            eglBindAPI, eglCreatePbufferSurface,
-            eglCreateContext, EGLConfig
+            eglBindAPI, eglCreateContext, EGLConfig
         )
         from OpenGL import arrays
 
@@ -116,8 +114,8 @@ class EGLPlatform(Platform):
             EGL_NONE
         ])
         context_attributes = arrays.GLintArray.asArray([
-            EGL_CONTEXT_MAJOR_VERSION, 3,
-            EGL_CONTEXT_MINOR_VERSION, 2,
+            EGL_CONTEXT_MAJOR_VERSION, 4,
+            EGL_CONTEXT_MINOR_VERSION, 1,
             EGL_CONTEXT_OPENGL_PROFILE_MASK,
             EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT,
             EGL_NONE
@@ -136,19 +134,13 @@ class EGLPlatform(Platform):
             os.environ['DISPLAY'] = orig_dpy
 
         # Initialize EGL
-        eglInitialize(self._egl_display, major, minor)
-        eglChooseConfig(
+        assert eglInitialize(self._egl_display, major, minor)
+        assert eglChooseConfig(
             self._egl_display, config_attributes, configs, 1, num_configs
         )
 
         # Bind EGL to the OpenGL API
-        eglBindAPI(EGL_OPENGL_API)
-
-        # Create a 1x1 EGL pbuffer
-        self._egl_surface = eglCreatePbufferSurface(
-            self._egl_display, configs[0],
-            [EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE]
-        )
+        assert eglBindAPI(EGL_OPENGL_API)
 
         # Create an EGL context
         self._egl_context = eglCreateContext(
@@ -160,22 +152,18 @@ class EGLPlatform(Platform):
         self.make_current()
 
     def make_current(self):
-        from OpenGL.EGL import eglMakeCurrent
-        eglMakeCurrent(
-            self._egl_display, self._egl_surface, self._egl_surface,
+        from OpenGL.EGL import eglMakeCurrent, EGL_NO_SURFACE
+        assert eglMakeCurrent(
+            self._egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE,
             self._egl_context
         )
 
     def delete_context(self):
-        from OpenGL.EGL import (eglDestroySurface, eglDestroyContext,
-                                eglTerminate)
+        from OpenGL.EGL import eglDestroyContext, eglTerminate
         if self._egl_display is not None:
             if self._egl_context is not None:
                 eglDestroyContext(self._egl_display, self._egl_context)
                 self._egl_context = None
-            if self._egl_surface:
-                eglDestroySurface(self._egl_display, self._egl_surface)
-                self._egl_surface = None
             eglTerminate(self._egl_display)
             self._egl_display = None
 
