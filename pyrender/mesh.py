@@ -284,7 +284,9 @@ class Mesh(object):
                     baseColorFactor=mat.baseColorFactor,
                     baseColorTexture=mat.baseColorTexture,
                     metallicFactor=mat.metallicFactor,
-                    metallicRoughnessTexture=mat.metallicRoughnessTexture
+                    metallicRoughnessTexture=mat.metallicRoughnessTexture,
+                    doubleSided=mat.doubleSided,
+                    alphaCutoff=mat.alphaCutoff
                 )
             elif isinstance(mat, trimesh.visual.texture.SimpleMaterial):
                 material = MetallicRoughnessMaterial(
