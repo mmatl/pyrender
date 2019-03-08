@@ -277,28 +277,43 @@ class Viewer(pyglet.window.Window):
         self._saved_frames = []
 
         # Extract main camera from scene and set up our mirrored copy
+        znear = None
+        zfar = None
         if scene.main_camera_node is not None:
             n = scene.main_camera_node
             camera = copy.copy(n.camera)
             if isinstance(camera, PerspectiveCamera):
                 self._default_persp_cam = camera
+                znear = camera.znear
+                zfar = camera.zfar
             elif isinstance(camera, OrthographicCamera):
                 self._default_orth_cam = camera
+                znear = camera.znear
+                zfar = camera.zfar
             self._default_camera_pose = scene.get_pose(scene.main_camera_node)
             self._prior_main_camera_node = n
 
         # Set defaults as needed
-        znear = min(scene.scale / 10.0, DEFAULT_Z_NEAR)
-        zfar = max(scene.scale * 10.0, DEFAULT_Z_FAR)
-        if znear == 0.0:
-            znear = DEFAULT_Z_NEAR
+        if zfar is None:
+            zfar = max(scene.scale * 10.0, DEFAULT_Z_FAR)
+        if znear is None or znear == 0:
+            if scene.scale == 0:
+                znear = DEFAULT_Z_NEAR
+            else:
+                znear = min(scene.scale / 10.0, DEFAULT_Z_NEAR)
+
         if self._default_persp_cam is None:
             self._default_persp_cam = PerspectiveCamera(
                 yfov=np.pi / 3.0, znear=znear, zfar=zfar
             )
         if self._default_orth_cam is None:
+            xmag = ymag = scene.scale
+            if scene.scale == 0:
+                xmag = ymag = 1.0
             self._default_orth_cam = OrthographicCamera(
-                xmag=scene.scale, ymag=scene.scale, znear=znear, zfar=zfar
+                xmag=xmag, ymag=ymag,
+                znear=znear,
+                zfar=zfar
             )
         if self._default_camera_pose is None:
             self._default_camera_pose = self._compute_initial_camera_pose()
