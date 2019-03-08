@@ -290,6 +290,8 @@ class Viewer(pyglet.window.Window):
         # Set defaults as needed
         znear = min(scene.scale / 10.0, DEFAULT_Z_NEAR)
         zfar = max(scene.scale * 10.0, DEFAULT_Z_FAR)
+        if znear == 0.0:
+            znear = DEFAULT_Z_NEAR
         if self._default_persp_cam is None:
             self._default_persp_cam = PerspectiveCamera(
                 yfov=np.pi / 3.0, znear=znear, zfar=zfar
