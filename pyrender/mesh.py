@@ -153,7 +153,7 @@ class Mesh(object):
 
     @staticmethod
     def from_trimesh(mesh, material=None, is_visible=True,
-                     poses=None, smooth=True):
+                     poses=None, wireframe=False, smooth=True):
         """Create a Mesh from a :class:`~trimesh.base.Trimesh`.
 
         Parameters
@@ -168,6 +168,8 @@ class Mesh(object):
             If False, the mesh will not be rendered.
         poses : (n,4,4) float
             Array of 4x4 transformation matrices for instancing this object.
+        wireframe : bool
+            If `True`, the mesh will be rendered as a wireframe object
         smooth : bool
             If `True`, the mesh will be rendered with interpolated vertex
             normals. Otherwise, the mesh edges will stay sharp.
@@ -216,6 +218,7 @@ class Mesh(object):
                     metallicFactor=0.2,
                     roughnessFactor=0.8
                 )
+            material.wireframe = wireframe
 
             # Create the primitive
             primitives.append(Primitive(
