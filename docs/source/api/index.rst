@@ -28,9 +28,20 @@ Objects
    :no-inheritance-diagram:
    :no-main-docstr:
    :no-heading:
+   :skip: Camera, DirectionalLight, Light, OffscreenRenderer, Node
+   :skip: OrthographicCamera, PerspectiveCamera, PointLight, RenderFlags
+   :skip: Renderer, Scene, SpotLight, TextAlign, Viewer, GLTF
+
+Scenes
+------
+.. automodapi:: pyrender
+   :no-inheritance-diagram:
+   :no-main-docstr:
+   :no-heading:
    :skip: Camera, DirectionalLight, Light, OffscreenRenderer
    :skip: OrthographicCamera, PerspectiveCamera, PointLight, RenderFlags
-   :skip: Renderer, Scene, SpotLight, TextAlign, Viewer
+   :skip: Renderer, SpotLight, TextAlign, Viewer, Sampler, Texture, Material
+   :skip: MetallicRoughnessMaterial, Primitive, Mesh, GLTF
 
 On-Screen Viewer
 ----------------
