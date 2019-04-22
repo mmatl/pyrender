@@ -28,7 +28,7 @@ Objects
    :no-inheritance-diagram:
    :no-main-docstr:
    :no-heading:
-   :skip: Camera, DirectionalLight, Light, Node, OffscreenRenderer
+   :skip: Camera, DirectionalLight, Light, OffscreenRenderer
    :skip: OrthographicCamera, PerspectiveCamera, PointLight, RenderFlags
    :skip: Renderer, Scene, SpotLight, TextAlign, Viewer
 
