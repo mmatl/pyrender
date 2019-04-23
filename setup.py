@@ -10,16 +10,16 @@ from setuptools import setup
 exec(open('pyrender/version.py').read())
 
 requirements = [
-    'freetype-py',         # For font loading
-    'imageio',             # For Image I/O
-    'networkx==2.2',       # For the scene graph
-    'numpy',               # Numpy
-    'Pillow',              # For Trimesh texture conversions
-    'pyglet==1.4.0b1',     # For the pyglet viewer
-    'PyOpenGL',            # For OpenGL
-    'PyOpenGL_accelerate', # For OpenGL
-    'six',                 # For Python 2/3 interop
-    'trimesh',             # For meshes
+    'freetype-py',                # For font loading
+    'imageio',                    # For Image I/O
+    'networkx==2.2',              # For the scene graph
+    'numpy',                      # Numpy
+    'Pillow',                     # For Trimesh texture conversions
+    'pyglet==1.4.0b1',            # For the pyglet viewer
+    'PyOpenGL==3.1.0',            # For OpenGL
+    'PyOpenGL_accelerate==3.1.0', # For OpenGL
+    'six',                        # For Python 2/3 interop
+    'trimesh>=2.37.6',            # For meshes
 ]
 
 dev_requirements = [
