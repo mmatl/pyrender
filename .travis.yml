@@ -23,6 +23,7 @@ install:
   - pip install .
     #  - pip install -q pytest pytest-cov coveralls
   - pip install pytest pytest-cov coveralls
+  - pip install ./pyopengl
 
 script:
   - PYOPENGL_PLATFORM=osmesa pytest --cov=pyrender tests
