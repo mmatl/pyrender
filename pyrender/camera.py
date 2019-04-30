@@ -92,6 +92,7 @@ class Camera(object):
 
 
 class PerspectiveCamera(Camera):
+
     """A perspective camera for perspective projection.
 
     Parameters
@@ -308,4 +309,120 @@ class OrthographicCamera(Camera):
         return P
 
 
-__all__ = ['Camera', 'PerspectiveCamera', 'OrthographicCamera']
+class IntrinsicsCamera(Camera):
+    """A perspective camera with custom intrinsics.
+
+    Parameters
+    ----------
+    fx : float
+        X-axis focal length in meters.
+    fy : float
+        Y-axis focal length in meters.
+    cx : float
+        X-axis optical center in pixels.
+    cy : float
+        Y-axis optical center in pixels.
+    znear : float
+        The floating-point distance to the near clipping plane.
+        If not specified, defaults to 0.05.
+    zfar : float
+        The floating-point distance to the far clipping plane.
+        ``zfar`` must be greater than ``znear``.
+        If not specified, defaults to 100.0.
+    name : str, optional
+        The user-defined name of this object.
+    """
+
+    def __init__(self,
+                 fx,
+                 fy,
+                 cx,
+                 cy,
+                 znear=DEFAULT_Z_NEAR,
+                 zfar=DEFAULT_Z_FAR,
+                 name=None):
+        super(IntrinsicsCamera, self).__init__(
+            znear=znear,
+            zfar=zfar,
+            name=name,
+        )
+
+        self.fx = fx
+        self.fy = fy
+        self.cx = cx
+        self.cy = cy
+
+    @property
+    def fx(self):
+        """float : X-axis focal length in meters.
+        """
+        return self._fx
+
+    @fx.setter
+    def fx(self, value):
+        self._fx = float(value)
+
+    @property
+    def fy(self):
+        """float : Y-axis focal length in meters.
+        """
+        return self._fy
+
+    @fy.setter
+    def fy(self, value):
+        self._fy = float(value)
+
+    @property
+    def cx(self):
+        """float : X-axis optical center in pixels.
+        """
+        return self._cx
+
+    @cx.setter
+    def cx(self, value):
+        self._cx = float(value)
+
+    @property
+    def cy(self):
+        """float : Y-axis optical center in pixels.
+        """
+        return self._cy
+
+    @cy.setter
+    def cy(self, value):
+        self._cy = float(value)
+
+    def get_projection_matrix(self, width, height):
+        """Return the OpenGL projection matrix for this camera.
+
+        Parameters
+        ----------
+        width : int
+            Width of the current viewport, in pixels.
+        height : int
+            Height of the current viewport, in pixels.
+        """
+        width = float(width)
+        height = float(height)
+
+        P = np.zeros((4,4))
+        P[0][0] = 2.0 * self.fx / width
+        P[1][1] = 2.0 * self.fy / height
+        P[0][2] = 1.0 - 2.0 * self.cx / width
+        P[1][2] = 2.0 * self.cy / height - 1.0
+        P[3][2] = -1.0
+
+        n = self.znear
+        f = self.zfar
+        if f is None:
+            P[2][2] = -1.0
+            P[2][3] = -2.0 * n
+        else:
+            P[2][2] = (f + n) / (n - f)
+            P[2][3] = (2 * f * n) / (n - f)
+
+        return P
+
+
+__all__ = ['Camera', 'PerspectiveCamera', 'OrthographicCamera',
+           'IntrinsicsCamera']

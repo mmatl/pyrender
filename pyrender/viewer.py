@@ -23,7 +23,7 @@ from .constants import (OPEN_GL_MAJOR, OPEN_GL_MINOR, TEXT_PADDING,
                         DEFAULT_Z_FAR, DEFAULT_Z_NEAR, RenderFlags, TextAlign)
 from .light import DirectionalLight
 from .node import Node
-from .camera import PerspectiveCamera, OrthographicCamera
+from .camera import PerspectiveCamera, OrthographicCamera, IntrinsicsCamera
 from .trackball import Trackball
 from .renderer import Renderer
 from .mesh import Mesh
@@ -282,7 +282,7 @@ class Viewer(pyglet.window.Window):
         if scene.main_camera_node is not None:
             n = scene.main_camera_node
             camera = copy.copy(n.camera)
-            if isinstance(camera, PerspectiveCamera):
+            if isinstance(camera, (PerspectiveCamera, IntrinsicsCamera)):
                 self._default_persp_cam = camera
                 znear = camera.znear
                 zfar = camera.zfar
