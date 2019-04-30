@@ -17,7 +17,6 @@ before_install:
   - cd pyopengl
   - pip install .
   - cd ..
-  - pip install PyOpenGL_accelerate
 
 install:
   - pip install .
