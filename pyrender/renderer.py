@@ -241,7 +241,7 @@ class Renderer(object):
 
         return color_im
 
-    def read_depth_buf(self):
+    def read_depth_buf(self, scene):
         """Read and return the current viewport's color buffer.
 
         Returns
@@ -260,17 +260,7 @@ class Renderer(object):
         depth_im = depth_im.reshape((height, width))
         depth_im = np.flip(depth_im, axis=0)
 
-        inf_inds = (depth_im == 1.0)
-        depth_im = 2.0 * depth_im - 1.0
-        z_near, z_far = self._latest_znear, self._latest_zfar
-        noninf = np.logical_not(inf_inds)
-        if z_far is None:
-            depth_im[noninf] = 2 * z_near / (1.0 - depth_im[noninf])
-        else:
-            depth_im[noninf] = ((2.0 * z_near * z_far) /
-                                (z_far + z_near - depth_im[noninf] *
-                                (z_far - z_near)))
-        depth_im[inf_inds] = 0.0
+        depth_im = scene.main_camera_node.camera.unproject_depth_map(depth_im)
 
         # Resize for macos if needed
         if sys.platform == 'darwin':
@@ -1113,18 +1103,8 @@ class Renderer(object):
         depth_im = np.frombuffer(depth_buf, dtype=np.float32)
         depth_im = depth_im.reshape((height, width))
         depth_im = np.flip(depth_im, axis=0)
-        inf_inds = (depth_im == 1.0)
-        depth_im = 2.0 * depth_im - 1.0
-        z_near = scene.main_camera_node.camera.znear
-        z_far = scene.main_camera_node.camera.zfar
-        noninf = np.logical_not(inf_inds)
-        if z_far is None:
-            depth_im[noninf] = 2 * z_near / (1.0 - depth_im[noninf])
-        else:
-            depth_im[noninf] = ((2.0 * z_near * z_far) /
-                                (z_far + z_near - depth_im[noninf] *
-                                (z_far - z_near)))
-        depth_im[inf_inds] = 0.0
+        
+        depth_im = scene.main_camera_node.camera.unproject_depth_map(depth_im)
 
         # Resize for macos if needed
         if sys.platform == 'darwin':

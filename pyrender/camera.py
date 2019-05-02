@@ -89,7 +89,20 @@ class Camera(object):
             Height of the current viewport, in pixels.
         """
         pass
-
+    
+    @abc.abstractmethod
+    def unproject_depth_map(self, depth_im):
+        '''
+        Unproject the depth map from buffer to linear unit in camera system.
+        
+        Parameters
+        ----------
+        depth_im:
+            depth map read from OpenGL buffer
+        return:
+            unprojected depth map with linear unit in camera system.
+        '''
+        pass
 
 class PerspectiveCamera(Camera):
 
@@ -204,6 +217,31 @@ class PerspectiveCamera(Camera):
 
         return P
 
+    def unproject_depth_map(self, depth_im_buffer):
+        '''
+        Unproject the depth map from buffer to linear unit in camera system.
+        
+        Parameters
+        ----------
+        depth_im : np.array
+            depth map read from OpenGL buffer
+        return :
+            unprojected depth map with linear unit in camera system.
+        '''
+        depth_im = depth_im_buffer.copy()
+
+        inf_inds = (depth_im == 1.0)
+        depth_im = 2.0 * depth_im - 1.0 # to Normalized Device Coordinates (NDC)
+        noninf = np.logical_not(inf_inds)
+        if self.zfar is None:
+            depth_im[noninf] = 2 * self.znear / (1.0 - depth_im[noninf])
+        else:
+            depth_im[noninf] = ((2.0 * self.znear * self.zfar) /
+                                (self.zfar + self.znear - depth_im[noninf] *
+                                (self.zfar - self.znear)))
+        depth_im[inf_inds] = 0.0
+
+        return depth_im
 
 class OrthographicCamera(Camera):
     """A perspective camera for perspective projection.
@@ -308,6 +346,28 @@ class OrthographicCamera(Camera):
         P[3][3] = 1.0
         return P
 
+    def unproject_depth_map(self, depth_im_buffer):
+        '''
+        Unproject the depth map from buffer to linear unit in camera system.
+        
+        Parameters
+        ----------
+        depth_im : np.array
+            depth map read from OpenGL buffer
+        return :
+            unprojected depth map with linear unit in camera system.
+        '''
+        depth_im = depth_im_buffer.copy()
+
+        inf_inds = (depth_im == 1.0)
+        depth_im = 2.0 * depth_im - 1.0 # to Normalized Device Coordinates (NDC)
+        noninf = np.logical_not(inf_inds)
+        
+        depth_im[noninf] = ( ( depth_im[noninf] + (self.zfar + self.znear) / (self.zfar - self.znear) ) * (self.zfar - self.znear) ) / (2.0)
+
+        depth_im[inf_inds] = 0.0
+
+        return depth_im
 
 class IntrinsicsCamera(Camera):
     """A perspective camera with custom intrinsics.

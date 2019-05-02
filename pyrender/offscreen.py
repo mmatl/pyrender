@@ -100,7 +100,7 @@ class OffscreenRenderer(object):
             return self._renderer.render(scene, flags)
         else:
             self._renderer.render(scene, flags)
-            depth = self._renderer.read_depth_buf()
+            depth = self._renderer.read_depth_buf(scene)
             if flags & RenderFlags.DEPTH_ONLY:
                 return depth
             color = self._renderer.read_color_buf()
