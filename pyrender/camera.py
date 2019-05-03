@@ -91,13 +91,13 @@ class Camera(object):
         pass
     
     @abc.abstractmethod
-    def unproject_depth_map(self, depth_im):
+    def unproject_depth_map(self, depth_im_buffer):
         '''
         Unproject the depth map from buffer to linear unit in camera system.
         
         Parameters
         ----------
-        depth_im:
+        depth_im_buffer:
             depth map read from OpenGL buffer
         return:
             unprojected depth map with linear unit in camera system.
