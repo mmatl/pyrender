@@ -483,6 +483,31 @@ class IntrinsicsCamera(Camera):
 
         return P
 
+    def unproject_depth_map(self, depth_im_buffer):
+        '''
+        Unproject the depth map from buffer to linear unit in camera system.
+        
+        Parameters
+        ----------
+        depth_im : np.array
+            depth map read from OpenGL buffer
+        return :
+            unprojected depth map with linear unit in camera system.
+        '''
+        depth_im = depth_im_buffer.copy()
+
+        inf_inds = (depth_im == 1.0)
+        depth_im = 2.0 * depth_im - 1.0 # to Normalized Device Coordinates (NDC)
+        noninf = np.logical_not(inf_inds)
+        if self.zfar is None:
+            depth_im[noninf] = 2 * self.znear / (1.0 - depth_im[noninf])
+        else:
+            depth_im[noninf] = ((2.0 * self.znear * self.zfar) /
+                                (self.zfar + self.znear - depth_im[noninf] *
+                                (self.zfar - self.znear)))
+        depth_im[inf_inds] = 0.0
+
+        return depth_im
 
 __all__ = ['Camera', 'PerspectiveCamera', 'OrthographicCamera',
            'IntrinsicsCamera']
