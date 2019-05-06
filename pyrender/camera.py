@@ -90,6 +90,22 @@ class Camera(object):
         """
         pass
 
+    @abc.abstractmethod
+    def linearize_depth_buffer(self, depth_im):
+        """Conver a depth buffer in NDC coords to standard linear coordinates.
+
+        Parameters
+        ----------
+        depth_im : (h, w) float
+            The depth image in NDC.
+
+        Returns
+        -------
+        depth_im : (h, w) float
+            The depth image in linear coords.
+        """
+        pass
+
 
 class PerspectiveCamera(Camera):
 
@@ -204,6 +220,33 @@ class PerspectiveCamera(Camera):
 
         return P
 
+    def linearize_depth_buffer(self, depth_im):
+        """Conver a depth buffer in NDC coords to standard linear coordinates.
+
+        Parameters
+        ----------
+        depth_im : (h, w) float
+            The depth image in NDC.
+
+        Returns
+        -------
+        depth_im : (h, w) float
+            The depth image in linear coords.
+        """
+        inf_inds = (depth_im == 1.0)
+        noninf = np.logical_not(inf_inds)
+        n = self.znear
+        f = self.zfar
+        depth_im = 2.0 * depth_im - 1.0
+        if f is None:
+            depth_im[noninf] = 2 * n / (1.0 - depth_im[noninf])
+        else:
+            depth_im[noninf] = ((2.0 * n * f) /
+                                (f + n - depth_im[noninf] *
+                                (f - n)))
+        depth_im[inf_inds] = 0.0
+        return depth_im
+
 
 class OrthographicCamera(Camera):
     """A perspective camera for perspective projection.
@@ -307,6 +350,30 @@ class OrthographicCamera(Camera):
         P[2][3] = (f + n) / (n - f)
         P[3][3] = 1.0
         return P
+
+    def linearize_depth_buffer(self, depth_im):
+        """Conver a depth buffer in NDC coords to standard linear coordinates.
+
+        Parameters
+        ----------
+        depth_im : (h, w) float
+            The depth image in NDC.
+
+        Returns
+        -------
+        depth_im : (h, w) float
+            The depth image in linear coords.
+        """
+        inf_inds = (depth_im == 1.0)
+        noninf = np.logical_not(inf_inds)
+        n = self.znear
+        f = self.zfar
+        depth_im = 2.0 * depth_im - 1.0
+        depth_im[noninf] = (
+            (depth_im[noninf] + (f + n) / (f - n)) * (f - n)
+        ) / 2.0
+        depth_im[inf_inds] = 0.0
+        return depth_im
 
 
 class IntrinsicsCamera(Camera):
@@ -422,6 +489,33 @@ class IntrinsicsCamera(Camera):
             P[2][3] = (2 * f * n) / (n - f)
 
         return P
+
+    def linearize_depth_buffer(self, depth_im):
+        """Conver a depth buffer in NDC coords to standard linear coordinates.
+
+        Parameters
+        ----------
+        depth_im : (h, w) float
+            The depth image in NDC.
+
+        Returns
+        -------
+        depth_im : (h, w) float
+            The depth image in linear coords.
+        """
+        inf_inds = (depth_im == 1.0)
+        noninf = np.logical_not(inf_inds)
+        n = self.znear
+        f = self.zfar
+        depth_im = 2.0 * depth_im - 1.0
+        if f is None:
+            depth_im[noninf] = 2 * n / (1.0 - depth_im[noninf])
+        else:
+            depth_im[noninf] = ((2.0 * n * f) /
+                                (f + n - depth_im[noninf] *
+                                (f - n)))
+        depth_im[inf_inds] = 0.0
+        return depth_im
 
 
 __all__ = ['Camera', 'PerspectiveCamera', 'OrthographicCamera',
