@@ -679,7 +679,7 @@ class SpecularGlossinessMaterial(Material):
         self._tex_flags = None
 
     def _compute_tex_flags(self):
-        flags = super(SpecularGlossinessMaterial, self)._compute_flags()
+        flags = super(SpecularGlossinessMaterial, self)._compute_tex_flags()
         if self.diffuseTexture is not None:
             flags |= TexFlags.DIFFUSE
         if self.specularGlossinessTexture is not None:
