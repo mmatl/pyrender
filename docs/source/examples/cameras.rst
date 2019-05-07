@@ -3,7 +3,8 @@
 Creating Cameras
 ================
 
-Pyrender supports two camera types -- :class:`.PerspectiveCamera` types,
+Pyrender supports three camera types -- :class:`.PerspectiveCamera` and
+:class:`.IntrinsicsCamera` types,
 which render scenes as a human would see them, and
 :class:`.OrthographicCamera` types, which preserve distances between points.
 
