@@ -15,3 +15,11 @@ Creating cameras is easy -- just specify their basic attributes:
 For more information, see the Khronos group's documentation here_:
 
 .. _here: https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#projection-matrices
+
+When you add cameras to the scene, make sure that you're using OpenGL camera
+coordinates to specify their pose. See the illustration below for details.
+Basically, the camera z-axis points away from the scene, the x-axis points
+right in image space, and the y-axis points up in image space.
+
+.. image:: _static/camera_coords.png
+
