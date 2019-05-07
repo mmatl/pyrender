@@ -22,5 +22,5 @@ coordinates to specify their pose. See the illustration below for details.
 Basically, the camera z-axis points away from the scene, the x-axis points
 right in image space, and the y-axis points up in image space.
 
-.. image:: _static/camera_coords.png
+.. image:: /_static/camera_coords.png
 
