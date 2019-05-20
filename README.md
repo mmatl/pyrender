@@ -60,6 +60,7 @@ the Google CoLab Notebooks:
 
 * [OSMesa Google CoLab Notebook](https://colab.research.google.com/drive/1Z71mHIc-Sqval92nK290vAsHZRUkCjUx)
 * [EGL Google CoLab Notebook](https://colab.research.google.com/drive/1rTLHk0qxh4dn8KNe-mCnN8HAWdd2_BEh)
+* [Example on the left above](https://github.com/JonathanLehner/Colab-collection/blob/master/pyrender_example.ipynb)
 
 ## Viewer Keyboard and Mouse Controls
 
