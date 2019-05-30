@@ -6,6 +6,7 @@ Author: Matthew Matl
 import abc
 import numpy as np
 import six
+import sys
 
 from .constants import DEFAULT_Z_NEAR, DEFAULT_Z_FAR
 
@@ -405,11 +406,19 @@ class IntrinsicsCamera(Camera):
         width = float(width)
         height = float(height)
 
+        cx, cy = self.cx, self.cy
+        fx, fy = self.fx, self.fy
+        if sys.platform == 'darwin':
+            cx = self.cx * 2.0
+            cy = self.cy * 2.0
+            fx = self.fx * 2.0
+            fy = self.fy * 2.0
+
         P = np.zeros((4,4))
-        P[0][0] = 2.0 * self.fx / width
-        P[1][1] = 2.0 * self.fy / height
-        P[0][2] = 1.0 - 2.0 * self.cx / width
-        P[1][2] = 2.0 * self.cy / height - 1.0
+        P[0][0] = 2.0 * fx / width
+        P[1][1] = 2.0 * fy / height
+        P[0][2] = 1.0 - 2.0 * cx / width
+        P[1][2] = 2.0 * cy / height - 1.0
         P[3][2] = -1.0
 
         n = self.znear
