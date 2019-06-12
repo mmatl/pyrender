@@ -19,7 +19,7 @@ except Exception:
     except Exception:
         pass
 
-from .constants import (OPEN_GL_MAJOR, OPEN_GL_MINOR, TEXT_PADDING,
+from .constants import (OPEN_GL_MAJOR, OPEN_GL_MINOR, TEXT_PADDING, DEFAULT_SCENE_SCALE,
                         DEFAULT_Z_FAR, DEFAULT_Z_NEAR, RenderFlags, TextAlign)
 from .light import DirectionalLight
 from .node import Node
@@ -883,6 +883,8 @@ class Viewer(pyglet.window.Window):
         sufficient distance from the scene.
         """
         scale = self.scene.scale
+        if scale == 0.0:
+            scale = DEFAULT_SCENE_SCALE
         centroid = self.scene.centroid
 
         if self.viewer_flags['view_center'] is not None:
@@ -1007,6 +1009,8 @@ class Viewer(pyglet.window.Window):
         if self.viewer_flags['view_center'] is not None:
             centroid = self.viewer_flags['view_center']
         scale = self.scene.scale
+        if scale == 0.0:
+            scale = DEFAULT_SCENE_SCALE
 
         s2 = 1.0 / np.sqrt(2.0)
         cp = np.eye(4)
