@@ -29,7 +29,7 @@ Minimal Example for Offscreen Rendering
 Here is a minimal example of rendering a mesh model offscreen in pyrender.
 The only additional necessities are that you need to add lighting and a camera.
 
->>> import numpy
+>>> import numpy as np
 >>> import trimesh
 >>> import pyrender
 >>> import matplotlib.pyplot as plt
@@ -49,7 +49,7 @@ The only additional necessities are that you need to add lighting and a camera.
 >>> scene.add(camera, pose=camera_pose)
 >>> light = pyrender.SpotLight(color=np.ones(3), intensity=3.0,
 ...                            innerConeAngle=np.pi/16.0,
-...                            outerconeAngle=np.pi/6.0)
+...                            outerConeAngle=np.pi/6.0)
 >>> scene.add(light, pose=camera_pose)
 >>> r = pyrender.OffscreenRenderer(400, 400)
 >>> color, depth = r.render(scene)
