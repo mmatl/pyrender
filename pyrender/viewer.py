@@ -667,7 +667,7 @@ class Viewer(pyglet.window.Window):
             callback = None
             args = []
             kwargs = {}
-            if not isinstance(tup, list) or isinstance(tup, tuple):
+            if not isinstance(tup, (list, tuple, np.ndarray)):
                 callback = tup
             else:
                 callback = tup[0]
