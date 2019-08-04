@@ -75,7 +75,7 @@ class Node(object):
             self.translation = translation
             self.scale = scale
         else:
-            self._matrix = matrix
+            self.matrix = matrix
 
         self.name = name
         self.camera = camera
