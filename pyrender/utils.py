@@ -56,7 +56,10 @@ def format_texture_source(texture, target_channels='RGB'):
 
     # Convert PIL images into numpy arrays
     if isinstance(texture, Image.Image):
-        texture = np.array(texture)
+        if texture.mode == 'P' and target_channels in ('RGB', 'RGBA'):
+            texture = np.array(texture.convert(target_channels))
+        else:
+            texture = np.array(texture)
 
     # Format numpy arrays
     if isinstance(texture, np.ndarray):
