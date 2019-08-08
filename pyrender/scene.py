@@ -464,7 +464,7 @@ class Scene(object):
         return pose
 
     def set_pose(self, node, pose):
-        """Get the local-frame pose of a node in the scene.
+        """Set the local-frame pose of a node in the scene.
 
         Parameters
         ----------
