@@ -5,7 +5,6 @@ Author: Matthew Matl
 import os
 
 from .renderer import Renderer
-from .platforms import EGLPlatform, OSMesaPlatform, PygletPlatform
 from .constants import RenderFlags
 
 
@@ -114,12 +113,18 @@ class OffscreenRenderer(object):
 
     def _create(self):
         if 'PYOPENGL_PLATFORM' not in os.environ:
+            from pyrender.platforms.pyglet import PygletPlatform
             self._platform = PygletPlatform(self.viewport_width,
                                             self.viewport_height)
         elif os.environ['PYOPENGL_PLATFORM'] == 'egl':
-            self._platform = EGLPlatform(self.viewport_width,
-                                         self.viewport_height)
+            from pyrender.platforms import egl
+            device_id = int(os.environ.get('EGL_DEVICE_ID', '0'))
+            egl_device = egl.get_device_by_index(device_id)
+            self._platform = egl.EGLPlatform(self.viewport_width,
+                                             self.viewport_height,
+                                             device=egl_device)
         elif os.environ['PYOPENGL_PLATFORM'] == 'osmesa':
+            from pyrender.platforms.osmesa import OSMesaPlatform
             self._platform = OSMesaPlatform(self.viewport_width,
                                             self.viewport_height)
         else:
