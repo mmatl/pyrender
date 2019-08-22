@@ -659,12 +659,12 @@ class SpecularGlossinessMaterial(Material):
     def glossinessFactor(self):
         """float : The glossiness of the material.
         """
-        return self.glossinessFactor
+        return self._glossinessFactor
 
     @glossinessFactor.setter
     def glossinessFactor(self, value):
-        if value < 0 or value > 1:
-            raise ValueError('glossiness factor must be in range [0,1]')
+        if value < 0:
+            raise ValueError('glossiness factor must be non-zero')
         self._glossinessFactor = float(value)
 
     @property
