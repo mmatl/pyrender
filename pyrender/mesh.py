@@ -309,28 +309,14 @@ class Mesh(object):
                 glossiness = mat.kwargs.get('Ns', 1.0)
                 if isinstance(glossiness, list):
                     glossiness = float(glossiness[0])
-                roughness = (2 / (glossiness + 2)) ** (1.0/4.0)
-                # material = MetallicRoughnessMaterial(
-                #     alphaMode='BLEND',
-                #     roughnessFactor=roughness,
-                #     baseColorTexture=mat.image,
-                #     baseColorFactor=rgba_to_float(mat.diffuse),
-                # )
                 material = SpecularGlossinessMaterial(
                     alphaMode='BLEND',
                     diffuseTexture=mat.image,
-                    emissiveFactor=rgba_to_float(mat.ambient),
-                    diffuseFactor=rgba_to_float(mat.diffuse),
-                    specularFactor=rgba_to_float(mat.specular),
+                    emissiveFactor=mat.ambient,
+                    diffuseFactor=mat.diffuse,
+                    specularFactor=mat.specular,
                     glossinessFactor=glossiness,
                     doubleSided=True,
                 )
 
         return colors, texcoords, material
-
-
-def rgba_to_float(rgba):
-    if rgba is None:
-        return None
-
-    return rgba.astype(np.float) / 255.0
