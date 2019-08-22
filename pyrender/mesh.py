@@ -3,6 +3,8 @@ https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-mes
 
 Author: Matthew Matl
 """
+import copy
+
 import numpy as np
 import trimesh
 
@@ -207,18 +209,23 @@ class Mesh(object):
             ret = Mesh._get_trimesh_props(m, smooth=smooth)
             color_0 = ret[0]
             texcoord_0 = ret[1]
-            if material is None:
-                material = ret[2]
 
-            # Replace material with default if needed
             if material is None:
-                material = MetallicRoughnessMaterial(
-                    alphaMode='BLEND',
-                    baseColorFactor=[0.3, 0.3, 0.3, 1.0],
-                    metallicFactor=0.2,
-                    roughnessFactor=0.8
-                )
-            material.wireframe = wireframe
+                if ret[2] is not None:
+                    primitive_material = ret[2]
+                else:
+                    # Replace material with default if needed
+                    primitive_material = MetallicRoughnessMaterial(
+                        alphaMode='BLEND',
+                        baseColorFactor=[0.3, 0.3, 0.3, 1.0],
+                        metallicFactor=0.2,
+                        roughnessFactor=0.8
+                    )
+            else:
+                # Copy to keep original material unmodified.
+                primitive_material = copy.deepcopy(material)
+
+            primitive_material.wireframe = wireframe
 
             # Create the primitive
             primitives.append(Primitive(
@@ -227,7 +234,7 @@ class Mesh(object):
                 texcoord_0=texcoord_0,
                 color_0=color_0,
                 indices=indices,
-                material=material,
+                material=primitive_material,
                 mode=GLTF.TRIANGLES,
                 poses=poses
             ))
