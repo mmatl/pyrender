@@ -206,24 +206,20 @@ class Mesh(object):
                 normals = np.repeat(m.face_normals, 3, axis=0)
 
             # Compute colors, texture coords, and material properties
-            ret = Mesh._get_trimesh_props(m, smooth=smooth)
-            color_0 = ret[0]
-            texcoord_0 = ret[1]
+            color_0, texcoord_0, primitive_material = Mesh._get_trimesh_props(m, smooth=smooth)
 
-            if material is None:
-                if ret[2] is not None:
-                    primitive_material = ret[2]
-                else:
-                    # Replace material with default if needed
-                    primitive_material = MetallicRoughnessMaterial(
-                        alphaMode='BLEND',
-                        baseColorFactor=[0.3, 0.3, 0.3, 1.0],
-                        metallicFactor=0.2,
-                        roughnessFactor=0.8
-                    )
-            else:
-                # Copy to keep original material unmodified.
+            # Override if material is given.
+            if material is not None:
                 primitive_material = copy.deepcopy(material)
+
+            if primitive_material is None:
+                # Replace material with default if needed
+                primitive_material = MetallicRoughnessMaterial(
+                    alphaMode='BLEND',
+                    baseColorFactor=[0.3, 0.3, 0.3, 1.0],
+                    metallicFactor=0.2,
+                    roughnessFactor=0.8
+                )
 
             primitive_material.wireframe = wireframe
 
@@ -312,9 +308,15 @@ class Mesh(object):
                     alphaCutoff=mat.alphaCutoff
                 )
             elif isinstance(mat, trimesh.visual.texture.SimpleMaterial):
+                glossiness = mat.kwargs.get('Ns', 1.0)
+                if isinstance(glossiness, list):
+                    glossiness = float(glossiness[0])
+                roughness = (2 / (glossiness + 2)) ** (1.0 / 4.0)
                 material = MetallicRoughnessMaterial(
                     alphaMode='BLEND',
-                    baseColorTexture=mat.image
+                    roughnessFactor=roughness,
+                    baseColorFactor=mat.diffuse,
+                    baseColorTexture=mat.image,
                 )
 
         return colors, texcoords, material
