@@ -58,7 +58,7 @@ void main()
     gl_Position = P * V * M * inst_m * vec4(position, 1);
     frag_position = vec3(M * inst_m * vec4(position, 1.0));
 
-    mat4 N = transpose(inverse(M * inst_m));
+    mat4 N = transpose(inverse(V * M * inst_m));
 
 #ifdef NORMAL_LOC
     frag_normal = normalize(vec3(N * vec4(normal, 0.0)));
