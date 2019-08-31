@@ -464,7 +464,7 @@ class Scene(object):
         return pose
 
     def set_pose(self, node, pose):
-        """Get the local-frame pose of a node in the scene.
+        """Set the local-frame pose of a node in the scene.
 
         Parameters
         ----------
@@ -475,7 +475,7 @@ class Scene(object):
         """
         if node not in self.nodes:
             raise ValueError('Node must already be in scene')
-        node.matrix = pose
+        node._matrix = pose
         if node.mesh is not None:
             self._bounds = None
 

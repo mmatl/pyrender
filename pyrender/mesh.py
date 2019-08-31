@@ -256,12 +256,25 @@ class Mesh(object):
                 colors = vc[mesh.faces].reshape(
                     (3 * len(mesh.faces), vc.shape[1])
                 )
+            material = MetallicRoughnessMaterial(
+                alphaMode='BLEND',
+                baseColorFactor=[1.0, 1.0, 1.0, 1.0],
+                metallicFactor=0.2,
+                roughnessFactor=0.8
+            )
         # Process face colors
         elif mesh.visual.kind == 'face':
             if smooth:
                 raise ValueError('Cannot use face colors with a smooth mesh')
             else:
                 colors = np.repeat(mesh.visual.face_colors, 3, axis=0)
+
+            material = MetallicRoughnessMaterial(
+                alphaMode='BLEND',
+                baseColorFactor=[1.0, 1.0, 1.0, 1.0],
+                metallicFactor=0.2,
+                roughnessFactor=0.8
+            )
         # Process texture colors
         elif mesh.visual.kind == 'texture':
             # Configure UV coordinates

@@ -354,9 +354,9 @@ class IntrinsicsCamera(Camera):
     Parameters
     ----------
     fx : float
-        X-axis focal length in meters.
+        X-axis focal length in pixels.
     fy : float
-        Y-axis focal length in meters.
+        Y-axis focal length in pixels.
     cx : float
         X-axis optical center in pixels.
     cy : float

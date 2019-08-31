@@ -138,6 +138,6 @@ spheres, you can render it by instancing a spherical trimesh:
 >>> sm.visual.vertex_colors = [1.0, 0.0, 0.0]
 >>> tfs = np.tile(np.eye(4), (len(pts), 1, 1))
 >>> tfs[:,:3,3] = pts
->>> m = pyrender.Mesh.from_trimesh(m, poses=poses)
+>>> m = pyrender.Mesh.from_trimesh(sm, poses=tfs)
 
 .. image:: /_static/points2.png
