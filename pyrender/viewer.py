@@ -983,7 +983,7 @@ class Viewer(pyglet.window.Window):
             flags |= RenderFlags.FACE_NORMALS
         if not self.render_flags['cull_faces']:
             flags |= RenderFlags.SKIP_CULL_FACES
-        if self.render_flags['all_camera_coords']:
+        if self.render_flags.get('all_camera_coords', False):
             flags |= RenderFlags.ALL_CAM_COORDS
 
         self._renderer.render(self.scene, flags)
