@@ -5,10 +5,11 @@ Author: Matthew Matl
 """
 import numpy as np
 import trimesh
+import trimesh.visual
 
 from .primitive import Primitive
 from .constants import GLTF
-from .material import MetallicRoughnessMaterial
+from .material import MetallicRoughnessMaterial, SpecularGlossinessMaterial
 
 
 class Mesh(object):
@@ -305,9 +306,17 @@ class Mesh(object):
                     alphaCutoff=mat.alphaCutoff
                 )
             elif isinstance(mat, trimesh.visual.texture.SimpleMaterial):
-                material = MetallicRoughnessMaterial(
+                glossiness = mat.kwargs.get('Ns', 1.0)
+                if isinstance(glossiness, list):
+                    glossiness = float(glossiness[0])
+                material = SpecularGlossinessMaterial(
                     alphaMode='BLEND',
-                    baseColorTexture=mat.image
+                    diffuseTexture=mat.image,
+                    emissiveFactor=mat.ambient,
+                    diffuseFactor=mat.diffuse,
+                    specularFactor=mat.specular,
+                    glossinessFactor=glossiness,
+                    doubleSided=True,
                 )
 
         return colors, texcoords, material
