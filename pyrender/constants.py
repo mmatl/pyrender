@@ -10,6 +10,12 @@ SHADOW_TEX_SZ = 1024      # Width and Height of Shadow Textures
 TEXT_PADDING = 20         # Width of padding for rendering text (px)
 
 
+def _flag_value(i):
+    if i == 0:
+        return 0
+    return 2 ** (i - 1)
+
+
 # Flags for render type
 class RenderFlags(object):
     """Flags for rendering in the scene.
@@ -21,34 +27,40 @@ class RenderFlags(object):
     would result in an offscreen render with directional shadows and
     vertex normals enabled.
     """
-    NONE = 0
+    NONE = _flag_value(0)
     """Normal PBR Render."""
-    DEPTH_ONLY = 1
+    NO_LIGHTS = _flag_value(1)
+    """Do not render lights."""
+    NO_MATERIALS = _flag_value(2)
+    """Do not render lights."""
+    DEPTH_ONLY = NO_LIGHTS | NO_MATERIALS | _flag_value(3)
     """Only render the depth buffer."""
-    OFFSCREEN = 2
+    OFFSCREEN = _flag_value(4)
     """Render offscreen and return the depth and (optionally) color buffers."""
-    FLIP_WIREFRAME = 4
+    FLIP_WIREFRAME = _flag_value(5)
     """Invert the status of wireframe rendering for each mesh."""
-    ALL_WIREFRAME = 8
+    ALL_WIREFRAME = _flag_value(6)
     """Render all meshes as wireframes."""
-    ALL_SOLID = 16
+    ALL_SOLID = _flag_value(7)
     """Render all meshes as solids."""
-    SHADOWS_DIRECTIONAL = 32
+    SHADOWS_DIRECTIONAL = _flag_value(8)
     """Render shadows for directional lights."""
-    SHADOWS_POINT = 64
+    SHADOWS_POINT = _flag_value(9)
     """Render shadows for point lights."""
-    SHADOWS_SPOT = 128
+    SHADOWS_SPOT = _flag_value(10)
     """Render shadows for spot lights."""
-    SHADOWS_ALL = 32 | 64 | 128
+    SHADOWS_ALL = SHADOWS_DIRECTIONAL | SHADOWS_POINT | SHADOWS_SPOT
     """Render shadows for all lights."""
-    VERTEX_NORMALS = 256
+    VERTEX_NORMALS = _flag_value(11)
     """Render vertex normals."""
-    FACE_NORMALS = 512
+    FACE_NORMALS = _flag_value(12)
     """Render face normals."""
-    SKIP_CULL_FACES = 1024
+    SKIP_CULL_FACES = _flag_value(13)
     """Do not cull back faces."""
-    RGBA = 2048
+    RGBA = _flag_value(14)
     """Render the color buffer with the alpha channel enabled."""
+    ALL_CAM_COORDS = NO_LIGHTS | NO_MATERIALS | _flag_value(15)
+    """Render the camera coordinates of pixels."""
 
 
 class TextAlign:
