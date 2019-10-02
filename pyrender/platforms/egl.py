@@ -107,7 +107,7 @@ class EGLDevice:
         return name.decode('ascii')
 
     def __repr__(self):
-        return f"<EGLDevice(name={self.name!r})>"
+        return "<EGLDevice(name={})>".format(self.name)
 
 
 class EGLPlatform(Platform):
