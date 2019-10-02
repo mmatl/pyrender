@@ -49,6 +49,8 @@ class RenderFlags(object):
     """Do not cull back faces."""
     RGBA = 2048
     """Render the color buffer with the alpha channel enabled."""
+    FLAT = 4096
+    """Render the color buffer flat, with no lighting computations."""
 
 
 class TextAlign:
