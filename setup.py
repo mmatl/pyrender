@@ -60,7 +60,7 @@ setup(
         'Topic :: Scientific/Engineering'
     ],
     keywords = 'rendering graphics opengl 3d visualization pbr gltf',
-    packages = ['pyrender'],
+    packages = ['pyrender', 'pyrender.platforms'],
     setup_requires = requirements,
     install_requires = requirements,
     extras_require={
