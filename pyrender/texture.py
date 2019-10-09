@@ -206,13 +206,19 @@ class Texture(object):
                 self.tex_type, GL_TEXTURE_MAG_FILTER, self.sampler.magFilter
             )
         else:
-            glTexParameteri(self.tex_type, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+            if self.source is not None:
+                glTexParameteri(self.tex_type, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+            else:
+                glTexParameteri(self.tex_type, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
         if self.sampler.minFilter is not None:
             glTexParameteri(
                 self.tex_type, GL_TEXTURE_MIN_FILTER, self.sampler.minFilter
             )
         else:
-            glTexParameteri(self.tex_type, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+            if self.source is not None:
+                glTexParameteri(self.tex_type, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
+            else:
+                glTexParameteri(self.tex_type, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
 
         glTexParameteri(self.tex_type, GL_TEXTURE_WRAP_S, self.sampler.wrapS)
         glTexParameteri(self.tex_type, GL_TEXTURE_WRAP_T, self.sampler.wrapT)
