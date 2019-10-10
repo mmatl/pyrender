@@ -57,9 +57,9 @@ def format_texture_source(texture, target_channels='RGB'):
     # Convert PIL images into numpy arrays
     if isinstance(texture, Image.Image):
         if texture.mode == 'P' and target_channels in ('RGB', 'RGBA'):
-            texture = np.array(texture.convert(target_channels))
+            texture = np.array(texture.convert(target_channels)).astype(np.float32)
         else:
-            texture = np.array(texture)
+            texture = np.array(texture).astype(np.float32)
 
     # Format numpy arrays
     if isinstance(texture, np.ndarray):
@@ -103,14 +103,14 @@ def format_texture_source(texture, target_channels='RGB'):
             elif texture.shape[2] == 2:
                 raise ValueError('Cannot reformat 2-channel texture into RGBA')
             elif texture.shape[2] == 3:
-                texture = np.concatenate((
-                    texture,
-                    np.ones((texture.shape[0], texture.shape[1], 1))
-                ), axis=2)
+                tx = np.empty((texture.shape[0], texture.shape[1], 4))
+                tx[:,:,:3] = texture
+                tx[:,:,3] = 1.0
+                texture = tx
         else:
             raise ValueError('Invalid texture channel specification: {}'
                              .format(target_channels))
     else:
         raise TypeError('Invalid type {} for texture'.format(type(texture)))
 
-    return texture.astype(np.float32)
+    return texture
