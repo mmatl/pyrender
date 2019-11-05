@@ -186,14 +186,15 @@ class PerspectiveCamera(Camera):
                 raise ValueError('Aspect ratio of camera must be defined')
             aspect_ratio = float(width) / float(height)
 
-        a = aspect_ratio
-        t = np.tan(self.yfov / 2.0)
+        xfov = self.yfov * aspect_ratio
+        tx = np.tan(xfov / 2.0)
+        ty = np.tan(self.yfov / 2.0)
         n = self.znear
         f = self.zfar
 
         P = np.zeros((4,4))
-        P[0][0] = 1.0 / (a * t)
-        P[1][1] = 1.0 / t
+        P[0][0] = 1.0 / tx
+        P[1][1] = 1.0 / ty
         P[3][2] = -1.0
 
         if f is None:
