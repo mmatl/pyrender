@@ -130,4 +130,4 @@ def test_duck():
     assert x.primitives[0].material.baseColorTexture is not None
     pixel = x.primitives[0].material.baseColorTexture.source[100, 100]
     yellowish = np.array([1.0, 0.7411765, 0.0, 1.0])
-    assert np.allclose(pixel, yellowish)
+    assert np.allclose(pixel / 255.0, yellowish)
