@@ -113,7 +113,7 @@ class OffscreenRenderer(object):
 
     def _create(self):
         if 'PYOPENGL_PLATFORM' not in os.environ:
-            from pyrender.platforms.pyglet import PygletPlatform
+            from pyrender.platforms.pyglet_platform import PygletPlatform
             self._platform = PygletPlatform(self.viewport_width,
                                             self.viewport_height)
         elif os.environ['PYOPENGL_PLATFORM'] == 'egl':

@@ -3,4 +3,4 @@
 Author: Matthew Matl
 """
 
-from pyrender.platforms.base import Platform
+from .base import Platform
