@@ -51,7 +51,8 @@ class RenderFlags(object):
     """Render the color buffer with the alpha channel enabled."""
     FLAT = 4096
     """Render the color buffer flat, with no lighting computations."""
-
+    USE_RAW_DEPTH = 8192
+    """Disable depth output preprocessing"""
 
 class TextAlign:
     """Text alignment options for captions.
