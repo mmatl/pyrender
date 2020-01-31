@@ -303,6 +303,7 @@ class Mesh(object):
                     baseColorFactor=mat.baseColorFactor,
                     baseColorTexture=mat.baseColorTexture,
                     metallicFactor=mat.metallicFactor,
+                    roughnessFactor=mat.roughnessFactor,
                     metallicRoughnessTexture=mat.metallicRoughnessTexture,
                     doubleSided=mat.doubleSided,
                     alphaCutoff=mat.alphaCutoff
