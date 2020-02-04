@@ -319,5 +319,7 @@ class Mesh(object):
                     baseColorFactor=mat.diffuse,
                     baseColorTexture=mat.image,
                 )
+            elif isinstance(mat, MetallicRoughnessMaterial):
+                material = mat
 
         return colors, texcoords, material
