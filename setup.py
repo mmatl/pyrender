@@ -15,7 +15,7 @@ requirements = [
     'networkx==2.2',              # For the scene graph
     'numpy',                      # Numpy
     'Pillow',                     # For Trimesh texture conversions
-    'pyglet==1.4.0b1',            # For the pyglet viewer
+    'pyglet==1.4.10',             # For the pyglet viewer
     'PyOpenGL==3.1.0',            # For OpenGL
 #    'PyOpenGL_accelerate==3.1.0', # For OpenGL
     'scipy',                      # Because of trimesh missing dep
