@@ -79,7 +79,6 @@ class OffscreenRenderer(object):
         depth_im : (h, w) float32
             The depth buffer in linear units.
         """
-
         self._platform.make_current()
         # If platform does not support dynamically-resizing framebuffers,
         # destroy it and restart it
@@ -110,6 +109,8 @@ class OffscreenRenderer(object):
         """
         self._renderer.delete()
         self._platform.delete_context()
+        self._renderer = None
+        self._platform = None
 
     def _create(self):
         if 'PYOPENGL_PLATFORM' not in os.environ:

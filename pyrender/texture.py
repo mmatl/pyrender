@@ -45,7 +45,7 @@ class Texture(object):
                  width=None,
                  height=None,
                  tex_type=GL_TEXTURE_2D,
-                 data_format=GL_FLOAT):
+                 data_format=GL_UNSIGNED_BYTE):
         self.source_channels = source_channels
         self.name = name
         self.sampler = sampler
@@ -222,9 +222,12 @@ class Texture(object):
 
         glTexParameteri(self.tex_type, GL_TEXTURE_WRAP_S, self.sampler.wrapS)
         glTexParameteri(self.tex_type, GL_TEXTURE_WRAP_T, self.sampler.wrapT)
+        border_color = 255 * np.ones(4).astype(np.uint8)
+        if self.data_format == GL_FLOAT:
+            border_color = np.ones(4).astype(np.float32)
         glTexParameterfv(
             self.tex_type, GL_TEXTURE_BORDER_COLOR,
-            np.ones(4).astype(np.float32)
+            border_color
         )
 
         # Unbind texture

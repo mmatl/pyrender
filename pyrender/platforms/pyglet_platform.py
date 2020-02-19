@@ -1,6 +1,8 @@
 from pyrender.constants import OPEN_GL_MAJOR, OPEN_GL_MINOR
 from .base import Platform
 
+import OpenGL
+
 
 __all__ = ['PygletPlatform']
 
@@ -44,12 +46,15 @@ class PygletPlatform(Platform):
 
     def delete_context(self):
         if self._window is not None:
+            cid = OpenGL.contextdata.getContext()
             try:
                 self._window.context.destroy()
                 self._window.close()
             except Exception:
                 pass
             self._window = None
+            OpenGL.contextdata.cleanupContext(cid)
+            del cid
 
     def supports_framebuffers(self):
         return True
