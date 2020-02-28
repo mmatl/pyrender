@@ -9,9 +9,14 @@ from setuptools import setup
 # load __version__
 exec(open('pyrender/version.py').read())
 
+def get_imageio_dep():
+    if sys.version[0] == "2":
+        return 'imageio<=2.6.1'
+    return 'imageio'
+
 requirements = [
     'freetype-py',                # For font loading
-    'imageio',                    # For Image I/O
+    get_imageio_dep(),            # For Image I/O
     'networkx',                   # For the scene graph
     'numpy',                      # Numpy
     'Pillow',                     # For Trimesh texture conversions
