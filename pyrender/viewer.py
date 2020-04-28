@@ -19,7 +19,9 @@ except Exception:
     except Exception:
         pass
 
-from .constants import (OPEN_GL_MAJOR, OPEN_GL_MINOR, TEXT_PADDING, DEFAULT_SCENE_SCALE,
+from .constants import (TARGET_OPEN_GL_MAJOR, TARGET_OPEN_GL_MINOR,
+                        MIN_OPEN_GL_MAJOR, MIN_OPEN_GL_MINOR,
+                        TEXT_PADDING, DEFAULT_SCENE_SCALE,
                         DEFAULT_Z_FAR, DEFAULT_Z_NEAR, RenderFlags, TextAlign)
 from .light import DirectionalLight
 from .node import Node
@@ -987,15 +989,38 @@ class Viewer(pyglet.window.Window):
         self._renderer.render(self.scene, flags)
 
     def _init_and_start_app(self):
+        # Try multiple configs starting with target OpenGL version
+        # and multisampling and removing these options if exception
+        # Note: multisampling not available on all hardware
         from pyglet.gl import Config
-        conf = Config(sample_buffers=1, samples=4,
-                      depth_size=24, double_buffer=True,
-                      major_version=OPEN_GL_MAJOR,
-                      minor_version=OPEN_GL_MINOR)
-        super(Viewer, self).__init__(config=conf, resizable=True,
-                                     width=self._viewport_size[0],
-                                     height=self._viewport_size[1])
-        if self.context.config.major_version < 3:
+        confs = [Config(sample_buffers=1, samples=4,
+                        depth_size=24,
+                        double_buffer=True,
+                        major_version=TARGET_OPEN_GL_MAJOR,
+                        minor_version=TARGET_OPEN_GL_MINOR),
+                 Config(depth_size=24,
+                        double_buffer=True,
+                        major_version=TARGET_OPEN_GL_MAJOR,
+                        minor_version=TARGET_OPEN_GL_MINOR),
+                 Config(sample_buffers=1, samples=4,
+                        depth_size=24,
+                        double_buffer=True,
+                        major_version=MIN_OPEN_GL_MAJOR,
+                        minor_version=MIN_OPEN_GL_MINOR),
+                 Config(depth_size=24,
+                        double_buffer=True,
+                        major_version=MIN_OPEN_GL_MAJOR,
+                        minor_version=MIN_OPEN_GL_MINOR)]
+        for conf in confs:
+            try:
+                super(Viewer, self).__init__(config=conf, resizable=True,
+                                             width=self._viewport_size[0],
+                                             height=self._viewport_size[1])
+                break
+            except pyglet.window.NoSuchConfigException:
+                pass
+
+        if not self.context:
             raise ValueError('Unable to initialize an OpenGL 3+ context')
         clock.schedule_interval(
             Viewer._time_event, 1.0 / self.viewer_flags['refresh_rate'], self
