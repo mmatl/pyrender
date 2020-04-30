@@ -112,6 +112,7 @@ class OffscreenRenderer(object):
     def delete(self):
         """Free all OpenGL resources.
         """
+        self._platform.make_current()
         self._renderer.delete()
         self._platform.delete_context()
         self._renderer = None
