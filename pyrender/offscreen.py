@@ -115,8 +115,12 @@ class OffscreenRenderer(object):
         self._platform.make_current()
         self._renderer.delete()
         self._platform.delete_context()
+        del self._renderer
+        del self._platform
         self._renderer = None
         self._platform = None
+        import gc
+        gc.collect()
 
     def _create(self):
         if 'PYOPENGL_PLATFORM' not in os.environ:
