@@ -198,6 +198,11 @@ class EGLPlatform(Platform):
             self._egl_context
         )
 
+    def make_uncurrent(self):
+        """Make the OpenGL context uncurrent.
+        """
+        pass
+
     def delete_context(self):
         from OpenGL.EGL import eglDestroyContext, eglTerminate
         if self._egl_display is not None:

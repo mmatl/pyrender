@@ -4,6 +4,7 @@ import numpy as np
 import os
 import re
 
+import OpenGL
 from OpenGL.GL import *
 from OpenGL.GL import shaders as gl_shader_utils
 
@@ -51,7 +52,8 @@ class ShaderProgramCache(object):
                 continue
             _, name = os.path.split(fn)
             shader_names.append(name)
-        key = tuple(sorted(
+        cid = OpenGL.contextdata.getContext()
+        key = tuple([cid] + sorted(
             [(s,1) for s in shader_names] + [(d, defines[d]) for d in defines]
         ))
 

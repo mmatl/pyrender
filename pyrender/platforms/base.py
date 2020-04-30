@@ -52,6 +52,12 @@ class Platform(object):
         pass
 
     @abc.abstractmethod
+    def make_uncurrent(self):
+        """Make the OpenGL context uncurrent.
+        """
+        pass
+
+    @abc.abstractmethod
     def delete_context(self):
         """Delete the OpenGL context.
         """

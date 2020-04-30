@@ -20,6 +20,11 @@ class PygletPlatform(Platform):
         import pyglet
         pyglet.options['shadow_window'] = False
 
+        try:
+            pyglet.lib.x11.xlib.XInitThreads()
+        except Exception:
+            pass
+
         self._window = None
         conf = pyglet.gl.Config(
             sample_buffers=1, samples=4,
@@ -44,8 +49,13 @@ class PygletPlatform(Platform):
         if self._window:
             self._window.switch_to()
 
+    def make_uncurrent(self):
+        import pyglet
+        pyglet.gl.xlib.glx.glXMakeContextCurrent(self._window.context.x_display, 0, 0, None)
+
     def delete_context(self):
         if self._window is not None:
+            self.make_current()
             cid = OpenGL.contextdata.getContext()
             try:
                 self._window.context.destroy()
