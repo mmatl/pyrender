@@ -299,7 +299,7 @@ float shadow_calc(mat4 light_matrix, sampler2D shadow_map, float nl)
     vec3 light_coords = proj_coords.xyz / proj_coords.w;
     light_coords = light_coords * 0.5 + 0.5;
     float current_depth = light_coords.z;
-    float bias = max(0.002 * (1.0 - nl), 0.001) / proj_coords.w;
+    float bias = max(0.001 * (1.0 - nl), 0.0001) / proj_coords.w;
     float compare = (current_depth - bias);
     float shadow = PCF(shadow_map, textureSize(shadow_map, 0), light_coords.xy, compare);
     if (light_coords.z > 1.0) {

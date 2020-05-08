@@ -63,10 +63,10 @@ def format_texture_source(texture, target_channels='RGB'):
 
     # Format numpy arrays
     if isinstance(texture, np.ndarray):
-        if np.issubdtype(texture.dtype, np.integer):
-            texture = (texture / 255.0).astype(np.float32)
-        elif np.issubdtype(texture.dtype, np.floating):
-            texture = texture.astype(np.float32)
+        if np.issubdtype(texture.dtype, np.floating):
+            texture = np.array(texture * 255.0, dtype=np.uint8)
+        elif np.issubdtype(texture.dtype, np.integer):
+            texture = texture.astype(np.uint8)
         else:
             raise TypeError('Invalid type {} for texture'.format(
                 type(texture)
@@ -75,7 +75,6 @@ def format_texture_source(texture, target_channels='RGB'):
         # Format array by picking out correct texture channels or padding
         if texture.ndim == 2:
             texture = texture[:,:,np.newaxis]
-
         if target_channels == 'R':
             texture = texture[:,:,0]
             texture = texture.squeeze()
@@ -99,18 +98,18 @@ def format_texture_source(texture, target_channels='RGB'):
         elif target_channels == 'RGBA':
             if texture.shape[2] == 1:
                 texture = np.repeat(texture, 4, axis=2)
-                texture[:,:,3] = 1.0
+                texture[:,:,3] = 255
             elif texture.shape[2] == 2:
                 raise ValueError('Cannot reformat 2-channel texture into RGBA')
             elif texture.shape[2] == 3:
-                texture = np.concatenate((
-                    texture,
-                    np.ones((texture.shape[0], texture.shape[1], 1))
-                ), axis=2)
+                tx = np.empty((texture.shape[0], texture.shape[1], 4), dtype=np.uint8)
+                tx[:,:,:3] = texture
+                tx[:,:,3] = 255
+                texture = tx
         else:
             raise ValueError('Invalid texture channel specification: {}'
                              .format(target_channels))
     else:
         raise TypeError('Invalid type {} for texture'.format(type(texture)))
 
-    return texture.astype(np.float32)
+    return texture

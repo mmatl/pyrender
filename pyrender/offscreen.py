@@ -5,7 +5,6 @@ Author: Matthew Matl
 import os
 
 from .renderer import Renderer
-from .platforms import EGLPlatform, OSMesaPlatform, PygletPlatform
 from .constants import RenderFlags
 
 
@@ -80,7 +79,6 @@ class OffscreenRenderer(object):
         depth_im : (h, w) float32
             The depth buffer in linear units.
         """
-
         self._platform.make_current()
         # If platform does not support dynamically-resizing framebuffers,
         # destroy it and restart it
@@ -97,29 +95,47 @@ class OffscreenRenderer(object):
 
         if self._platform.supports_framebuffers():
             flags |= RenderFlags.OFFSCREEN
-            return self._renderer.render(scene, flags)
+            retval = self._renderer.render(scene, flags)
         else:
             self._renderer.render(scene, flags)
             depth = self._renderer.read_depth_buf()
             if flags & RenderFlags.DEPTH_ONLY:
-                return depth
-            color = self._renderer.read_color_buf()
-            return color, depth
+                retval = depth
+            else:
+                color = self._renderer.read_color_buf()
+                retval = color, depth
+
+        # Make the platform not current
+        self._platform.make_uncurrent()
+        return retval
 
     def delete(self):
         """Free all OpenGL resources.
         """
+        self._platform.make_current()
         self._renderer.delete()
         self._platform.delete_context()
+        del self._renderer
+        del self._platform
+        self._renderer = None
+        self._platform = None
+        import gc
+        gc.collect()
 
     def _create(self):
         if 'PYOPENGL_PLATFORM' not in os.environ:
+            from pyrender.platforms.pyglet_platform import PygletPlatform
             self._platform = PygletPlatform(self.viewport_width,
                                             self.viewport_height)
         elif os.environ['PYOPENGL_PLATFORM'] == 'egl':
-            self._platform = EGLPlatform(self.viewport_width,
-                                         self.viewport_height)
+            from pyrender.platforms import egl
+            device_id = int(os.environ.get('EGL_DEVICE_ID', '0'))
+            egl_device = egl.get_device_by_index(device_id)
+            self._platform = egl.EGLPlatform(self.viewport_width,
+                                             self.viewport_height,
+                                             device=egl_device)
         elif os.environ['PYOPENGL_PLATFORM'] == 'osmesa':
+            from pyrender.platforms.osmesa import OSMesaPlatform
             self._platform = OSMesaPlatform(self.viewport_width,
                                             self.viewport_height)
         else:

@@ -9,18 +9,23 @@ from setuptools import setup
 # load __version__
 exec(open('pyrender/version.py').read())
 
+def get_imageio_dep():
+    if sys.version[0] == "2":
+        return 'imageio<=2.6.1'
+    return 'imageio'
+
 requirements = [
     'freetype-py',                # For font loading
-    'imageio',                    # For Image I/O
-    'networkx==2.2',              # For the scene graph
+    get_imageio_dep(),            # For Image I/O
+    'networkx',                   # For the scene graph
     'numpy',                      # Numpy
     'Pillow',                     # For Trimesh texture conversions
-    'pyglet==1.4.0b1',            # For the pyglet viewer
+    'pyglet>=1.4.10',             # For the pyglet viewer
     'PyOpenGL==3.1.0',            # For OpenGL
 #    'PyOpenGL_accelerate==3.1.0', # For OpenGL
     'scipy',                      # Because of trimesh missing dep
     'six',                        # For Python 2/3 interop
-    'trimesh>=2.37.6',            # For meshes
+    'trimesh',                    # For meshes
 ]
 
 dev_requirements = [
@@ -60,7 +65,7 @@ setup(
         'Topic :: Scientific/Engineering'
     ],
     keywords = 'rendering graphics opengl 3d visualization pbr gltf',
-    packages = ['pyrender'],
+    packages = ['pyrender', 'pyrender.platforms'],
     setup_requires = requirements,
     install_requires = requirements,
     extras_require={

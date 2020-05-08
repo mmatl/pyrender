@@ -6,6 +6,7 @@ import freetype
 import numpy as np
 import os
 
+import OpenGL
 from OpenGL.GL import *
 
 from .constants import TextAlign, FLOAT_SZ
@@ -33,7 +34,8 @@ class FontCache(object):
         else:
             font_filename = os.path.join(self.font_dir, font_name) + '.ttf'
 
-        key = (font_name, int(font_pt))
+        cid = OpenGL.contextdata.getContext()
+        key = (cid, font_name, int(font_pt))
 
         if key not in self._font_cache:
             self._font_cache[key] = Font(font_filename, font_pt)

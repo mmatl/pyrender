@@ -7,10 +7,13 @@ import abc
 import numpy as np
 import six
 
+from OpenGL.GL import *
+
 from .utils import format_color_vector
 from .texture import Texture
 from .constants import SHADOW_TEX_SZ
 from .camera import OrthographicCamera, PerspectiveCamera
+
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -158,7 +161,7 @@ class DirectionalLight(Light):
         if size is None:
             size = SHADOW_TEX_SZ
         self.shadow_texture = Texture(width=size, height=size,
-                                      source_channels='D')
+                                      source_channels='D', data_format=GL_FLOAT)
 
     def _get_shadow_camera(self, scene_scale):
         """Generate and return a shadow mapping camera for this light.
@@ -356,7 +359,7 @@ class SpotLight(Light):
         if size is None:
             size = SHADOW_TEX_SZ
         self.shadow_texture = Texture(width=size, height=size,
-                                      source_channels='D')
+                                      source_channels='D', data_format=GL_FLOAT)
 
     def _get_shadow_camera(self, scene_scale):
         """Generate and return a shadow mapping camera for this light.

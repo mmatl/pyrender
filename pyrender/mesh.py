@@ -3,6 +3,8 @@ https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-mes
 
 Author: Matthew Matl
 """
+import copy
+
 import numpy as np
 import trimesh
 
@@ -204,21 +206,22 @@ class Mesh(object):
                 normals = np.repeat(m.face_normals, 3, axis=0)
 
             # Compute colors, texture coords, and material properties
-            ret = Mesh._get_trimesh_props(m, smooth=smooth)
-            color_0 = ret[0]
-            texcoord_0 = ret[1]
-            if material is None:
-                material = ret[2]
+            color_0, texcoord_0, primitive_material = Mesh._get_trimesh_props(m, smooth=smooth)
 
-            # Replace material with default if needed
-            if material is None:
-                material = MetallicRoughnessMaterial(
+            # Override if material is given.
+            if material is not None:
+                primitive_material = copy.deepcopy(material)
+
+            if primitive_material is None:
+                # Replace material with default if needed
+                primitive_material = MetallicRoughnessMaterial(
                     alphaMode='BLEND',
                     baseColorFactor=[0.3, 0.3, 0.3, 1.0],
                     metallicFactor=0.2,
                     roughnessFactor=0.8
                 )
-            material.wireframe = wireframe
+
+            primitive_material.wireframe = wireframe
 
             # Create the primitive
             primitives.append(Primitive(
@@ -227,7 +230,7 @@ class Mesh(object):
                 texcoord_0=texcoord_0,
                 color_0=color_0,
                 indices=indices,
-                material=material,
+                material=primitive_material,
                 mode=GLTF.TRIANGLES,
                 poses=poses
             ))
@@ -300,14 +303,23 @@ class Mesh(object):
                     baseColorFactor=mat.baseColorFactor,
                     baseColorTexture=mat.baseColorTexture,
                     metallicFactor=mat.metallicFactor,
+                    roughnessFactor=mat.roughnessFactor,
                     metallicRoughnessTexture=mat.metallicRoughnessTexture,
                     doubleSided=mat.doubleSided,
                     alphaCutoff=mat.alphaCutoff
                 )
             elif isinstance(mat, trimesh.visual.texture.SimpleMaterial):
+                glossiness = mat.kwargs.get('Ns', 1.0)
+                if isinstance(glossiness, list):
+                    glossiness = float(glossiness[0])
+                roughness = (2 / (glossiness + 2)) ** (1.0 / 4.0)
                 material = MetallicRoughnessMaterial(
                     alphaMode='BLEND',
-                    baseColorTexture=mat.image
+                    roughnessFactor=roughness,
+                    baseColorFactor=mat.diffuse,
+                    baseColorTexture=mat.image,
                 )
+            elif isinstance(mat, MetallicRoughnessMaterial):
+                material = mat
 
         return colors, texcoords, material

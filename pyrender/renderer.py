@@ -354,7 +354,7 @@ class Renderer(object):
                 )
 
                 # Next, bind the lighting
-                if not flags & RenderFlags.DEPTH_ONLY:
+                if not (flags & RenderFlags.DEPTH_ONLY or flags & RenderFlags.FLAT):
                     self._bind_lighting(scene, program, node, flags)
 
                 # Finally, bind and draw the primitive
@@ -871,7 +871,8 @@ class Renderer(object):
         defines = {}
 
         if (bool(program_flags & ProgramFlags.USE_MATERIAL) and
-                not flags & RenderFlags.DEPTH_ONLY):
+                not flags & RenderFlags.DEPTH_ONLY and
+                not flags & RenderFlags.FLAT):
             vertex_shader = 'mesh.vert'
             fragment_shader = 'mesh.frag'
         elif bool(program_flags & (ProgramFlags.VERTEX_NORMALS |
@@ -882,6 +883,9 @@ class Renderer(object):
             else:
                 geometry_shader = 'vertex_normals.geom'
             fragment_shader = 'vertex_normals.frag'
+        elif flags & RenderFlags.FLAT:
+            vertex_shader = 'flat.vert'
+            fragment_shader = 'flat.frag'
         else:
             vertex_shader = 'mesh_depth.vert'
             fragment_shader = 'mesh_depth.frag'
@@ -1187,7 +1191,7 @@ class Renderer(object):
                 )
 
                 # Next, bind the lighting
-                if not flags & RenderFlags.DEPTH_ONLY:
+                if not flags & RenderFlags.DEPTH_ONLY and not flags & RenderFlags.FLAT:
                     self._bind_lighting(scene, program, node, flags)
 
                 # Finally, bind and draw the primitive

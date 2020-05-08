@@ -6,7 +6,7 @@ OPEN_GL_MAJOR = 4         # Target OpenGL Major Version
 OPEN_GL_MINOR = 1         # Target OpenGL Minor Version
 FLOAT_SZ = 4              # Byte size of GL float32
 UINT_SZ = 4               # Byte size of GL uint32
-SHADOW_TEX_SZ = 1024      # Width and Height of Shadow Textures
+SHADOW_TEX_SZ = 2048      # Width and Height of Shadow Textures
 TEXT_PADDING = 20         # Width of padding for rendering text (px)
 
 
@@ -49,6 +49,8 @@ class RenderFlags(object):
     """Do not cull back faces."""
     RGBA = 2048
     """Render the color buffer with the alpha channel enabled."""
+    FLAT = 4096
+    """Render the color buffer flat, with no lighting computations."""
 
 
 class TextAlign:
