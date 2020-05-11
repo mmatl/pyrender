@@ -149,6 +149,31 @@ class Renderer(object):
 
         return retval
 
+    def pick(self, scene, pos_window):
+        """Return the scene node displayed at given coordinates.
+
+        Parameters
+        ----------
+        scene : :class:`Scene`
+            A scene to render.
+        pos_window : [int,int]
+            The x/y coordinates in window space at which
+            the returned scene node is located.
+
+        Returns
+        -------
+        picked : The node in the scene graph displayed at given
+                 window coordinates, or None if no node is displayed
+                 at that location.
+        """
+        # Update context with meshes and textures
+        self._update_context(scene, 0)
+
+        # Make picking pass
+        picked = self._picking_pass(scene, pos_window)
+
+        return picked
+
     def render_text(self, text, x, y, font_name='OpenSans-Regular',
                     font_pt=40, color=None, scale=1.0,
                     align=TextAlign.BOTTOM_LEFT):
@@ -376,6 +401,91 @@ class Renderer(object):
             return self._read_main_framebuffer(scene, flags)
         else:
             return
+
+
+    def _picking_pass(self, scene, pos_window):
+        flags = RenderFlags.PICK
+
+        # Set up viewport for render
+        self._configure_picking_pass_viewport()
+
+        # Clear it
+        glClearColor(1,1,1,1)
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        glDisable(GL_MULTISAMPLE)
+
+        # Set up camera matrices
+        V, P = self._get_camera_matrices(scene)
+
+        i = 0
+        program = None
+        node_sequence = []
+        # Now, render each object
+        # for node in self._sorted_mesh_nodes(scene):
+        for node in scene.mesh_nodes:
+            mesh = node.mesh
+
+            # Skip the mesh if it's not visible
+            if not mesh.is_visible:
+                continue
+
+            # Remember sequence of nodes
+            node_sequence.append(node)
+            # Map index to unique RGB color used to identify the node
+            r = (i & 0x000000FF) >>  0
+            g = (i & 0x0000FF00) >>  8
+            b = (i & 0x00FF0000) >> 16
+            pick_color = np.array([r/255.0, g/255.0, b/255.0, 1.0])
+            i = i+1
+
+            for primitive in mesh.primitives:
+
+                # First, get and bind the appropriate program
+                program = self._get_primitive_program(
+                    primitive, flags, 0
+                )
+                program._bind()
+
+                # Set the camera uniforms
+                program.set_uniform('V', V)
+                program.set_uniform('P', P)
+                program.set_uniform(
+                    'cam_pos', scene.get_pose(scene.main_camera_node)[:3,3]
+                )
+                program.set_uniform('pick_color', pick_color)
+
+                # Finally, bind and draw the primitive
+                self._bind_and_draw_primitive(
+                    primitive=primitive,
+                    pose=scene.get_pose(node),
+                    program=program,
+                    flags=flags
+                )
+                self._reset_active_textures()
+
+        # Unbind the shader and flush the output
+        if program is not None:
+            program._unbind()
+        glFlush()
+        glFinish()
+
+        # Read the color value at requested coordinate
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, self._main_fb)
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
+        data = glReadPixels(
+            pos_window[0],
+            pos_window[1],
+            1,1,
+            GL_RGBA,
+            GL_UNSIGNED_BYTE
+        )
+
+        # Map color to index in node sequence
+        pickedID = data[0] + data[1]*256 + data[2]*256*256
+        if pickedID == 0x00ffffff:
+            return None # background
+        else:
+            return node_sequence[pickedID]
 
     def _shadow_mapping_pass(self, scene, light_node, flags):
         light = light_node.light
@@ -883,6 +993,9 @@ class Renderer(object):
             else:
                 geometry_shader = 'vertex_normals.geom'
             fragment_shader = 'vertex_normals.frag'
+        elif flags & RenderFlags.PICK:
+            vertex_shader = 'pick.vert'
+            fragment_shader = 'pick.frag'
         elif flags & RenderFlags.FLAT:
             vertex_shader = 'flat.vert'
             fragment_shader = 'flat.frag'
@@ -980,6 +1093,16 @@ class Renderer(object):
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, self._main_fb_ms)
         else:
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0)
+
+        glViewport(0, 0, self.viewport_width, self.viewport_height)
+        glEnable(GL_DEPTH_TEST)
+        glDepthMask(GL_TRUE)
+        glDepthFunc(GL_LESS)
+        glDepthRange(0.0, 1.0)
+
+    def _configure_picking_pass_viewport(self):
+        self._configure_main_framebuffer()
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, self._main_fb)
 
         glViewport(0, 0, self.viewport_width, self.viewport_height)
         glEnable(GL_DEPTH_TEST)
