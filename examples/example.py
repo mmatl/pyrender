@@ -10,7 +10,7 @@ from pyrender import PerspectiveCamera,\
                      DirectionalLight, SpotLight, PointLight,\
                      MetallicRoughnessMaterial,\
                      Primitive, Mesh, Node, Scene,\
-                     Viewer, OffscreenRenderer
+                     Viewer, OffscreenRenderer, RenderFlags
 
 #==============================================================================
 # Mesh creation
@@ -137,9 +137,21 @@ v = Viewer(scene, central_node=drill_node)
 
 r = OffscreenRenderer(viewport_width=640*2, viewport_height=480*2)
 color, depth = r.render(scene)
-r.delete()
 
 import matplotlib.pyplot as plt
 plt.figure()
 plt.imshow(color)
 plt.show()
+
+#==============================================================================
+# Segmask rendering
+#==============================================================================
+
+nm = {node: 20*(i + 1) for i, node in enumerate(scene.mesh_nodes)}
+seg = r.render(scene, RenderFlags.SEG, nm)[0]
+plt.figure()
+plt.imshow(seg)
+plt.show()
+
+r.delete()
+

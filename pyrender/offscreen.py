@@ -60,7 +60,7 @@ class OffscreenRenderer(object):
     def point_size(self, value):
         self._point_size = float(value)
 
-    def render(self, scene, flags=RenderFlags.NONE):
+    def render(self, scene, flags=RenderFlags.NONE, seg_node_map=None):
         """Render a scene with the given set of flags.
 
         Parameters
@@ -69,6 +69,10 @@ class OffscreenRenderer(object):
             A scene to render.
         flags : int
             A bitwise or of one or more flags from :class:`.RenderFlags`.
+        seg_node_map : dict
+            A map from :class:`.Node` objects to (3,) colors for each.
+            If specified along with flags set to :attr:`.RenderFlags.SEG`,
+            the color image will be a segmentation image.
 
         Returns
         -------
@@ -95,9 +99,9 @@ class OffscreenRenderer(object):
 
         if self._platform.supports_framebuffers():
             flags |= RenderFlags.OFFSCREEN
-            retval = self._renderer.render(scene, flags)
+            retval = self._renderer.render(scene, flags, seg_node_map)
         else:
-            self._renderer.render(scene, flags)
+            self._renderer.render(scene, flags, seg_node_map)
             depth = self._renderer.read_depth_buf()
             if flags & RenderFlags.DEPTH_ONLY:
                 retval = depth

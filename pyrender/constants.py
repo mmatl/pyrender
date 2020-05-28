@@ -51,6 +51,7 @@ class RenderFlags(object):
     """Render the color buffer with the alpha channel enabled."""
     FLAT = 4096
     """Render the color buffer flat, with no lighting computations."""
+    SEG = 8192
 
 
 class TextAlign:
