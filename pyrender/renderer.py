@@ -9,7 +9,7 @@ import PIL
 
 from .constants import (RenderFlags, TextAlign, GLTF, BufFlags, TexFlags,
                         ProgramFlags, DEFAULT_Z_FAR, DEFAULT_Z_NEAR,
-                        SHADOW_TEX_SZ)
+                        SHADOW_TEX_SZ, MAX_N_LIGHTS)
 from .shader_program import ShaderProgramCache
 from .material import MetallicRoughnessMaterial, SpecularGlossinessMaterial
 from .light import PointLight, SpotLight, DirectionalLight
@@ -853,7 +853,7 @@ class Renderer(object):
         return program
 
     def _compute_max_n_lights(self, flags):
-        max_n_lights = [8, 8, 8]
+        max_n_lights = [MAX_N_LIGHTS, MAX_N_LIGHTS, MAX_N_LIGHTS]
         n_tex_units = glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS)
 
         # Reserved texture units: 6
