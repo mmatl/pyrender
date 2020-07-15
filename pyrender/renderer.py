@@ -985,7 +985,7 @@ class Renderer(object):
                 defines['HAS_SPECULAR_GLOSSINESS_TEX'] = 1
             if isinstance(primitive.material, MetallicRoughnessMaterial):
                 defines['USE_METALLIC_MATERIAL'] = 1
-            elif isinstance(material, SpecularGlossinessMaterial):
+            elif isinstance(primitive.material, SpecularGlossinessMaterial):
                 defines['USE_GLOSSY_MATERIAL'] = 1
 
         program = self._program_cache.get_program(
