@@ -635,8 +635,9 @@ class Renderer(object):
         dlc = 0
 
         light_nodes = scene.light_nodes
-        if (n_d > max_n_lights[0] or n_s > max_n_lights[1] or
-                n_p > max_n_lights[2]):
+        if (len(scene.directional_light_nodes) > max_n_lights[0] or
+            len(scene.spot_light_nodes) > max_n_lights[1] or
+            len(scene.point_light_nodes) > max_n_lights[2]):
             light_nodes = self._sorted_nodes_by_distance(
                 scene, scene.light_nodes, node
             )
