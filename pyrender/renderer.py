@@ -636,8 +636,8 @@ class Renderer(object):
 
         light_nodes = scene.light_nodes
         if (len(scene.directional_light_nodes) > max_n_lights[0] or
-            len(scene.spot_light_nodes) > max_n_lights[1] or
-            len(scene.point_light_nodes) > max_n_lights[2]):
+                len(scene.spot_light_nodes) > max_n_lights[1] or
+                len(scene.point_light_nodes) > max_n_lights[2]):
             light_nodes = self._sorted_nodes_by_distance(
                 scene, scene.light_nodes, node
             )
@@ -718,7 +718,7 @@ class Renderer(object):
     def _sorted_nodes_by_distance(self, scene, nodes, compare_node):
         nodes = list(nodes)
         compare_posn = scene.get_pose(compare_node)[:3,3]
-        nodes.sort(key=lambda n: -np.linalg.norm(
+        nodes.sort(key=lambda n: np.linalg.norm(
             scene.get_pose(n)[:3,3] - compare_posn)
         )
         return nodes
