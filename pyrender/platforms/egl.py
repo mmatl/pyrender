@@ -111,7 +111,7 @@ class EGLDevice:
 
 
 class EGLPlatform(Platform):
-    """Renders using EGL (not currently working on Ubuntu).
+    """Renders using EGL.
     """
 
     def __init__(self, viewport_width, viewport_height, device: EGLDevice = None):
