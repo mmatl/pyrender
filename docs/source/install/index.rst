@@ -141,7 +141,7 @@ on PyPI.
 
 .. code-block:: bash
 
-   git clone git@github.com:mmatl/pyopengl.git
+   git clone https://github.com/mmatl/pyopengl.git
    pip install ./pyopengl
 
 
