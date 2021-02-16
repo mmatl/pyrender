@@ -51,7 +51,10 @@ class PygletPlatform(Platform):
 
     def make_uncurrent(self):
         import pyglet
-        pyglet.gl.xlib.glx.glXMakeContextCurrent(self._window.context.x_display, 0, 0, None)
+        if hasattr(pyglet.gl, 'xlib'):
+            pyglet.gl.xlib.glx.glXMakeContextCurrent(self._window.context.x_display, 0, 0, None)
+        elif hasattr(pyglet.gl, 'wgl'):
+            pyglet.gl.wgl.wglMakeCurrent(self._window.canvas.hdc, None)
 
     def delete_context(self):
         if self._window is not None:
