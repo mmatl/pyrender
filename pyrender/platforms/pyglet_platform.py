@@ -1,4 +1,5 @@
-from pyrender.constants import OPEN_GL_MAJOR, OPEN_GL_MINOR
+from pyrender.constants import (TARGET_OPEN_GL_MAJOR, TARGET_OPEN_GL_MINOR,
+                                MIN_OPEN_GL_MAJOR, MIN_OPEN_GL_MINOR)
 from .base import Platform
 
 import OpenGL
@@ -26,18 +27,34 @@ class PygletPlatform(Platform):
             pass
 
         self._window = None
-        conf = pyglet.gl.Config(
-            sample_buffers=1, samples=4,
-            depth_size=24,
-            double_buffer=True,
-            major_version=OPEN_GL_MAJOR,
-            minor_version=OPEN_GL_MINOR
-        )
-        try:
-            self._window = pyglet.window.Window(config=conf, visible=False,
-                                                resizable=False,
-                                                width=1, height=1)
-        except Exception as e:
+        confs = [pyglet.gl.Config(sample_buffers=1, samples=4,
+                                  depth_size=24,
+                                  double_buffer=True,
+                                  major_version=TARGET_OPEN_GL_MAJOR,
+                                  minor_version=TARGET_OPEN_GL_MINOR),
+                 pyglet.gl.Config(depth_size=24,
+                                  double_buffer=True,
+                                  major_version=TARGET_OPEN_GL_MAJOR,
+                                  minor_version=TARGET_OPEN_GL_MINOR),
+                 pyglet.gl.Config(sample_buffers=1, samples=4,
+                                  depth_size=24,
+                                  double_buffer=True,
+                                  major_version=MIN_OPEN_GL_MAJOR,
+                                  minor_version=MIN_OPEN_GL_MINOR),
+                 pyglet.gl.Config(depth_size=24,
+                                  double_buffer=True,
+                                  major_version=MIN_OPEN_GL_MAJOR,
+                                  minor_version=MIN_OPEN_GL_MINOR)]
+        for conf in confs:
+            try:
+                self._window = pyglet.window.Window(config=conf, visible=False,
+                                                    resizable=False,
+                                                    width=1, height=1)
+                break
+            except pyglet.window.NoSuchConfigException as e:
+                pass
+
+        if not self._window:
             raise ValueError(
                 'Failed to initialize Pyglet window with an OpenGL >= 3+ '
                 'context. If you\'re logged in via SSH, ensure that you\'re '
