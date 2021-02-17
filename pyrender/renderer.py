@@ -9,7 +9,7 @@ import PIL
 
 from .constants import (RenderFlags, TextAlign, GLTF, BufFlags, TexFlags,
                         ProgramFlags, DEFAULT_Z_FAR, DEFAULT_Z_NEAR,
-                        SHADOW_TEX_SZ)
+                        SHADOW_TEX_SZ, MAX_N_LIGHTS)
 from .shader_program import ShaderProgramCache
 from .material import MetallicRoughnessMaterial, SpecularGlossinessMaterial
 from .light import PointLight, SpotLight, DirectionalLight
@@ -635,8 +635,9 @@ class Renderer(object):
         dlc = 0
 
         light_nodes = scene.light_nodes
-        if (n_d > max_n_lights[0] or n_s > max_n_lights[1] or
-                n_p > max_n_lights[2]):
+        if (len(scene.directional_light_nodes) > max_n_lights[0] or
+                len(scene.spot_light_nodes) > max_n_lights[1] or
+                len(scene.point_light_nodes) > max_n_lights[2]):
             light_nodes = self._sorted_nodes_by_distance(
                 scene, scene.light_nodes, node
             )
@@ -717,7 +718,7 @@ class Renderer(object):
     def _sorted_nodes_by_distance(self, scene, nodes, compare_node):
         nodes = list(nodes)
         compare_posn = scene.get_pose(compare_node)[:3,3]
-        nodes.sort(key=lambda n: -np.linalg.norm(
+        nodes.sort(key=lambda n: np.linalg.norm(
             scene.get_pose(n)[:3,3] - compare_posn)
         )
         return nodes
@@ -853,7 +854,7 @@ class Renderer(object):
         return program
 
     def _compute_max_n_lights(self, flags):
-        max_n_lights = [8, 8, 8]
+        max_n_lights = [MAX_N_LIGHTS, MAX_N_LIGHTS, MAX_N_LIGHTS]
         n_tex_units = glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS)
 
         # Reserved texture units: 6

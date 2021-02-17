@@ -417,8 +417,8 @@ class IntrinsicsCamera(Camera):
         P = np.zeros((4,4))
         P[0][0] = 2.0 * fx / width
         P[1][1] = 2.0 * fy / height
-        P[0][2] = 1.0 - 2.0 * cx / (width - 1.0)
-        P[1][2] = 2.0 * cy / (height - 1.0) - 1.0
+        P[0][2] = 1.0 - 2.0 * cx / width
+        P[1][2] = 2.0 * cy / height - 1.0
         P[3][2] = -1.0
 
         n = self.znear
