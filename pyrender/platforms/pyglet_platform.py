@@ -50,8 +50,8 @@ class PygletPlatform(Platform):
             self._window.switch_to()
 
     def make_uncurrent(self):
-        import pyglet
         try:
+            import pyglet
             if hasattr(pyglet.gl, 'xlib'):
                 pyglet.gl.xlib.glx.glXMakeContextCurrent(self._window.context.x_display, 0, 0, None)
             elif hasattr(pyglet.gl, 'wgl'):
