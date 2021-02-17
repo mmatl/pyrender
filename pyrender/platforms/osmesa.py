@@ -44,6 +44,11 @@ class OSMesaPlatform(Platform):
             self.viewport_width, self.viewport_height
         ))
 
+    def make_uncurrent(self):
+        """Make the OpenGL context uncurrent.
+        """
+        pass
+
     def delete_context(self):
         from OpenGL.osmesa import OSMesaDestroyContext
         OSMesaDestroyContext(self._context)

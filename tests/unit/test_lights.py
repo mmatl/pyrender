@@ -3,6 +3,7 @@ import pytest
 
 from pyrender import (DirectionalLight, SpotLight, PointLight, Texture,
                       PerspectiveCamera, OrthographicCamera)
+from pyrender.constants import SHADOW_TEX_SZ
 
 
 def test_directional_light():
@@ -24,7 +25,7 @@ def test_directional_light():
     d._generate_shadow_texture()
     st = d.shadow_texture
     assert isinstance(st, Texture)
-    assert st.width == st.height == 1024
+    assert st.width == st.height == SHADOW_TEX_SZ
 
     sc = d._get_shadow_camera(scene_scale=5.0)
     assert isinstance(sc, OrthographicCamera)
@@ -70,7 +71,7 @@ def test_spot_light():
     s._generate_shadow_texture()
     st = s.shadow_texture
     assert isinstance(st, Texture)
-    assert st.width == st.height == 1024
+    assert st.width == st.height == SHADOW_TEX_SZ
 
     sc = s._get_shadow_camera(scene_scale=5.0)
     assert isinstance(sc, PerspectiveCamera)

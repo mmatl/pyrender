@@ -9,7 +9,7 @@ import PIL
 
 from .constants import (RenderFlags, TextAlign, GLTF, BufFlags, TexFlags,
                         ProgramFlags, DEFAULT_Z_FAR, DEFAULT_Z_NEAR,
-                        SHADOW_TEX_SZ)
+                        SHADOW_TEX_SZ, MAX_N_LIGHTS)
 from .shader_program import ShaderProgramCache
 from .material import MetallicRoughnessMaterial, SpecularGlossinessMaterial
 from .light import PointLight, SpotLight, DirectionalLight
@@ -97,7 +97,7 @@ class Renderer(object):
     def point_size(self, value):
         self._point_size = float(value)
 
-    def render(self, scene, flags):
+    def render(self, scene, flags, seg_node_map=None):
         """Render a scene with the given set of flags.
 
         Parameters
@@ -106,6 +106,10 @@ class Renderer(object):
             A scene to render.
         flags : int
             A specification from :class:`.RenderFlags`.
+        seg_node_map : dict
+            A map from :class:`.Node` objects to (3,) colors for each.
+            If specified along with flags set to :attr:`.RenderFlags.SEG`,
+            the color image will be a segmentation image.
 
         Returns
         -------
@@ -121,7 +125,7 @@ class Renderer(object):
         self._update_context(scene, flags)
 
         # Render necessary shadow maps
-        if not bool(flags & RenderFlags.DEPTH_ONLY):
+        if not bool(flags & RenderFlags.DEPTH_ONLY or flags & RenderFlags.SEG):
             for ln in scene.light_nodes:
                 take_pass = False
                 if (isinstance(ln.light, DirectionalLight) and
@@ -137,7 +141,7 @@ class Renderer(object):
                     self._shadow_mapping_pass(scene, ln, flags)
 
         # Make forward pass
-        retval = self._forward_pass(scene, flags)
+        retval = self._forward_pass(scene, flags, seg_node_map=seg_node_map)
 
         # If necessary, make normals pass
         if flags & (RenderFlags.VERTEX_NORMALS | RenderFlags.FACE_NORMALS):
@@ -317,14 +321,24 @@ class Renderer(object):
     # Rendering passes
     ###########################################################################
 
-    def _forward_pass(self, scene, flags):
+    def _forward_pass(self, scene, flags, seg_node_map=None):
         # Set up viewport for render
         self._configure_forward_pass_viewport(flags)
 
         # Clear it
-        glClearColor(*scene.bg_color)
+        if bool(flags & RenderFlags.SEG):
+            glClearColor(0.0, 0.0, 0.0, 1.0)
+            if seg_node_map is None:
+                seg_node_map = {}
+        else:
+            glClearColor(*scene.bg_color)
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        glEnable(GL_MULTISAMPLE)
+
+        if not bool(flags & RenderFlags.SEG):
+            glEnable(GL_MULTISAMPLE)
+        else:
+            glDisable(GL_MULTISAMPLE)
 
         # Set up camera matrices
         V, P = self._get_camera_matrices(scene)
@@ -337,6 +351,17 @@ class Renderer(object):
             # Skip the mesh if it's not visible
             if not mesh.is_visible:
                 continue
+
+            # If SEG, set color
+            if bool(flags & RenderFlags.SEG):
+                if node not in seg_node_map:
+                    continue
+                color = seg_node_map[node]
+                if not isinstance(color, (list, tuple, np.ndarray)):
+                    color = np.repeat(color, 3)
+                else:
+                    color = np.asanyarray(color)
+                color = color / 255.0
 
             for primitive in mesh.primitives:
 
@@ -352,9 +377,12 @@ class Renderer(object):
                 program.set_uniform(
                     'cam_pos', scene.get_pose(scene.main_camera_node)[:3,3]
                 )
+                if bool(flags & RenderFlags.SEG):
+                    program.set_uniform('color', color)
 
                 # Next, bind the lighting
-                if not (flags & RenderFlags.DEPTH_ONLY or flags & RenderFlags.FLAT):
+                if not (flags & RenderFlags.DEPTH_ONLY or flags & RenderFlags.FLAT or
+                        flags & RenderFlags.SEG):
                     self._bind_lighting(scene, program, node, flags)
 
                 # Finally, bind and draw the primitive
@@ -488,7 +516,7 @@ class Renderer(object):
         primitive._bind()
 
         # Bind mesh material
-        if not flags & RenderFlags.DEPTH_ONLY:
+        if not (flags & RenderFlags.DEPTH_ONLY or flags & RenderFlags.SEG):
             material = primitive.material
 
             # Bind textures
@@ -607,8 +635,9 @@ class Renderer(object):
         dlc = 0
 
         light_nodes = scene.light_nodes
-        if (n_d > max_n_lights[0] or n_s > max_n_lights[1] or
-                n_p > max_n_lights[2]):
+        if (len(scene.directional_light_nodes) > max_n_lights[0] or
+                len(scene.spot_light_nodes) > max_n_lights[1] or
+                len(scene.point_light_nodes) > max_n_lights[2]):
             light_nodes = self._sorted_nodes_by_distance(
                 scene, scene.light_nodes, node
             )
@@ -689,7 +718,7 @@ class Renderer(object):
     def _sorted_nodes_by_distance(self, scene, nodes, compare_node):
         nodes = list(nodes)
         compare_posn = scene.get_pose(compare_node)[:3,3]
-        nodes.sort(key=lambda n: -np.linalg.norm(
+        nodes.sort(key=lambda n: np.linalg.norm(
             scene.get_pose(n)[:3,3] - compare_posn)
         )
         return nodes
@@ -825,7 +854,7 @@ class Renderer(object):
         return program
 
     def _compute_max_n_lights(self, flags):
-        max_n_lights = [8, 8, 8]
+        max_n_lights = [MAX_N_LIGHTS, MAX_N_LIGHTS, MAX_N_LIGHTS]
         n_tex_units = glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS)
 
         # Reserved texture units: 6
@@ -872,7 +901,8 @@ class Renderer(object):
 
         if (bool(program_flags & ProgramFlags.USE_MATERIAL) and
                 not flags & RenderFlags.DEPTH_ONLY and
-                not flags & RenderFlags.FLAT):
+                not flags & RenderFlags.FLAT and
+                not flags & RenderFlags.SEG):
             vertex_shader = 'mesh.vert'
             fragment_shader = 'mesh.frag'
         elif bool(program_flags & (ProgramFlags.VERTEX_NORMALS |
@@ -886,6 +916,9 @@ class Renderer(object):
         elif flags & RenderFlags.FLAT:
             vertex_shader = 'flat.vert'
             fragment_shader = 'flat.frag'
+        elif flags & RenderFlags.SEG:
+            vertex_shader = 'segmentation.vert'
+            fragment_shader = 'segmentation.frag'
         else:
             vertex_shader = 'mesh_depth.vert'
             fragment_shader = 'mesh_depth.frag'
@@ -953,7 +986,7 @@ class Renderer(object):
                 defines['HAS_SPECULAR_GLOSSINESS_TEX'] = 1
             if isinstance(primitive.material, MetallicRoughnessMaterial):
                 defines['USE_METALLIC_MATERIAL'] = 1
-            elif isinstance(material, SpecularGlossinessMaterial):
+            elif isinstance(primitive.material, SpecularGlossinessMaterial):
                 defines['USE_GLOSSY_MATERIAL'] = 1
 
         program = self._program_cache.get_program(

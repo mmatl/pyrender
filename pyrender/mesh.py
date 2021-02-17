@@ -206,11 +206,12 @@ class Mesh(object):
                 normals = np.repeat(m.face_normals, 3, axis=0)
 
             # Compute colors, texture coords, and material properties
-            color_0, texcoord_0, primitive_material = Mesh._get_trimesh_props(m, smooth=smooth)
+            color_0, texcoord_0, primitive_material = Mesh._get_trimesh_props(m, smooth=smooth, material=material)
 
             # Override if material is given.
             if material is not None:
-                primitive_material = copy.deepcopy(material)
+                #primitive_material = copy.copy(material)
+                primitive_material = copy.deepcopy(material)  # TODO
 
             if primitive_material is None:
                 # Replace material with default if needed
@@ -238,48 +239,49 @@ class Mesh(object):
         return Mesh(primitives=primitives, is_visible=is_visible)
 
     @staticmethod
-    def _get_trimesh_props(mesh, smooth=False):
+    def _get_trimesh_props(mesh, smooth=False, material=None):
         """Gets the vertex colors, texture coordinates, and material properties
         from a :class:`~trimesh.base.Trimesh`.
         """
         colors = None
         texcoords = None
-        material = None
 
         # If the trimesh visual is undefined, return none for both
         if not mesh.visual.defined:
             return colors, texcoords, material
 
         # Process vertex colors
-        if mesh.visual.kind == 'vertex':
-            vc = mesh.visual.vertex_colors.copy()
-            if smooth:
-                colors = vc
-            else:
-                colors = vc[mesh.faces].reshape(
-                    (3 * len(mesh.faces), vc.shape[1])
+        if material is None:
+            if mesh.visual.kind == 'vertex':
+                vc = mesh.visual.vertex_colors.copy()
+                if smooth:
+                    colors = vc
+                else:
+                    colors = vc[mesh.faces].reshape(
+                        (3 * len(mesh.faces), vc.shape[1])
+                    )
+                material = MetallicRoughnessMaterial(
+                    alphaMode='BLEND',
+                    baseColorFactor=[1.0, 1.0, 1.0, 1.0],
+                    metallicFactor=0.2,
+                    roughnessFactor=0.8
                 )
-            material = MetallicRoughnessMaterial(
-                alphaMode='BLEND',
-                baseColorFactor=[1.0, 1.0, 1.0, 1.0],
-                metallicFactor=0.2,
-                roughnessFactor=0.8
-            )
-        # Process face colors
-        elif mesh.visual.kind == 'face':
-            if smooth:
-                raise ValueError('Cannot use face colors with a smooth mesh')
-            else:
-                colors = np.repeat(mesh.visual.face_colors, 3, axis=0)
+            # Process face colors
+            elif mesh.visual.kind == 'face':
+                if smooth:
+                    raise ValueError('Cannot use face colors with a smooth mesh')
+                else:
+                    colors = np.repeat(mesh.visual.face_colors, 3, axis=0)
 
-            material = MetallicRoughnessMaterial(
-                alphaMode='BLEND',
-                baseColorFactor=[1.0, 1.0, 1.0, 1.0],
-                metallicFactor=0.2,
-                roughnessFactor=0.8
-            )
+                material = MetallicRoughnessMaterial(
+                    alphaMode='BLEND',
+                    baseColorFactor=[1.0, 1.0, 1.0, 1.0],
+                    metallicFactor=0.2,
+                    roughnessFactor=0.8
+                )
+
         # Process texture colors
-        elif mesh.visual.kind == 'texture':
+        if mesh.visual.kind == 'texture':
             # Configure UV coordinates
             if mesh.visual.uv is not None:
                 uv = mesh.visual.uv.copy()
@@ -290,36 +292,37 @@ class Mesh(object):
                         (3 * len(mesh.faces), uv.shape[1])
                     )
 
-            # Configure mesh material
-            mat = mesh.visual.material
+            if material is None:
+                # Configure mesh material
+                mat = mesh.visual.material
 
-            if isinstance(mat, trimesh.visual.texture.PBRMaterial):
-                material = MetallicRoughnessMaterial(
-                    normalTexture=mat.normalTexture,
-                    occlusionTexture=mat.occlusionTexture,
-                    emissiveTexture=mat.emissiveTexture,
-                    emissiveFactor=mat.emissiveFactor,
-                    alphaMode='BLEND',
-                    baseColorFactor=mat.baseColorFactor,
-                    baseColorTexture=mat.baseColorTexture,
-                    metallicFactor=mat.metallicFactor,
-                    roughnessFactor=mat.roughnessFactor,
-                    metallicRoughnessTexture=mat.metallicRoughnessTexture,
-                    doubleSided=mat.doubleSided,
-                    alphaCutoff=mat.alphaCutoff
-                )
-            elif isinstance(mat, trimesh.visual.texture.SimpleMaterial):
-                glossiness = mat.kwargs.get('Ns', 1.0)
-                if isinstance(glossiness, list):
-                    glossiness = float(glossiness[0])
-                roughness = (2 / (glossiness + 2)) ** (1.0 / 4.0)
-                material = MetallicRoughnessMaterial(
-                    alphaMode='BLEND',
-                    roughnessFactor=roughness,
-                    baseColorFactor=mat.diffuse,
-                    baseColorTexture=mat.image,
-                )
-            elif isinstance(mat, MetallicRoughnessMaterial):
-                material = mat
+                if isinstance(mat, trimesh.visual.texture.PBRMaterial):
+                    material = MetallicRoughnessMaterial(
+                        normalTexture=mat.normalTexture,
+                        occlusionTexture=mat.occlusionTexture,
+                        emissiveTexture=mat.emissiveTexture,
+                        emissiveFactor=mat.emissiveFactor,
+                        alphaMode='BLEND',
+                        baseColorFactor=mat.baseColorFactor,
+                        baseColorTexture=mat.baseColorTexture,
+                        metallicFactor=mat.metallicFactor,
+                        roughnessFactor=mat.roughnessFactor,
+                        metallicRoughnessTexture=mat.metallicRoughnessTexture,
+                        doubleSided=mat.doubleSided,
+                        alphaCutoff=mat.alphaCutoff
+                    )
+                elif isinstance(mat, trimesh.visual.texture.SimpleMaterial):
+                    glossiness = mat.kwargs.get('Ns', 1.0)
+                    if isinstance(glossiness, list):
+                        glossiness = float(glossiness[0])
+                    roughness = (2 / (glossiness + 2)) ** (1.0 / 4.0)
+                    material = MetallicRoughnessMaterial(
+                        alphaMode='BLEND',
+                        roughnessFactor=roughness,
+                        baseColorFactor=mat.diffuse,
+                        baseColorTexture=mat.image,
+                    )
+                elif isinstance(mat, MetallicRoughnessMaterial):
+                    material = mat
 
         return colors, texcoords, material

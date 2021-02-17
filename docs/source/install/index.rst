@@ -81,7 +81,7 @@ First, install build dependencies via `apt` or your system's package manager.
 Then, download the current release of Mesa from here_.
 Unpack the source and go to the source folder:
 
-.. _here: ftp://ftp.freedesktop.org/pub/mesa/mesa-18.3.3.tar.gz
+.. _here: https://archive.mesa3d.org/mesa-18.3.3.tar.gz
 
 .. code-block:: bash
 
@@ -141,7 +141,7 @@ on PyPI.
 
 .. code-block:: bash
 
-   git clone git@github.com:mmatl/pyopengl.git
+   git clone https://github.com/mmatl/pyopengl.git
    pip install ./pyopengl
 
 
