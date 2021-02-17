@@ -1,7 +1,7 @@
 DEFAULT_Z_NEAR = 0.05     # Near clipping plane, in meters
 DEFAULT_Z_FAR = 100.0     # Far clipping plane, in meters
 DEFAULT_SCENE_SCALE = 2.0 # Default scene scale
-MAX_N_LIGHTS = 4          # Maximum number of lights of each type allowed
+MAX_N_LIGHTS = 8          # Maximum number of lights of each type allowed
 OPEN_GL_MAJOR = 4         # Target OpenGL Major Version
 OPEN_GL_MINOR = 1         # Target OpenGL Minor Version
 FLOAT_SZ = 4              # Byte size of GL float32
