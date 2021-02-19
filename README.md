@@ -17,11 +17,8 @@ servers, which makes it perfect for machine learning applications.
 
 Extensive documentation, including a quickstart guide, is provided [here](https://pyrender.readthedocs.io/en/latest/).
 
-For a minimal working example of offscreen rendering using OSMesa,
-check out the [OSMesa Google CoLab Notebook](https://colab.research.google.com/drive/1Z71mHIc-Sqval92nK290vAsHZRUkCjUx).
-
 For a minimal working example of GPU-accelerated offscreen rendering using EGL,
-check out the [EGL Google CoLab Notebook](https://colab.research.google.com/drive/1rTLHk0qxh4dn8KNe-mCnN8HAWdd2_BEh).
+check out the [EGL Google CoLab Notebook](https://colab.research.google.com/drive/1pcndwqeY8vker3bLKQNJKr3B-7-SYenE?usp=sharing).
 
 
 <p align="center">
@@ -58,9 +55,7 @@ For sample usage, check out the [quickstart
 guide](https://pyrender.readthedocs.io/en/latest/examples/index.html) or one of
 the Google CoLab Notebooks:
 
-* [OSMesa Google CoLab Notebook](https://colab.research.google.com/drive/1Z71mHIc-Sqval92nK290vAsHZRUkCjUx)
-* [EGL Google CoLab Notebook](https://colab.research.google.com/drive/1rTLHk0qxh4dn8KNe-mCnN8HAWdd2_BEh)
-* [Example on the left above](https://github.com/JonathanLehner/Colab-collection/blob/master/pyrender_example.ipynb)
+* [EGL Google CoLab Notebook](https://colab.research.google.com/drive/1pcndwqeY8vker3bLKQNJKr3B-7-SYenE?usp=sharing)
 
 ## Viewer Keyboard and Mouse Controls
 
