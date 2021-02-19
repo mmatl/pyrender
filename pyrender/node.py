@@ -218,10 +218,10 @@ class Node(object):
             raise ValueError('Matrix must be a 4x4 numpy ndarray')
         if not np.allclose(value[3,:], np.array([0.0, 0.0, 0.0, 1.0])):
             raise ValueError('Bottom row of matrix must be [0,0,0,1]')
-        self._matrix = value
         self.rotation = Node._q_from_m(value)
         self.scale = Node._s_from_m(value)
         self.translation = Node._t_from_m(value)
+        self._matrix = value
 
     @staticmethod
     def _t_from_m(m):
