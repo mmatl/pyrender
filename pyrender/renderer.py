@@ -335,7 +335,7 @@ class Renderer(object):
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-        if not bool(flags & RenderFlags.SEG):
+        if not bool(flags & RenderFlags.SEG) and not bool(flags & RenderFlags.DISABLE_ANTI_ALIASING):
             glEnable(GL_MULTISAMPLE)
         else:
             glDisable(GL_MULTISAMPLE)
