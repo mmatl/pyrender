@@ -207,7 +207,7 @@ class PerspectiveCamera(Camera):
 
 
 class OrthographicCamera(Camera):
-    """A perspective camera for perspective projection.
+    """A orthographic camera for orthographic projection.
 
     Parameters
     ----------
