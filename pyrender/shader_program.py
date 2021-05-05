@@ -275,7 +275,7 @@ class ShaderProgram(object):
         (2,3): glUniformMatrix2x3fv,
         (2,4): glUniformMatrix2x4fv,
         (3,2): glUniformMatrix3x2fv,
-        (3,3): glUniformMatrix4fv,
+        (3,3): glUniformMatrix3fv,
         (3,4): glUniformMatrix3x4fv,
         (4,2): glUniformMatrix4x2fv,
         (4,3): glUniformMatrix4x3fv,
