@@ -992,7 +992,6 @@ class Viewer(pyglet.window.Window):
             flags |= RenderFlags.FACE_NORMALS
         if not self.render_flags['cull_faces']:
             flags |= RenderFlags.SKIP_CULL_FACES
-
         self._renderer.render(self.scene, flags)
 
     def _init_and_start_app(self):
@@ -1054,7 +1053,8 @@ class Viewer(pyglet.window.Window):
         hfov = np.pi / 6.0
         dist = scale / (2.0 * np.tan(hfov))
         cp[:3,3] = dist * np.array([1.0, 0.0, 1.0]) + centroid
-
+        np.set_printoptions(suppress=True)
+        print(cp)
         return cp
 
     def _create_raymond_lights(self):

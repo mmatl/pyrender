@@ -158,6 +158,8 @@ class Trackball(object):
             t_tf = np.eye(4)
             t_tf[:3,3] = translation
             self._n_pose = t_tf.dot(self._pose)
+        np.set_printoptions(suppress=True)
+        print(self._n_pose)
 
     def scroll(self, clicks):
         """Zoom using a mouse scroll wheel motion.
