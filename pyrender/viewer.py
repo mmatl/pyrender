@@ -852,6 +852,12 @@ class Viewer(pyglet.window.Window):
         # Z resets the camera viewpoint
         elif symbol == pyglet.window.key.Z:
             self._reset_view()
+        elif symbol == pyglet.window.key.F1:
+            self._trackball.save_current_position()
+            self._message_text = 'Current view position saved'
+        elif symbol == pyglet.window.key.F2:
+            self._trackball.dump_positions()
+            self._message_text = 'Positions dumped to /tmp/positions.npy'
 
         if self._message_text is not None:
             self._message_opac = 1.0 + self._ticks_till_fade
@@ -1053,8 +1059,6 @@ class Viewer(pyglet.window.Window):
         hfov = np.pi / 6.0
         dist = scale / (2.0 * np.tan(hfov))
         cp[:3,3] = dist * np.array([1.0, 0.0, 1.0]) + centroid
-        np.set_printoptions(suppress=True)
-        print(cp)
         return cp
 
     def _create_raymond_lights(self):

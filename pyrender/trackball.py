@@ -45,6 +45,7 @@ class Trackball(object):
         self._n_target = target
 
         self._state = Trackball.STATE_ROTATE
+        self._positions = []
 
     @property
     def pose(self):
@@ -158,8 +159,6 @@ class Trackball(object):
             t_tf = np.eye(4)
             t_tf[:3,3] = translation
             self._n_pose = t_tf.dot(self._pose)
-        np.set_printoptions(suppress=True)
-        print(self._n_pose)
 
     def scroll(self, clicks):
         """Zoom using a mouse scroll wheel motion.
@@ -216,3 +215,12 @@ class Trackball(object):
             y_axis = axis
         x_rot_mat = transformations.rotation_matrix(azimuth, y_axis, target)
         self._pose = x_rot_mat.dot(self._pose)
+
+    def save_current_position(self):
+        self._positions.append(self._n_pose)
+
+    def dump_positions(self):
+        with open('/tmp/positions.npy', 'wb') as f:
+            np.save(f, np.asarray(self._positions))
+        self._positions = []
+        
