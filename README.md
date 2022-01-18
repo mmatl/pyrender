@@ -78,6 +78,7 @@ The available keyboard commands are as follows:
 * `h`: Toggles shadow rendering.
 * `i`: Toggles axis display mode (no axes, world axis, mesh axes, all axes).
 * `l`: Toggles lighting mode (scene lighting, Raymond lighting, or direct lighting).
+* `L`: Uses flat lighting mode.
 * `m`: Toggles face normal visualization.
 * `n`: Toggles vertex normal visualization.
 * `o`: Toggles orthographic camera mode.

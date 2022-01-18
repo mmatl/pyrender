@@ -96,6 +96,7 @@ class Viewer(pyglet.window.Window):
       (no axes, world axis, mesh axes, all axes).
     - ``l``: Toggles lighting mode
       (scene lighting, Raymond lighting, or direct lighting).
+    - ``L``: Uses flat lighting mode.
     - ``m``: Toggles face normal visualization.
     - ``n``: Toggles vertex normal visualization.
     - ``o``: Toggles orthographic mode.
@@ -751,7 +752,23 @@ class Viewer(pyglet.window.Window):
 
         # L toggles the lighting mode
         elif symbol == pyglet.window.key.L:
-            if self.viewer_flags['use_raymond_lighting']:
+            # SHIFT+L sets flat lighting
+            if modifiers & pyglet.window.key.MOD_SHIFT:
+                self.render_flags['flat'] = True
+                self._message_text = 'Flat Lighting'
+
+            # L unsets flat lighting if set
+            elif self.render_flags['flat']:
+                self.render_flags['flat'] = False
+                if self.viewer_flags['use_raymond_lighting']:
+                    self._message_text = 'Raymond Lighting'
+                elif self.viewer_flags['use_direct_lighting']:
+                    self._message_text = 'Direct Lighting'
+                else:
+                    self._message_text = 'Default Lighting'
+
+            # otherwise cycles lighting mode
+            elif self.viewer_flags['use_raymond_lighting']:
                 self.viewer_flags['use_raymond_lighting'] = False
                 self.viewer_flags['use_direct_lighting'] = True
                 self._message_text = 'Direct Lighting'
