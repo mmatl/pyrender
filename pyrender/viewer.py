@@ -92,9 +92,9 @@ class Viewer(pyglet.window.Window):
     - ``c``: Toggles backface culling.
     - ``f``: Toggles fullscreen mode.
     - ``h``: Toggles shadow rendering.
-    - ``i``: Toggles axis display mode
+    - ``i``: Cycles axis display mode
       (no axes, world axis, mesh axes, all axes).
-    - ``l``: Toggles lighting mode
+    - ``l``: Cycles lighting mode
       (scene lighting, Raymond lighting, or direct lighting).
     - ``L``: Uses flat lighting mode.
     - ``m``: Toggles face normal visualization.
@@ -104,7 +104,7 @@ class Viewer(pyglet.window.Window):
     - ``r``: Starts recording a GIF, and pressing again stops recording
       and opens a file dialog.
     - ``s``: Opens a file dialog to save the current view as an image.
-    - ``w``: Toggles wireframe mode
+    - ``w``: Cycles wireframe mode
       (scene default, flip wireframes, all wireframe, or all solid).
     - ``z``: Resets the camera to the initial view.
 
@@ -750,7 +750,7 @@ class Viewer(pyglet.window.Window):
                 self._set_axes(True, False)
                 self._message_text = 'World Axis On'
 
-        # L toggles the lighting mode
+        # L cycles the lighting mode
         elif symbol == pyglet.window.key.L:
             # SHIFT+L sets flat lighting
             if modifiers & pyglet.window.key.MOD_SHIFT:
