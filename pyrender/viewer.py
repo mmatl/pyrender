@@ -126,6 +126,8 @@ class Viewer(pyglet.window.Window):
       blue lines. Defaults to `False`.
     - ``cull_faces``: `bool`, If `True`, backfaces will be culled.
       Defaults to `True`.
+    - ``flat``: `bool`, If `True`, render the color buffer flat,
+      with no lighting computations. Defaults to `True`.
     - ``point_size`` : float, The point size in pixels. Defaults to 1px.
 
     Note
@@ -198,6 +200,7 @@ class Viewer(pyglet.window.Window):
             'face_normals': False,
             'cull_faces': True,
             'point_size': 1.0,
+            'flat': False,
         }
         self._default_viewer_flags = {
             'mouse_pressed': False,
@@ -985,6 +988,8 @@ class Viewer(pyglet.window.Window):
             flags |= RenderFlags.FACE_NORMALS
         if not self.render_flags['cull_faces']:
             flags |= RenderFlags.SKIP_CULL_FACES
+        if self.render_flags['flat']:
+            flags |= RenderFlags.FLAT
 
         self._renderer.render(self.scene, flags)
 
