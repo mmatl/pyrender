@@ -175,7 +175,8 @@ class Viewer(pyglet.window.Window):
 
     def __init__(self, scene, viewport_size=None,
                  render_flags=None, viewer_flags=None,
-                 registered_keys=None, run_in_thread=False, **kwargs):
+                 registered_keys=None, auto_start=True,
+                 run_in_thread=False, **kwargs):
 
         #######################################################################
         # Save attributes and flags
@@ -345,8 +346,11 @@ class Viewer(pyglet.window.Window):
         if self.run_in_thread:
             self._thread = Thread(target=self._init_and_start_app)
             self._thread.start()
-        else:
+        elif auto_start:
             self._init_and_start_app()
+
+    def start(self):
+        self._init_and_start_app()
 
     @property
     def scene(self):
