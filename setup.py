@@ -3,29 +3,28 @@ Setup of pyrender Python codebase.
 
 Author: Matthew Matl
 """
-import sys
 from setuptools import setup
 
 # load __version__
 exec(open('pyrender/version.py').read())
 
-def get_imageio_dep():
-    if sys.version[0] == "2":
-        return 'imageio<=2.6.1'
-    return 'imageio'
 
 requirements = [
-    'freetype-py',                # For font loading
-    get_imageio_dep(),            # For Image I/O
-    'networkx',                   # For the scene graph
-    'numpy',                      # Numpy
-    'Pillow',                     # For Trimesh texture conversions
-    'pyglet>=1.4.10',             # For the pyglet viewer
-    'PyOpenGL==3.1.0',            # For OpenGL
-#    'PyOpenGL_accelerate==3.1.0', # For OpenGL
-    'scipy',                      # Because of trimesh missing dep
-    'six',                        # For Python 2/3 interop
-    'trimesh',                    # For meshes
+    'freetype-py',                            # For font loading
+    'imageio<=2.6.1; python_version < "3"',   # For Image I/O
+    'imageio<=2.15.0; python_version <= "3.6" and python_version > "3"',
+    'imageio; python_version > "3.6"',
+    'networkx',                               # For the scene graph
+    'numpy<=1.19.5; python_version <= "3.6"', # Numpy
+    'numpy; python_version > "3.6"',
+    'Pillow',                                 # For Trimesh texture conversions
+    'pyglet>=1.4.10',                         # For the pyglet viewer
+    'PyOpenGL==3.1.0',                        # For OpenGL
+#   'PyOpenGL_accelerate==3.1.0',             # For OpenGL
+    'scipy<=1.5.4; python_version <= "3.6"',  # Because of trimesh missing dep
+    'scipy; python_version > "3.6"',          
+    'six',                                    # For Python 2/3 interop
+    'trimesh<=3.9.32',                        # For meshes
 ]
 
 dev_requirements = [

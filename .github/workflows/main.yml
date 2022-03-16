@@ -1,0 +1,46 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+  
+jobs:
+  build:
+    name: 'Python ${{ matrix.python-version }}'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version:
+          - '3.6'
+          - '3.7'
+          - '3.8'
+          - '3.9'
+          - '3.10'
+    steps:
+      - uses: actions/checkout@v3
+      - name: 'Set up Python ${{ matrix.python-version }}'
+        uses: actions/setup-python@v3
+        with:
+          python-version: '${{ matrix.python-version }}'
+      - name: Install System dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y libosmesa6-dev freeglut3-dev
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install wheel
+          python -m pip install git+https://github.com/mmatl/pyopengl.git
+          python -m pip install .
+          python -m pip install pytest pytest-cov coveralls
+      - name: Test
+        run: |
+          python -m pytest --cov=pyrender tests
+        env:
+          PYOPENGL_PLATFORM: osmesa
