@@ -24,7 +24,7 @@ requirements = [
     'scipy<=1.5.4; python_version <= "3.6"',  # Because of trimesh missing dep
     'scipy; python_version > "3.6"',          
     'six',                                    # For Python 2/3 interop
-    'trimesh<=3.9.32',                        # For meshes
+    'trimesh',                                # For meshes
 ]
 
 dev_requirements = [
