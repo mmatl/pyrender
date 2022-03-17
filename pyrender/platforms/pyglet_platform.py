@@ -45,6 +45,7 @@ class PygletPlatform(Platform):
                                   double_buffer=True,
                                   major_version=MIN_OPEN_GL_MAJOR,
                                   minor_version=MIN_OPEN_GL_MINOR)]
+        error_message = ""
         for conf in confs:
             try:
                 self._window = pyglet.window.Window(config=conf, visible=False,
