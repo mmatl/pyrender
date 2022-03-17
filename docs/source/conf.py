@@ -348,5 +348,4 @@ class MyPythonDomain(PythonDomain):
 
 def setup(sphinx):
     """Use MyPythonDomain in place of PythonDomain"""
-    sphinx.override_domain(MyPythonDomain)
-
+    sphinx.add_domain(MyPythonDomain, override=True)

@@ -52,14 +52,14 @@ class PygletPlatform(Platform):
                                                     width=1, height=1)
                 break
             except pyglet.window.NoSuchConfigException as e:
-                pass
+                error_message = str(e)
 
         if not self._window:
             raise ValueError(
                 'Failed to initialize Pyglet window with an OpenGL >= 3+ '
                 'context. If you\'re logged in via SSH, ensure that you\'re '
                 'running your script with vglrun (i.e. VirtualGL). The '
-                'internal error message was "{}"'.format(e)
+                'internal error message was "{}"'.format(error_message)
             )
 
     def make_current(self):

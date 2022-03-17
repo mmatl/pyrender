@@ -15,7 +15,6 @@ from .constants import SHADOW_TEX_SZ
 from .camera import OrthographicCamera, PerspectiveCamera
 
 
-
 @six.add_metaclass(abc.ABCMeta)
 class Light(object):
     """Base class for all light objects.

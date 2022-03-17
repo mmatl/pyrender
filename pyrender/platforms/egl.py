@@ -23,7 +23,7 @@ def _ensure_egl_loaded():
 
 
 _ensure_egl_loaded()
-from OpenGL import EGL as egl
+from OpenGL import EGL as egl  # noqa: E402
 
 
 def _get_egl_func(func_name, res_type, *arg_types):
@@ -126,7 +126,7 @@ class EGLPlatform(Platform):
     def init_context(self):
         _ensure_egl_loaded()
 
-        from OpenGL.EGL import (
+        from OpenGL.EGL import (  # noqa: F401
             EGL_SURFACE_TYPE, EGL_PBUFFER_BIT, EGL_BLUE_SIZE,
             EGL_RED_SIZE, EGL_GREEN_SIZE, EGL_DEPTH_SIZE,
             EGL_COLOR_BUFFER_TYPE, EGL_RGB_BUFFER,

@@ -210,7 +210,7 @@ class Mesh(object):
 
             # Override if material is given.
             if material is not None:
-                #primitive_material = copy.copy(material)
+                # primitive_material = copy.copy(material)
                 primitive_material = copy.deepcopy(material)  # TODO
 
             if primitive_material is None:
