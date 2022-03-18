@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from trimesh import transformations
 
-from pyrender import (DirectionalLight, PerspectiveCamera, Mesh, Node)
+from pyrender import DirectionalLight, PerspectiveCamera, Mesh, Node
 
 
 def test_nodes():
@@ -14,13 +14,13 @@ def test_nodes():
     assert x.skin is None
     assert np.allclose(x.matrix, np.eye(4))
     assert x.mesh is None
-    assert np.allclose(x.rotation, [0,0,0,1])
+    assert np.allclose(x.rotation, [0, 0, 0, 1])
     assert np.allclose(x.scale, np.ones(3))
     assert np.allclose(x.translation, np.zeros(3))
     assert x.weights is None
     assert x.light is None
 
-    x.name = 'node'
+    x.name = "node"
 
     # Test node light/camera/mesh tests
     c = PerspectiveCamera(yfov=2.0)
@@ -53,15 +53,15 @@ def test_nodes():
     Mx = transformations.rotation_matrix(np.pi / 2.0, x)
     qx = np.roll(transformations.quaternion_about_axis(np.pi / 2.0, x), -1)
     Mxt = Mx.copy()
-    Mxt[:3,3] = t
+    Mxt[:3, 3] = t
     S = np.eye(4)
-    S[:3,:3] = np.diag(s)
+    S[:3, :3] = np.diag(s)
     Mxts = Mxt.dot(S)
 
     My = transformations.rotation_matrix(np.pi / 2.0, y)
     qy = np.roll(transformations.quaternion_about_axis(np.pi / 2.0, y), -1)
     Myt = My.copy()
-    Myt[:3,3] = t
+    Myt[:3, 3] = t
 
     x = Node(matrix=Mx)
     assert np.allclose(x.matrix, Mx)
@@ -102,8 +102,8 @@ def test_nodes():
     assert np.allclose(x.translation[0], 0)
 
     x.matrix = np.eye(4)
-    x.matrix[0,0] = 500
-    assert x.matrix[0,0] == 1.0
+    x.matrix[0, 0] = 500
+    assert x.matrix[0, 0] == 1.0
 
     # Failures
     with pytest.raises(ValueError):
@@ -111,14 +111,14 @@ def test_nodes():
     with pytest.raises(ValueError):
         x.matrix = np.eye(5)
     with pytest.raises(ValueError):
-        x.matrix = np.eye(4).dot([5,1,1,1])
+        x.matrix = np.eye(4).dot([5, 1, 1, 1])
     with pytest.raises(ValueError):
-        x.rotation = np.array([1,2])
+        x.rotation = np.array([1, 2])
     with pytest.raises(ValueError):
-        x.rotation = np.array([1,2,3])
+        x.rotation = np.array([1, 2, 3])
     with pytest.raises(ValueError):
-        x.rotation = np.array([1,2,3,4])
+        x.rotation = np.array([1, 2, 3, 4])
     with pytest.raises(ValueError):
-        x.translation = np.array([1,2,3,4])
+        x.translation = np.array([1, 2, 3, 4])
     with pytest.raises(ValueError):
-        x.scale = np.array([1,2,3,4])
+        x.scale = np.array([1, 2, 3, 4])

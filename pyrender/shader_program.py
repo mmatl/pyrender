@@ -10,18 +10,18 @@ from OpenGL.GL import shaders as gl_shader_utils
 
 
 class ShaderProgramCache(object):
-    """A cache for shader programs.
-    """
+    """A cache for shader programs."""
 
     def __init__(self, shader_dir=None):
         self._program_cache = {}
         self.shader_dir = shader_dir
         if self.shader_dir is None:
             base_dir, _ = os.path.split(os.path.realpath(__file__))
-            self.shader_dir = os.path.join(base_dir, 'shaders')
+            self.shader_dir = os.path.join(base_dir, "shaders")
 
-    def get_program(self, vertex_shader, fragment_shader,
-                    geometry_shader=None, defines=None):
+    def get_program(
+        self, vertex_shader, fragment_shader, geometry_shader=None, defines=None
+    ):
         """Get a program via a list of shader files to include in the program.
 
         Parameters
@@ -44,7 +44,8 @@ class ShaderProgramCache(object):
         if defines is None:
             defines = {}
         shader_filenames = [
-            x for x in [vertex_shader, fragment_shader, geometry_shader]
+            x
+            for x in [vertex_shader, fragment_shader, geometry_shader]
             if x is not None
         ]
         for fn in shader_filenames:
@@ -53,9 +54,12 @@ class ShaderProgramCache(object):
             _, name = os.path.split(fn)
             shader_names.append(name)
         cid = OpenGL.contextdata.getContext()
-        key = tuple([cid] + sorted(
-            [(s,1) for s in shader_names] + [(d, defines[d]) for d in defines]
-        ))
+        key = tuple(
+            [cid]
+            + sorted(
+                [(s, 1) for s in shader_names] + [(d, defines[d]) for d in defines]
+            )
+        )
 
         if key not in self._program_cache:
             shader_filenames = [
@@ -65,8 +69,10 @@ class ShaderProgramCache(object):
                 shader_filenames.append(None)
             vs, fs, gs = shader_filenames
             self._program_cache[key] = ShaderProgram(
-                vertex_shader=vs, fragment_shader=fs,
-                geometry_shader=gs, defines=defines
+                vertex_shader=vs,
+                fragment_shader=fs,
+                geometry_shader=gs,
+                defines=defines,
             )
         return self._program_cache[key]
 
@@ -92,8 +98,9 @@ class ShaderProgram(object):
         Defines and their values for the shader.
     """
 
-    def __init__(self, vertex_shader, fragment_shader,
-                 geometry_shader=None, defines=None):
+    def __init__(
+        self, vertex_shader, fragment_shader, geometry_shader=None, defines=None
+    ):
 
         self.vertex_shader = vertex_shader
         self.fragment_shader = fragment_shader
@@ -111,21 +118,27 @@ class ShaderProgram(object):
 
     def _add_to_context(self):
         if self._program_id is not None:
-            raise ValueError('Shader program already in context')
+            raise ValueError("Shader program already in context")
         shader_ids = []
 
         # Load vert shader
-        shader_ids.append(gl_shader_utils.compileShader(
-            self._load(self.vertex_shader), GL_VERTEX_SHADER)
+        shader_ids.append(
+            gl_shader_utils.compileShader(
+                self._load(self.vertex_shader), GL_VERTEX_SHADER
+            )
         )
         # Load frag shader
-        shader_ids.append(gl_shader_utils.compileShader(
-            self._load(self.fragment_shader), GL_FRAGMENT_SHADER)
+        shader_ids.append(
+            gl_shader_utils.compileShader(
+                self._load(self.fragment_shader), GL_FRAGMENT_SHADER
+            )
         )
         # Load geometry shader
         if self.geometry_shader is not None:
-            shader_ids.append(gl_shader_utils.compileShader(
-                self._load(self.geometry_shader), GL_GEOMETRY_SHADER)
+            shader_ids.append(
+                gl_shader_utils.compileShader(
+                    self._load(self.geometry_shader), GL_GEOMETRY_SHADER
+                )
             )
 
         # Bind empty VAO PYOPENGL BUG
@@ -157,21 +170,21 @@ class ShaderProgram(object):
 
         def ifdef(matchobj):
             if matchobj.group(1) in self.defines:
-                return '#if 1'
+                return "#if 1"
             else:
-                return '#if 0'
+                return "#if 0"
 
         def ifndef(matchobj):
             if matchobj.group(1) in self.defines:
-                return '#if 0'
+                return "#if 0"
             else:
-                return '#if 1'
+                return "#if 1"
 
         ifdef_regex = re.compile(
-            '#ifdef\\s+([a-zA-Z_][a-zA-Z_0-9]*)\\s*$', re.MULTILINE
+            "#ifdef\\s+([a-zA-Z_][a-zA-Z_0-9]*)\\s*$", re.MULTILINE
         )
         ifndef_regex = re.compile(
-            '#ifndef\\s+([a-zA-Z_][a-zA-Z_0-9]*)\\s*$', re.MULTILINE
+            "#ifndef\\s+([a-zA-Z_][a-zA-Z_0-9]*)\\s*$", re.MULTILINE
         )
         text = re.sub(ifdef_regex, ifdef, text)
         text = re.sub(ifndef_regex, ifndef, text)
@@ -183,21 +196,18 @@ class ShaderProgram(object):
         return text
 
     def _bind(self):
-        """Bind this shader program to the current OpenGL context.
-        """
+        """Bind this shader program to the current OpenGL context."""
         if self._program_id is None:
-            raise ValueError('Cannot bind program that is not in context')
+            raise ValueError("Cannot bind program that is not in context")
         # glBindVertexArray(self._vao_id)
         glUseProgram(self._program_id)
 
     def _unbind(self):
-        """Unbind this shader program from the current OpenGL context.
-        """
+        """Unbind this shader program from the current OpenGL context."""
         glUseProgram(0)
 
     def delete(self):
-        """Delete this shader program from the current OpenGL context.
-        """
+        """Delete this shader program from the current OpenGL context."""
         self._remove_from_context()
 
     def set_uniform(self, name, value, unsigned=False):
@@ -218,21 +228,20 @@ class ShaderProgram(object):
             loc = glGetUniformLocation(self._program_id, name)
 
             if loc == -1:
-                raise ValueError('Invalid shader variable: {}'.format(name))
+                raise ValueError("Invalid shader variable: {}".format(name))
 
             if isinstance(value, np.ndarray):
                 # DEBUG
                 # self._unif_map[name] = value.size, value.shape
                 if value.ndim == 1:
-                    if (np.issubdtype(value.dtype, np.unsignedinteger) or
-                            unsigned):
-                        dtype = 'u'
+                    if np.issubdtype(value.dtype, np.unsignedinteger) or unsigned:
+                        dtype = "u"
                         value = value.astype(np.uint32)
                     elif np.issubdtype(value.dtype, np.integer):
-                        dtype = 'i'
+                        dtype = "i"
                         value = value.astype(np.int32)
                     else:
-                        dtype = 'f'
+                        dtype = "f"
                         value = value.astype(np.float32)
                     self._FUNC_MAP[(value.shape[0], dtype)](loc, 1, value)
                 else:
@@ -254,30 +263,30 @@ class ShaderProgram(object):
                 else:
                     glUniform1i(loc, int(value))
             else:
-                raise ValueError('Invalid data type')
+                raise ValueError("Invalid data type")
         except Exception:
             pass
 
     _FUNC_MAP = {
-        (1,'u'): glUniform1uiv,
-        (2,'u'): glUniform2uiv,
-        (3,'u'): glUniform3uiv,
-        (4,'u'): glUniform4uiv,
-        (1,'i'): glUniform1iv,
-        (2,'i'): glUniform2iv,
-        (3,'i'): glUniform3iv,
-        (4,'i'): glUniform4iv,
-        (1,'f'): glUniform1fv,
-        (2,'f'): glUniform2fv,
-        (3,'f'): glUniform3fv,
-        (4,'f'): glUniform4fv,
-        (2,2): glUniformMatrix2fv,
-        (2,3): glUniformMatrix2x3fv,
-        (2,4): glUniformMatrix2x4fv,
-        (3,2): glUniformMatrix3x2fv,
-        (3,3): glUniformMatrix3fv,
-        (3,4): glUniformMatrix3x4fv,
-        (4,2): glUniformMatrix4x2fv,
-        (4,3): glUniformMatrix4x3fv,
-        (4,4): glUniformMatrix4fv,
+        (1, "u"): glUniform1uiv,
+        (2, "u"): glUniform2uiv,
+        (3, "u"): glUniform3uiv,
+        (4, "u"): glUniform4uiv,
+        (1, "i"): glUniform1iv,
+        (2, "i"): glUniform2iv,
+        (3, "i"): glUniform3iv,
+        (4, "i"): glUniform4iv,
+        (1, "f"): glUniform1fv,
+        (2, "f"): glUniform2fv,
+        (3, "f"): glUniform3fv,
+        (4, "f"): glUniform4fv,
+        (2, 2): glUniformMatrix2fv,
+        (2, 3): glUniformMatrix2x3fv,
+        (2, 4): glUniformMatrix2x4fv,
+        (3, 2): glUniformMatrix3x2fv,
+        (3, 3): glUniformMatrix3fv,
+        (3, 4): glUniformMatrix3x4fv,
+        (4, 2): glUniformMatrix4x2fv,
+        (4, 3): glUniformMatrix4x3fv,
+        (4, 4): glUniformMatrix4fv,
     }

@@ -21,8 +21,7 @@ class Platform(object):
 
     @property
     def viewport_width(self):
-        """int : The width of the main viewport, in pixels.
-        """
+        """int : The width of the main viewport, in pixels."""
         return self._viewport_width
 
     @viewport_width.setter
@@ -31,8 +30,7 @@ class Platform(object):
 
     @property
     def viewport_height(self):
-        """int : The height of the main viewport, in pixels.
-        """
+        """int : The height of the main viewport, in pixels."""
         return self._viewport_height
 
     @viewport_height.setter
@@ -41,32 +39,27 @@ class Platform(object):
 
     @abc.abstractmethod
     def init_context(self):
-        """Create an OpenGL context.
-        """
+        """Create an OpenGL context."""
         pass
 
     @abc.abstractmethod
     def make_current(self):
-        """Make the OpenGL context current.
-        """
+        """Make the OpenGL context current."""
         pass
 
     @abc.abstractmethod
     def make_uncurrent(self):
-        """Make the OpenGL context uncurrent.
-        """
+        """Make the OpenGL context uncurrent."""
         pass
 
     @abc.abstractmethod
     def delete_context(self):
-        """Delete the OpenGL context.
-        """
+        """Delete the OpenGL context."""
         pass
 
     @abc.abstractmethod
     def supports_framebuffers(self):
-        """Returns True if the method supports framebuffer rendering.
-        """
+        """Returns True if the method supports framebuffer rendering."""
         pass
 
     def __del__(self):
