@@ -104,16 +104,12 @@ def test_meshes():
     assert x.primitives[0].color_0 is not None
     assert x.is_transparent
 
-    bm = trimesh.load("tests/data/WaterBottle.glb").dump()[0]
+    # bm = trimesh.load("tests/data/WaterBottle.glb").dump()[0]
+    bm = trimesh.load("tests/data/WaterBottle.glb").geometry["WaterBottle"]
     x = Mesh.from_trimesh(bm)
     assert x.primitives[0].material.baseColorTexture is not None
-
-    from packaging.version import Version
-
-    if Version(trimesh.__version__) <= Version("3.9.32"):
-        # FIXME
-        assert x.primitives[0].material.emissiveTexture is not None
-        assert x.primitives[0].material.metallicRoughnessTexture is not None
+    assert x.primitives[0].material.emissiveTexture is not None
+    assert x.primitives[0].material.metallicRoughnessTexture is not None
 
     # From point cloud
     x = Mesh.from_points(fm.vertices)
