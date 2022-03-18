@@ -75,21 +75,23 @@ class Material(object):
         If True, the material is rendered in wireframe mode.
     """
 
-    def __init__(self,
-                 name=None,
-                 normalTexture=None,
-                 occlusionTexture=None,
-                 emissiveTexture=None,
-                 emissiveFactor=None,
-                 alphaMode=None,
-                 alphaCutoff=None,
-                 doubleSided=False,
-                 smooth=True,
-                 wireframe=False):
+    def __init__(
+        self,
+        name=None,
+        normalTexture=None,
+        occlusionTexture=None,
+        emissiveTexture=None,
+        emissiveFactor=None,
+        alphaMode=None,
+        alphaCutoff=None,
+        doubleSided=False,
+        smooth=True,
+        wireframe=False,
+    ):
 
         # Set defaults
         if alphaMode is None:
-            alphaMode = 'OPAQUE'
+            alphaMode = "OPAQUE"
 
         if alphaCutoff is None:
             alphaCutoff = 0.5
@@ -112,8 +114,7 @@ class Material(object):
 
     @property
     def name(self):
-        """str : The user-defined name of this object.
-        """
+        """str : The user-defined name of this object."""
         return self._name
 
     @name.setter
@@ -124,42 +125,38 @@ class Material(object):
 
     @property
     def normalTexture(self):
-        """(n,n,3) float or :class:`Texture` : The tangent-space normal map.
-        """
+        """(n,n,3) float or :class:`Texture` : The tangent-space normal map."""
         return self._normalTexture
 
     @normalTexture.setter
     def normalTexture(self, value):
         # TODO TMP
-        self._normalTexture = self._format_texture(value, 'RGB')
+        self._normalTexture = self._format_texture(value, "RGB")
         self._tex_flags = None
 
     @property
     def occlusionTexture(self):
-        """(n,n,1) float or :class:`Texture` : The ambient occlusion map.
-        """
+        """(n,n,1) float or :class:`Texture` : The ambient occlusion map."""
         return self._occlusionTexture
 
     @occlusionTexture.setter
     def occlusionTexture(self, value):
-        self._occlusionTexture = self._format_texture(value, 'R')
+        self._occlusionTexture = self._format_texture(value, "R")
         self._tex_flags = None
 
     @property
     def emissiveTexture(self):
-        """(n,n,3) float or :class:`Texture` : The emission map.
-        """
+        """(n,n,3) float or :class:`Texture` : The emission map."""
         return self._emissiveTexture
 
     @emissiveTexture.setter
     def emissiveTexture(self, value):
-        self._emissiveTexture = self._format_texture(value, 'RGB')
+        self._emissiveTexture = self._format_texture(value, "RGB")
         self._tex_flags = None
 
     @property
     def emissiveFactor(self):
-        """(3,) float : Base multiplier for emission colors.
-        """
+        """(3,) float : Base multiplier for emission colors."""
         return self._emissiveFactor
 
     @emissiveFactor.setter
@@ -170,38 +167,35 @@ class Material(object):
 
     @property
     def alphaMode(self):
-        """str : The mode for blending.
-        """
+        """str : The mode for blending."""
         return self._alphaMode
 
     @alphaMode.setter
     def alphaMode(self, value):
-        if value not in set(['OPAQUE', 'MASK', 'BLEND']):
-            raise ValueError('Invalid alpha mode {}'.format(value))
+        if value not in set(["OPAQUE", "MASK", "BLEND"]):
+            raise ValueError("Invalid alpha mode {}".format(value))
         self._alphaMode = value
 
     @property
     def alphaCutoff(self):
-        """float : The cutoff threshold in MASK mode.
-        """
+        """float : The cutoff threshold in MASK mode."""
         return self._alphaCutoff
 
     @alphaCutoff.setter
     def alphaCutoff(self, value):
         if value < 0 or value > 1:
-            raise ValueError('Alpha cutoff must be in range [0,1]')
+            raise ValueError("Alpha cutoff must be in range [0,1]")
         self._alphaCutoff = float(value)
 
     @property
     def doubleSided(self):
-        """bool : Whether the material is double-sided.
-        """
+        """bool : Whether the material is double-sided."""
         return self._doubleSided
 
     @doubleSided.setter
     def doubleSided(self, value):
         if not isinstance(value, bool):
-            raise TypeError('Double sided must be a boolean value')
+            raise TypeError("Double sided must be a boolean value")
         self._doubleSided = value
 
     @property
@@ -214,31 +208,28 @@ class Material(object):
     @smooth.setter
     def smooth(self, value):
         if not isinstance(value, bool):
-            raise TypeError('Double sided must be a boolean value')
+            raise TypeError("Double sided must be a boolean value")
         self._smooth = value
 
     @property
     def wireframe(self):
-        """bool : Whether to render the mesh in wireframe mode.
-        """
+        """bool : Whether to render the mesh in wireframe mode."""
         return self._wireframe
 
     @wireframe.setter
     def wireframe(self, value):
         if not isinstance(value, bool):
-            raise TypeError('Wireframe must be a boolean value')
+            raise TypeError("Wireframe must be a boolean value")
         self._wireframe = value
 
     @property
     def is_transparent(self):
-        """bool : If True, the object is partially transparent.
-        """
+        """bool : If True, the object is partially transparent."""
         return self._compute_transparency()
 
     @property
     def tex_flags(self):
-        """int : Texture availability flags.
-        """
+        """int : Texture availability flags."""
         if self._tex_flags is None:
             self._tex_flags = self._compute_tex_flags()
         return self._tex_flags
@@ -264,15 +255,12 @@ class Material(object):
         return tex_flags
 
     def _compute_textures(self):
-        all_textures = [
-            self.normalTexture, self.occlusionTexture, self.emissiveTexture
-        ]
+        all_textures = [self.normalTexture, self.occlusionTexture, self.emissiveTexture]
         textures = set([t for t in all_textures if t is not None])
         return textures
 
-    def _format_texture(self, texture, target_channels='RGB'):
-        """Format a texture as a float32 np array.
-        """
+    def _format_texture(self, texture, target_channels="RGB"):
+        """Format a texture as a float32 np array."""
         if isinstance(texture, Texture) or texture is None:
             return texture
         else:
@@ -370,22 +358,24 @@ class MetallicRoughnessMaterial(Material):
         are ignored for metallic-roughness calculations.
     """
 
-    def __init__(self,
-                 name=None,
-                 normalTexture=None,
-                 occlusionTexture=None,
-                 emissiveTexture=None,
-                 emissiveFactor=None,
-                 alphaMode=None,
-                 alphaCutoff=None,
-                 doubleSided=False,
-                 smooth=True,
-                 wireframe=False,
-                 baseColorFactor=None,
-                 baseColorTexture=None,
-                 metallicFactor=1.0,
-                 roughnessFactor=1.0,
-                 metallicRoughnessTexture=None):
+    def __init__(
+        self,
+        name=None,
+        normalTexture=None,
+        occlusionTexture=None,
+        emissiveTexture=None,
+        emissiveFactor=None,
+        alphaMode=None,
+        alphaCutoff=None,
+        doubleSided=False,
+        smooth=True,
+        wireframe=False,
+        baseColorFactor=None,
+        baseColorTexture=None,
+        metallicFactor=1.0,
+        roughnessFactor=1.0,
+        metallicRoughnessTexture=None,
+    ):
         super(MetallicRoughnessMaterial, self).__init__(
             name=name,
             normalTexture=normalTexture,
@@ -396,7 +386,7 @@ class MetallicRoughnessMaterial(Material):
             alphaCutoff=alphaCutoff,
             doubleSided=doubleSided,
             smooth=smooth,
-            wireframe=wireframe
+            wireframe=wireframe,
         )
 
         # Set defaults
@@ -411,8 +401,7 @@ class MetallicRoughnessMaterial(Material):
 
     @property
     def baseColorFactor(self):
-        """(4,) float or :class:`Texture` : The RGBA base color multiplier.
-        """
+        """(4,) float or :class:`Texture` : The RGBA base color multiplier."""
         return self._baseColorFactor
 
     @baseColorFactor.setter
@@ -423,19 +412,17 @@ class MetallicRoughnessMaterial(Material):
 
     @property
     def baseColorTexture(self):
-        """(n,n,4) float or :class:`Texture` : The diffuse texture.
-        """
+        """(n,n,4) float or :class:`Texture` : The diffuse texture."""
         return self._baseColorTexture
 
     @baseColorTexture.setter
     def baseColorTexture(self, value):
-        self._baseColorTexture = self._format_texture(value, 'RGBA')
+        self._baseColorTexture = self._format_texture(value, "RGBA")
         self._tex_flags = None
 
     @property
     def metallicFactor(self):
-        """float : The metalness of the material.
-        """
+        """float : The metalness of the material."""
         return self._metallicFactor
 
     @metallicFactor.setter
@@ -443,13 +430,12 @@ class MetallicRoughnessMaterial(Material):
         if value is None:
             value = 1.0
         if value < 0 or value > 1:
-            raise ValueError('Metallic factor must be in range [0,1]')
+            raise ValueError("Metallic factor must be in range [0,1]")
         self._metallicFactor = float(value)
 
     @property
     def roughnessFactor(self):
-        """float : The roughness of the material.
-        """
+        """float : The roughness of the material."""
         return self.RoughnessFactor
 
     @roughnessFactor.setter
@@ -457,18 +443,17 @@ class MetallicRoughnessMaterial(Material):
         if value is None:
             value = 1.0
         if value < 0 or value > 1:
-            raise ValueError('Roughness factor must be in range [0,1]')
+            raise ValueError("Roughness factor must be in range [0,1]")
         self.RoughnessFactor = float(value)
 
     @property
     def metallicRoughnessTexture(self):
-        """(n,n,2) float or :class:`Texture` : The metallic-roughness texture.
-        """
+        """(n,n,2) float or :class:`Texture` : The metallic-roughness texture."""
         return self._metallicRoughnessTexture
 
     @metallicRoughnessTexture.setter
     def metallicRoughnessTexture(self, value):
-        self._metallicRoughnessTexture = self._format_texture(value, 'GB')
+        self._metallicRoughnessTexture = self._format_texture(value, "GB")
         self._tex_flags = None
 
     def _compute_tex_flags(self):
@@ -480,15 +465,16 @@ class MetallicRoughnessMaterial(Material):
         return tex_flags
 
     def _compute_transparency(self):
-        if self.alphaMode == 'OPAQUE':
+        if self.alphaMode == "OPAQUE":
             return False
         cutoff = self.alphaCutoff
-        if self.alphaMode == 'BLEND':
+        if self.alphaMode == "BLEND":
             cutoff = 1.0
         if self.baseColorFactor[3] < cutoff:
             return True
-        if (self.baseColorTexture is not None and
-                self.baseColorTexture.is_transparent(cutoff)):
+        if self.baseColorTexture is not None and self.baseColorTexture.is_transparent(
+            cutoff
+        ):
             return True
         return False
 
@@ -583,22 +569,24 @@ class SpecularGlossinessMaterial(Material):
         linear space.
     """
 
-    def __init__(self,
-                 name=None,
-                 normalTexture=None,
-                 occlusionTexture=None,
-                 emissiveTexture=None,
-                 emissiveFactor=None,
-                 alphaMode=None,
-                 alphaCutoff=None,
-                 doubleSided=False,
-                 smooth=True,
-                 wireframe=False,
-                 diffuseFactor=None,
-                 diffuseTexture=None,
-                 specularFactor=None,
-                 glossinessFactor=1.0,
-                 specularGlossinessTexture=None):
+    def __init__(
+        self,
+        name=None,
+        normalTexture=None,
+        occlusionTexture=None,
+        emissiveTexture=None,
+        emissiveFactor=None,
+        alphaMode=None,
+        alphaCutoff=None,
+        doubleSided=False,
+        smooth=True,
+        wireframe=False,
+        diffuseFactor=None,
+        diffuseTexture=None,
+        specularFactor=None,
+        glossinessFactor=1.0,
+        specularGlossinessTexture=None,
+    ):
         super(SpecularGlossinessMaterial, self).__init__(
             name=name,
             normalTexture=normalTexture,
@@ -609,7 +597,7 @@ class SpecularGlossinessMaterial(Material):
             alphaCutoff=alphaCutoff,
             doubleSided=doubleSided,
             smooth=smooth,
-            wireframe=wireframe
+            wireframe=wireframe,
         )
 
         # Set defaults
@@ -626,8 +614,7 @@ class SpecularGlossinessMaterial(Material):
 
     @property
     def diffuseFactor(self):
-        """(4,) float : The diffuse base color.
-        """
+        """(4,) float : The diffuse base color."""
         return self._diffuseFactor
 
     @diffuseFactor.setter
@@ -636,19 +623,17 @@ class SpecularGlossinessMaterial(Material):
 
     @property
     def diffuseTexture(self):
-        """(n,n,4) float or :class:`Texture` : The diffuse map.
-        """
+        """(n,n,4) float or :class:`Texture` : The diffuse map."""
         return self._diffuseTexture
 
     @diffuseTexture.setter
     def diffuseTexture(self, value):
-        self._diffuseTexture = self._format_texture(value, 'RGBA')
+        self._diffuseTexture = self._format_texture(value, "RGBA")
         self._tex_flags = None
 
     @property
     def specularFactor(self):
-        """(3,) float : The specular color of the material.
-        """
+        """(3,) float : The specular color of the material."""
         return self._specularFactor
 
     @specularFactor.setter
@@ -657,25 +642,23 @@ class SpecularGlossinessMaterial(Material):
 
     @property
     def glossinessFactor(self):
-        """float : The glossiness of the material.
-        """
+        """float : The glossiness of the material."""
         return self.glossinessFactor
 
     @glossinessFactor.setter
     def glossinessFactor(self, value):
         if value < 0 or value > 1:
-            raise ValueError('glossiness factor must be in range [0,1]')
+            raise ValueError("glossiness factor must be in range [0,1]")
         self._glossinessFactor = float(value)
 
     @property
     def specularGlossinessTexture(self):
-        """(n,n,4) or :class:`Texture` : The specular-glossiness texture.
-        """
+        """(n,n,4) or :class:`Texture` : The specular-glossiness texture."""
         return self._specularGlossinessTexture
 
     @specularGlossinessTexture.setter
     def specularGlossinessTexture(self, value):
-        self._specularGlossinessTexture = self._format_texture(value, 'GB')
+        self._specularGlossinessTexture = self._format_texture(value, "GB")
         self._tex_flags = None
 
     def _compute_tex_flags(self):
@@ -687,15 +670,16 @@ class SpecularGlossinessMaterial(Material):
         return flags
 
     def _compute_transparency(self):
-        if self.alphaMode == 'OPAQUE':
+        if self.alphaMode == "OPAQUE":
             return False
         cutoff = self.alphaCutoff
-        if self.alphaMode == 'BLEND':
+        if self.alphaMode == "BLEND":
             cutoff = 1.0
         if self.diffuseFactor[3] < cutoff:
             return True
-        if (self.diffuseTexture is not None and
-                self.diffuseTexture.is_transparent(cutoff)):
+        if self.diffuseTexture is not None and self.diffuseTexture.is_transparent(
+            cutoff
+        ):
             return True
         return False
 

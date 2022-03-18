@@ -15,15 +15,14 @@ from .sampler import Sampler
 
 
 class FontCache(object):
-    """A cache for fonts.
-    """
+    """A cache for fonts."""
 
     def __init__(self, font_dir=None):
         self._font_cache = {}
         self.font_dir = font_dir
         if self.font_dir is None:
             base_dir, _ = os.path.split(os.path.realpath(__file__))
-            self.font_dir = os.path.join(base_dir, 'fonts')
+            self.font_dir = os.path.join(base_dir, "fonts")
 
     def get_font(self, font_name, font_pt):
         # If it's a file, load it directly, else, try to load from font dir.
@@ -32,7 +31,7 @@ class FontCache(object):
             _, font_name = os.path.split(font_name)
             font_name, _ = os.path.split(font_name)
         else:
-            font_filename = os.path.join(self.font_dir, font_name) + '.ttf'
+            font_filename = os.path.join(self.font_dir, font_name) + ".ttf"
 
         cid = OpenGL.contextdata.getContext()
         key = (cid, font_name, int(font_pt))
@@ -48,8 +47,7 @@ class FontCache(object):
 
 
 class Character(object):
-    """A single character, with its texture and attributes.
-    """
+    """A single character, with its texture and attributes."""
 
     def __init__(self, texture, size, bearing, advance):
         self.texture = texture
@@ -83,25 +81,22 @@ class Font(object):
             face.load_char(chr(i))
             buf = face.glyph.bitmap.buffer
             src = (np.array(buf) / 255.0).astype(np.float32)
-            src = src.reshape((face.glyph.bitmap.rows,
-                               face.glyph.bitmap.width))
+            src = src.reshape((face.glyph.bitmap.rows, face.glyph.bitmap.width))
             tex = Texture(
                 sampler=Sampler(
                     magFilter=GL_LINEAR,
                     minFilter=GL_LINEAR,
                     wrapS=GL_CLAMP_TO_EDGE,
-                    wrapT=GL_CLAMP_TO_EDGE
+                    wrapT=GL_CLAMP_TO_EDGE,
                 ),
                 source=src,
-                source_channels='R',
+                source_channels="R",
             )
             character = Character(
                 texture=tex,
-                size=np.array([face.glyph.bitmap.width,
-                               face.glyph.bitmap.rows]),
-                bearing=np.array([face.glyph.bitmap_left,
-                                  face.glyph.bitmap_top]),
-                advance=face.glyph.advance.x
+                size=np.array([face.glyph.bitmap.width, face.glyph.bitmap.rows]),
+                bearing=np.array([face.glyph.bitmap_left, face.glyph.bitmap_top]),
+                advance=face.glyph.advance.x,
             )
             self._character_map[chr(i)] = character
 
@@ -110,8 +105,7 @@ class Font(object):
 
     @property
     def font_file(self):
-        """str : The file the font was loaded from.
-        """
+        """str : The file the font was loaded from."""
         return self._font_file
 
     @font_file.setter
@@ -120,8 +114,7 @@ class Font(object):
 
     @property
     def font_pt(self):
-        """int : The height of the font in pixels.
-        """
+        """int : The height of the font in pixels."""
         return self._font_pt
 
     @font_pt.setter
@@ -170,8 +163,7 @@ class Font(object):
         self._unbind()
         self._remove_from_context()
 
-    def render_string(self, text, x, y, scale=1.0,
-                      align=TextAlign.BOTTOM_LEFT):
+    def render_string(self, text, x, y, scale=1.0, align=TextAlign.BOTTOM_LEFT):
         """Render a string to the current view buffer.
 
         Note
@@ -244,21 +236,22 @@ class Font(object):
             w = ch.size[0] * scale
             h = ch.size[1] * scale
 
-            vertices = np.array([
-                [xpos, ypos, 0.0, 0.0],
-                [xpos + w, ypos, 1.0, 0.0],
-                [xpos + w, ypos + h, 1.0, 1.0],
-                [xpos + w, ypos + h, 1.0, 1.0],
-                [xpos, ypos + h, 0.0, 1.0],
-                [xpos, ypos, 0.0, 0.0],
-            ], dtype=np.float32)
+            vertices = np.array(
+                [
+                    [xpos, ypos, 0.0, 0.0],
+                    [xpos + w, ypos, 1.0, 0.0],
+                    [xpos + w, ypos + h, 1.0, 1.0],
+                    [xpos + w, ypos + h, 1.0, 1.0],
+                    [xpos, ypos + h, 0.0, 1.0],
+                    [xpos, ypos, 0.0, 0.0],
+                ],
+                dtype=np.float32,
+            )
 
             ch.texture._bind()
 
             glBindBuffer(GL_ARRAY_BUFFER, self._vbo)
-            glBufferData(
-                GL_ARRAY_BUFFER, FLOAT_SZ * 6 * 4, vertices, GL_DYNAMIC_DRAW
-            )
+            glBufferData(GL_ARRAY_BUFFER, FLOAT_SZ * 6 * 4, vertices, GL_DYNAMIC_DRAW)
             # TODO MAKE THIS MORE EFFICIENT, lgBufferSubData is broken
             # glBufferSubData(
             #     GL_ARRAY_BUFFER, 0, 6 * 4 * FLOAT_SZ,

@@ -2,8 +2,16 @@ import numpy as np
 import pytest
 import trimesh
 
-from pyrender import (Mesh, PerspectiveCamera, DirectionalLight,
-                      SpotLight, PointLight, Scene, Node, OrthographicCamera)
+from pyrender import (
+    Mesh,
+    PerspectiveCamera,
+    DirectionalLight,
+    SpotLight,
+    PointLight,
+    Scene,
+    Node,
+    OrthographicCamera,
+)
 
 
 def test_scenes():
@@ -14,7 +22,7 @@ def test_scenes():
     assert np.allclose(s.ambient_light, np.zeros(3))
     assert len(s.nodes) == 0
     assert s.name is None
-    s.name = 'asdf'
+    s.name = "asdf"
     s.bg_color = None
     s.ambient_light = None
     assert np.allclose(s.bg_color, np.ones(4))
@@ -40,7 +48,7 @@ def test_scenes():
     assert np.all(s.scale == 0)
 
     # From trimesh scene
-    tms = trimesh.load('tests/data/WaterBottle.glb')
+    tms = trimesh.load("tests/data/WaterBottle.glb")
     s = Scene.from_trimesh_scene(tms)
     assert len(s.meshes) == 1
     assert len(s.mesh_nodes) == 1
@@ -84,14 +92,14 @@ def test_scenes():
     with pytest.raises(ValueError):
         s.set_pose(n3, np.eye(4))
     tf = np.eye(4)
-    tf[:3,3] = np.ones(3)
+    tf[:3, 3] = np.ones(3)
     s.set_pose(n1, tf)
     assert np.allclose(s.get_pose(n1), tf)
     assert np.allclose(s.get_pose(n2), np.eye(4))
 
     nodes = [n1, n2, n3]
     tf2 = np.eye(4)
-    tf2[:3,:3] = np.diag([-1,-1,1])
+    tf2[:3, :3] = np.diag([-1, -1, 1])
     n1.children.append(n2)
     n1.matrix = tf
     n2.matrix = tf2
@@ -134,14 +142,14 @@ def test_scenes():
 
     # Now test ADD function
     s = Scene()
-    m = Mesh([], name='m')
+    m = Mesh([], name="m")
     cp = PerspectiveCamera(yfov=2.0)
     co = OrthographicCamera(xmag=1.0, ymag=1.0)
     dl = DirectionalLight()
     pl = PointLight()
     sl = SpotLight()
 
-    n1 = s.add(m, name='mn')
+    n1 = s.add(m, name="mn")
     assert n1.mesh == m
     assert len(s.nodes) == 1
     assert len(s.mesh_nodes) == 1
@@ -153,13 +161,13 @@ def test_scenes():
     assert len(s.nodes) == len(s.mesh_nodes) == 2
     assert len(s.meshes) == 1
     assert len(s.get_nodes(node=n1)) == 1
-    assert len(s.get_nodes(node=n1, name='mn')) == 1
-    assert len(s.get_nodes(name='mn')) == 1
+    assert len(s.get_nodes(node=n1, name="mn")) == 1
+    assert len(s.get_nodes(name="mn")) == 1
     assert len(s.get_nodes(obj=m)) == 2
-    assert len(s.get_nodes(obj=m, obj_name='m')) == 2
+    assert len(s.get_nodes(obj=m, obj_name="m")) == 2
     assert len(s.get_nodes(obj=co)) == 0
-    nsl = s.add(sl, name='sln')
-    npl = s.add(pl, parent_name='sln')
+    nsl = s.add(sl, name="sln")
+    npl = s.add(pl, parent_name="sln")
     assert nsl.children[0] == npl
     ndl = s.add(dl, parent_node=npl)
     assert npl.children[0] == ndl
@@ -200,11 +208,11 @@ def test_scenes():
     with pytest.raises(ValueError):
         s.add(m, parent_node=n1)
     with pytest.raises(ValueError):
-        s.add(m, name='asdf')
-        s.add(m, name='asdf')
-        s.add(m, parent_name='asdf')
+        s.add(m, name="asdf")
+        s.add(m, name="asdf")
+        s.add(m, parent_name="asdf")
     with pytest.raises(ValueError):
-        s.add(m, parent_name='asfd')
+        s.add(m, parent_name="asfd")
     with pytest.raises(TypeError):
         s.add(None)
 
@@ -226,7 +234,7 @@ def test_scenes():
     s.add_node(n3, parent_node=n2)
     assert np.allclose(s.bounds, [[-0.5, -0.5, -0.5], [2.0, 0.5, 1.5]])
     tf = np.eye(4)
-    tf[:3,3] = np.ones(3)
+    tf[:3, 3] = np.ones(3)
     s.set_pose(n3, tf)
     assert np.allclose(s.bounds, [[-0.5, -0.5, -0.5], [2.5, 1.5, 1.5]])
     s.remove_node(n2)

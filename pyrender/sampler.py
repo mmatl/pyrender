@@ -37,12 +37,14 @@ class Sampler(object):
             - :attr:`.GLTF.REPEAT`
     """
 
-    def __init__(self,
-                 name=None,
-                 magFilter=None,
-                 minFilter=None,
-                 wrapS=GLTF.REPEAT,
-                 wrapT=GLTF.REPEAT):
+    def __init__(
+        self,
+        name=None,
+        magFilter=None,
+        minFilter=None,
+        wrapS=GLTF.REPEAT,
+        wrapT=GLTF.REPEAT,
+    ):
         self.name = name
         self.magFilter = magFilter
         self.minFilter = minFilter
@@ -51,8 +53,7 @@ class Sampler(object):
 
     @property
     def name(self):
-        """str : The user-defined name of this object.
-        """
+        """str : The user-defined name of this object."""
         return self._name
 
     @name.setter
@@ -63,8 +64,7 @@ class Sampler(object):
 
     @property
     def magFilter(self):
-        """int : Magnification filter type.
-        """
+        """int : Magnification filter type."""
         return self._magFilter
 
     @magFilter.setter
@@ -73,8 +73,7 @@ class Sampler(object):
 
     @property
     def minFilter(self):
-        """int : Minification filter type.
-        """
+        """int : Minification filter type."""
         return self._minFilter
 
     @minFilter.setter
@@ -83,8 +82,7 @@ class Sampler(object):
 
     @property
     def wrapS(self):
-        """int : S (U) wrapping mode.
-        """
+        """int : S (U) wrapping mode."""
         return self._wrapS
 
     @wrapS.setter
@@ -93,8 +91,7 @@ class Sampler(object):
 
     @property
     def wrapT(self):
-        """int : T (V) wrapping mode.
-        """
+        """int : T (V) wrapping mode."""
         return self._wrapT
 
     @wrapT.setter

@@ -38,8 +38,7 @@ class Mesh(object):
 
     @property
     def name(self):
-        """str : The user-defined name of this object.
-        """
+        """str : The user-defined name of this object."""
         return self._name
 
     @name.setter
@@ -61,8 +60,7 @@ class Mesh(object):
 
     @property
     def weights(self):
-        """(k,) float : Weights to be applied to morph targets.
-        """
+        """(k,) float : Weights to be applied to morph targets."""
         return self._weights
 
     @weights.setter
@@ -71,8 +69,7 @@ class Mesh(object):
 
     @property
     def is_visible(self):
-        """bool : Whether the mesh is visible.
-        """
+        """bool : Whether the mesh is visible."""
         return self._is_visible
 
     @is_visible.setter
@@ -81,11 +78,11 @@ class Mesh(object):
 
     @property
     def bounds(self):
-        """(2,3) float : The axis-aligned bounds of the mesh.
-        """
+        """(2,3) float : The axis-aligned bounds of the mesh."""
         if self._bounds is None:
-            bounds = np.array([[np.infty, np.infty, np.infty],
-                               [-np.infty, -np.infty, -np.infty]])
+            bounds = np.array(
+                [[np.infty, np.infty, np.infty], [-np.infty, -np.infty, -np.infty]]
+            )
             for p in self.primitives:
                 bounds[0] = np.minimum(bounds[0], p.bounds[0])
                 bounds[1] = np.maximum(bounds[1], p.bounds[1])
@@ -101,28 +98,24 @@ class Mesh(object):
 
     @property
     def extents(self):
-        """(3,) float : The lengths of the axes of the mesh's AABB.
-        """
+        """(3,) float : The lengths of the axes of the mesh's AABB."""
         return np.diff(self.bounds, axis=0).reshape(-1)
 
     @property
     def scale(self):
-        """(3,) float : The length of the diagonal of the mesh's AABB.
-        """
+        """(3,) float : The length of the diagonal of the mesh's AABB."""
         return np.linalg.norm(self.extents)
 
     @property
     def is_transparent(self):
-        """bool : If True, the mesh is partially-transparent.
-        """
+        """bool : If True, the mesh is partially-transparent."""
         for p in self.primitives:
             if p.is_transparent:
                 return True
         return False
 
     @staticmethod
-    def from_points(points, colors=None, normals=None,
-                    is_visible=True, poses=None):
+    def from_points(points, colors=None, normals=None, is_visible=True, poses=None):
         """Create a Mesh from a set of points.
 
         Parameters
@@ -148,14 +141,15 @@ class Mesh(object):
             normals=normals,
             color_0=colors,
             mode=GLTF.POINTS,
-            poses=poses
+            poses=poses,
         )
         mesh = Mesh(primitives=[primitive], is_visible=is_visible)
         return mesh
 
     @staticmethod
-    def from_trimesh(mesh, material=None, is_visible=True,
-                     poses=None, wireframe=False, smooth=True):
+    def from_trimesh(
+        mesh, material=None, is_visible=True, poses=None, wireframe=False, smooth=True
+    ):
         """Create a Mesh from a :class:`~trimesh.base.Trimesh`.
 
         Parameters
@@ -187,8 +181,7 @@ class Mesh(object):
         elif isinstance(mesh, trimesh.Trimesh):
             meshes = [mesh]
         else:
-            raise TypeError('Expected a Trimesh or a list, got a {}'
-                            .format(type(mesh)))
+            raise TypeError("Expected a Trimesh or a list, got a {}".format(type(mesh)))
 
         primitives = []
         for m in meshes:
@@ -206,35 +199,39 @@ class Mesh(object):
                 normals = np.repeat(m.face_normals, 3, axis=0)
 
             # Compute colors, texture coords, and material properties
-            color_0, texcoord_0, primitive_material = Mesh._get_trimesh_props(m, smooth=smooth, material=material)
+            color_0, texcoord_0, primitive_material = Mesh._get_trimesh_props(
+                m, smooth=smooth, material=material
+            )
 
             # Override if material is given.
             if material is not None:
-                #primitive_material = copy.copy(material)
+                # primitive_material = copy.copy(material)
                 primitive_material = copy.deepcopy(material)  # TODO
 
             if primitive_material is None:
                 # Replace material with default if needed
                 primitive_material = MetallicRoughnessMaterial(
-                    alphaMode='BLEND',
+                    alphaMode="BLEND",
                     baseColorFactor=[0.3, 0.3, 0.3, 1.0],
                     metallicFactor=0.2,
-                    roughnessFactor=0.8
+                    roughnessFactor=0.8,
                 )
 
             primitive_material.wireframe = wireframe
 
             # Create the primitive
-            primitives.append(Primitive(
-                positions=positions,
-                normals=normals,
-                texcoord_0=texcoord_0,
-                color_0=color_0,
-                indices=indices,
-                material=primitive_material,
-                mode=GLTF.TRIANGLES,
-                poses=poses
-            ))
+            primitives.append(
+                Primitive(
+                    positions=positions,
+                    normals=normals,
+                    texcoord_0=texcoord_0,
+                    color_0=color_0,
+                    indices=indices,
+                    material=primitive_material,
+                    mode=GLTF.TRIANGLES,
+                    poses=poses,
+                )
+            )
 
         return Mesh(primitives=primitives, is_visible=is_visible)
 
@@ -252,36 +249,34 @@ class Mesh(object):
 
         # Process vertex colors
         if material is None:
-            if mesh.visual.kind == 'vertex':
+            if mesh.visual.kind == "vertex":
                 vc = mesh.visual.vertex_colors.copy()
                 if smooth:
                     colors = vc
                 else:
-                    colors = vc[mesh.faces].reshape(
-                        (3 * len(mesh.faces), vc.shape[1])
-                    )
+                    colors = vc[mesh.faces].reshape((3 * len(mesh.faces), vc.shape[1]))
                 material = MetallicRoughnessMaterial(
-                    alphaMode='BLEND',
+                    alphaMode="BLEND",
                     baseColorFactor=[1.0, 1.0, 1.0, 1.0],
                     metallicFactor=0.2,
-                    roughnessFactor=0.8
+                    roughnessFactor=0.8,
                 )
             # Process face colors
-            elif mesh.visual.kind == 'face':
+            elif mesh.visual.kind == "face":
                 if smooth:
-                    raise ValueError('Cannot use face colors with a smooth mesh')
+                    raise ValueError("Cannot use face colors with a smooth mesh")
                 else:
                     colors = np.repeat(mesh.visual.face_colors, 3, axis=0)
 
                 material = MetallicRoughnessMaterial(
-                    alphaMode='BLEND',
+                    alphaMode="BLEND",
                     baseColorFactor=[1.0, 1.0, 1.0, 1.0],
                     metallicFactor=0.2,
-                    roughnessFactor=0.8
+                    roughnessFactor=0.8,
                 )
 
         # Process texture colors
-        if mesh.visual.kind == 'texture':
+        if mesh.visual.kind == "texture":
             # Configure UV coordinates
             if mesh.visual.uv is not None and len(mesh.visual.uv) != 0:
                 uv = mesh.visual.uv.copy()
@@ -302,22 +297,22 @@ class Mesh(object):
                         occlusionTexture=mat.occlusionTexture,
                         emissiveTexture=mat.emissiveTexture,
                         emissiveFactor=mat.emissiveFactor,
-                        alphaMode='BLEND',
+                        alphaMode="BLEND",
                         baseColorFactor=mat.baseColorFactor,
                         baseColorTexture=mat.baseColorTexture,
                         metallicFactor=mat.metallicFactor,
                         roughnessFactor=mat.roughnessFactor,
                         metallicRoughnessTexture=mat.metallicRoughnessTexture,
                         doubleSided=mat.doubleSided,
-                        alphaCutoff=mat.alphaCutoff
+                        alphaCutoff=mat.alphaCutoff,
                     )
                 elif isinstance(mat, trimesh.visual.texture.SimpleMaterial):
-                    glossiness = mat.kwargs.get('Ns', 1.0)
+                    glossiness = mat.kwargs.get("Ns", 1.0)
                     if isinstance(glossiness, list):
                         glossiness = float(glossiness[0])
                     roughness = (2 / (glossiness + 2)) ** (1.0 / 4.0)
                     material = MetallicRoughnessMaterial(
-                        alphaMode='BLEND',
+                        alphaMode="BLEND",
                         roughnessFactor=roughness,
                         baseColorFactor=mat.diffuse,
                         baseColorTexture=mat.image,

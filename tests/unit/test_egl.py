@@ -1,3 +1,4 @@
+# flake8: noqa
 # from pyrender.platforms import egl
 
 
