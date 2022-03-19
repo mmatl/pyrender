@@ -12,19 +12,25 @@ exec(open("pyrender/version.py").read())
 requirements = [
     "freetype-py",  # For font loading
     'imageio<=2.6.1; python_version < "3"',  # For Image I/O
-    'imageio<=2.15.0; python_version <= "3.6" and python_version > "3"',
+    'imageio<=2.15.0; python_version <= "3.6" and python_version >= "3"',
     'imageio; python_version > "3.6"',
-    "networkx",  # For the scene graph
-    'numpy<=1.19.5; python_version <= "3.6"',  # Numpy
+    'networkx<=2.2; python_version < "3"',  # For the scene graph
+    'networkx; python_version >= "3"',
+    'numpy<=1.16.6; python_version < "3"',  # Numpy
+    'numpy<=1.19.5; python_version <= "3.6" and python_version >= "3"',
     'numpy; python_version > "3.6"',
-    "Pillow",  # For Trimesh texture conversions
-    "pyglet>=1.4.10",  # For the pyglet viewer
+    'Pillow<=6.2.2; python_version < "3"',  # For Trimesh texture conversions
+    'Pillow; python_version >= "3"',
+    'pyglet<=1.4.11; python_version < "3"',  # For the pyglet viewer
+    'pyglet; python_version >= "3"',
     "PyOpenGL==3.1.0",  # For OpenGL
     #   'PyOpenGL_accelerate==3.1.0',             # For OpenGL
     'scipy<=1.5.4; python_version <= "3.6"',  # Because of trimesh missing dep
     'scipy; python_version > "3.6"',
     "six",  # For Python 2/3 interop
     "trimesh",  # For meshes
+    'decorator<=4.4.2; python_version < "3"',
+    'setuptools_scm; python_version < "3"',
 ]
 
 dev_requirements = [
