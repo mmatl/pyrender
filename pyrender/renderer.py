@@ -218,7 +218,7 @@ class Renderer(object):
         # Draw text
         font.render_string(text, x, y, scale, align)
 
-    def read_color_buf(self):
+    def read_color_buf(self, flags=RenderFlags.NONE):
         """Read and return the current viewport's color buffer.
 
         Alpha cannot be computed for an on-screen buffer.
@@ -232,11 +232,13 @@ class Renderer(object):
         width, height = self.viewport_width, self.viewport_height
         glBindFramebuffer(GL_READ_FRAMEBUFFER, 0)
         glReadBuffer(GL_FRONT)
-        color_buf = glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE)
+        fmt = GL_RGBA if flags & RenderFlags.RGBA else GL_RGB
+        color_buf = glReadPixels(0, 0, width, height, fmt, GL_UNSIGNED_BYTE)
 
         # Re-format them into numpy arrays
         color_im = np.frombuffer(color_buf, dtype=np.uint8)
-        color_im = color_im.reshape((height, width, 3))
+        channels = 4 if flags & RenderFlags.RGBA else 3
+        color_im = color_im.reshape((height, width, channels))
         color_im = np.flip(color_im, axis=0)
 
         # Resize for macos if needed

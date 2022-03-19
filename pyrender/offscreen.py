@@ -106,7 +106,7 @@ class OffscreenRenderer(object):
             if flags & RenderFlags.DEPTH_ONLY:
                 retval = depth
             else:
-                color = self._renderer.read_color_buf()
+                color = self._renderer.read_color_buf(flags=flags)
                 retval = color, depth
 
         # Make the platform not current
