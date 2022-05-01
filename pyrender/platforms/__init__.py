@@ -3,4 +3,4 @@
 Author: Matthew Matl
 """
 
-from .base import Platform
+from .base import Platform  # noqa: F401

@@ -32,8 +32,7 @@ class OffscreenRenderer(object):
 
     @property
     def viewport_width(self):
-        """int : The width of the main viewport, in pixels.
-        """
+        """int : The width of the main viewport, in pixels."""
         return self._viewport_width
 
     @viewport_width.setter
@@ -42,8 +41,7 @@ class OffscreenRenderer(object):
 
     @property
     def viewport_height(self):
-        """int : The height of the main viewport, in pixels.
-        """
+        """int : The height of the main viewport, in pixels."""
         return self._viewport_height
 
     @viewport_height.setter
@@ -52,8 +50,7 @@ class OffscreenRenderer(object):
 
     @property
     def point_size(self):
-        """float : The pixel size of points in point clouds.
-        """
+        """float : The pixel size of points in point clouds."""
         return self._point_size
 
     @point_size.setter
@@ -86,8 +83,10 @@ class OffscreenRenderer(object):
         self._platform.make_current()
         # If platform does not support dynamically-resizing framebuffers,
         # destroy it and restart it
-        if (self._platform.viewport_height != self.viewport_height or
-                self._platform.viewport_width != self.viewport_width):
+        if (
+            self._platform.viewport_height != self.viewport_height
+            or self._platform.viewport_width != self.viewport_width
+        ):
             if not self._platform.supports_framebuffers():
                 self.delete()
                 self._create()
@@ -114,8 +113,7 @@ class OffscreenRenderer(object):
         return retval
 
     def delete(self):
-        """Free all OpenGL resources.
-        """
+        """Free all OpenGL resources."""
         self._platform.make_current()
         self._renderer.delete()
         self._platform.delete_context()
@@ -124,28 +122,32 @@ class OffscreenRenderer(object):
         self._renderer = None
         self._platform = None
         import gc
+
         gc.collect()
 
     def _create(self):
-        if 'PYOPENGL_PLATFORM' not in os.environ:
+        if "PYOPENGL_PLATFORM" not in os.environ:
             from pyrender.platforms.pyglet_platform import PygletPlatform
-            self._platform = PygletPlatform(self.viewport_width,
-                                            self.viewport_height)
-        elif os.environ['PYOPENGL_PLATFORM'] == 'egl':
+
+            self._platform = PygletPlatform(self.viewport_width, self.viewport_height)
+        elif os.environ["PYOPENGL_PLATFORM"] == "egl":
             from pyrender.platforms import egl
-            device_id = int(os.environ.get('EGL_DEVICE_ID', '0'))
+
+            device_id = int(os.environ.get("EGL_DEVICE_ID", "0"))
             egl_device = egl.get_device_by_index(device_id)
-            self._platform = egl.EGLPlatform(self.viewport_width,
-                                             self.viewport_height,
-                                             device=egl_device)
-        elif os.environ['PYOPENGL_PLATFORM'] == 'osmesa':
+            self._platform = egl.EGLPlatform(
+                self.viewport_width, self.viewport_height, device=egl_device
+            )
+        elif os.environ["PYOPENGL_PLATFORM"] == "osmesa":
             from pyrender.platforms.osmesa import OSMesaPlatform
-            self._platform = OSMesaPlatform(self.viewport_width,
-                                            self.viewport_height)
+
+            self._platform = OSMesaPlatform(self.viewport_width, self.viewport_height)
         else:
-            raise ValueError('Unsupported PyOpenGL platform: {}'.format(
-                os.environ['PYOPENGL_PLATFORM']
-            ))
+            raise ValueError(
+                "Unsupported PyOpenGL platform: {}".format(
+                    os.environ["PYOPENGL_PLATFORM"]
+                )
+            )
         self._platform.init_context()
         self._platform.make_current()
         self._renderer = Renderer(self.viewport_width, self.viewport_height)
@@ -157,4 +159,4 @@ class OffscreenRenderer(object):
             pass
 
 
-__all__ = ['OffscreenRenderer']
+__all__ = ["OffscreenRenderer"]

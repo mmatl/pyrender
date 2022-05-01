@@ -1,15 +1,15 @@
-DEFAULT_Z_NEAR = 0.05     # Near clipping plane, in meters
-DEFAULT_Z_FAR = 100.0     # Far clipping plane, in meters
-DEFAULT_SCENE_SCALE = 2.0 # Default scene scale
-MAX_N_LIGHTS = 4          # Maximum number of lights of each type allowed
+DEFAULT_Z_NEAR = 0.05  # Near clipping plane, in meters
+DEFAULT_Z_FAR = 100.0  # Far clipping plane, in meters
+DEFAULT_SCENE_SCALE = 2.0  # Default scene scale
+MAX_N_LIGHTS = 4  # Maximum number of lights of each type allowed
 TARGET_OPEN_GL_MAJOR = 4  # Target OpenGL Major Version
 TARGET_OPEN_GL_MINOR = 1  # Target OpenGL Minor Version
-MIN_OPEN_GL_MAJOR = 3     # Minimum OpenGL Major Version
-MIN_OPEN_GL_MINOR = 3     # Minimum OpenGL Minor Version
-FLOAT_SZ = 4              # Byte size of GL float32
-UINT_SZ = 4               # Byte size of GL uint32
-SHADOW_TEX_SZ = 2048      # Width and Height of Shadow Textures
-TEXT_PADDING = 20         # Width of padding for rendering text (px)
+MIN_OPEN_GL_MAJOR = 3  # Minimum OpenGL Major Version
+MIN_OPEN_GL_MINOR = 3  # Minimum OpenGL Minor Version
+FLOAT_SZ = 4  # Byte size of GL float32
+UINT_SZ = 4  # Byte size of GL uint32
+SHADOW_TEX_SZ = 2048  # Width and Height of Shadow Textures
+TEXT_PADDING = 20  # Width of padding for rendering text (px)
 
 
 # Flags for render type
@@ -23,6 +23,7 @@ class RenderFlags(object):
     would result in an offscreen render with directional shadows and
     vertex normals enabled.
     """
+
     NONE = 0
     """Normal PBR Render."""
     DEPTH_ONLY = 1
@@ -61,6 +62,7 @@ class TextAlign:
 
     Only use one at a time.
     """
+
     CENTER = 0
     """Center the text by width and height."""
     CENTER_LEFT = 1
@@ -83,6 +85,7 @@ class TextAlign:
 
 class GLTF(object):
     """Options for GL objects."""
+
     NEAREST = 9728
     """Nearest neighbor interpolation."""
     LINEAR = 9729
@@ -146,4 +149,4 @@ class ProgramFlags:
     FACE_NORMALS = 4
 
 
-__all__ = ['RenderFlags', 'TextAlign', 'GLTF']
+__all__ = ["RenderFlags", "TextAlign", "GLTF"]

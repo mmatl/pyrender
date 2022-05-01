@@ -37,15 +37,17 @@ class Texture(object):
         For now, just GL_FLOAT.
     """
 
-    def __init__(self,
-                 name=None,
-                 sampler=None,
-                 source=None,
-                 source_channels=None,
-                 width=None,
-                 height=None,
-                 tex_type=GL_TEXTURE_2D,
-                 data_format=GL_UNSIGNED_BYTE):
+    def __init__(
+        self,
+        name=None,
+        sampler=None,
+        source=None,
+        source_channels=None,
+        width=None,
+        height=None,
+        tex_type=GL_TEXTURE_2D,
+        data_format=GL_UNSIGNED_BYTE,
+    ):
         self.source_channels = source_channels
         self.name = name
         self.sampler = sampler
@@ -60,8 +62,7 @@ class Texture(object):
 
     @property
     def name(self):
-        """str : The user-defined name of this object.
-        """
+        """str : The user-defined name of this object."""
         return self._name
 
     @name.setter
@@ -72,8 +73,7 @@ class Texture(object):
 
     @property
     def sampler(self):
-        """:class:`Sampler` : The sampler used by this texture.
-        """
+        """:class:`Sampler` : The sampler used by this texture."""
         return self._sampler
 
     @sampler.setter
@@ -99,8 +99,7 @@ class Texture(object):
 
     @property
     def source_channels(self):
-        """str : The channels that were extracted from the original source.
-        """
+        """str : The channels that were extracted from the original source."""
         return self._source_channels
 
     @source_channels.setter
@@ -109,8 +108,7 @@ class Texture(object):
 
     @property
     def width(self):
-        """int : The width of the texture buffer.
-        """
+        """int : The width of the texture buffer."""
         return self._width
 
     @width.setter
@@ -119,8 +117,7 @@ class Texture(object):
 
     @property
     def height(self):
-        """int : The height of the texture buffer.
-        """
+        """int : The height of the texture buffer."""
         return self._height
 
     @height.setter
@@ -129,8 +126,7 @@ class Texture(object):
 
     @property
     def tex_type(self):
-        """int : The type of the texture.
-        """
+        """int : The type of the texture."""
         return self._tex_type
 
     @tex_type.setter
@@ -139,8 +135,7 @@ class Texture(object):
 
     @property
     def data_format(self):
-        """int : The format of the texture data.
-        """
+        """int : The format of the texture data."""
         return self._data_format
 
     @data_format.setter
@@ -148,18 +143,16 @@ class Texture(object):
         self._data_format = value
 
     def is_transparent(self, cutoff=1.0):
-        """bool : If True, the texture is partially transparent.
-        """
+        """bool : If True, the texture is partially transparent."""
         if self._is_transparent is None:
             self._is_transparent = False
-            if self.source_channels == 'RGBA' and self.source is not None:
-                if np.any(self.source[:,:,3] < cutoff):
+            if self.source_channels == "RGBA" and self.source is not None:
+                if np.any(self.source[:, :, 3] < cutoff):
                     self._is_transparent = True
         return self._is_transparent
 
     def delete(self):
-        """Remove this texture from the OpenGL context.
-        """
+        """Remove this texture from the OpenGL context."""
         self._unbind()
         self._remove_from_context()
 
@@ -168,16 +161,16 @@ class Texture(object):
     ##################
     def _add_to_context(self):
         if self._texid is not None:
-            raise ValueError('Texture already loaded into OpenGL context')
+            raise ValueError("Texture already loaded into OpenGL context")
 
         fmt = GL_DEPTH_COMPONENT
-        if self.source_channels == 'R':
+        if self.source_channels == "R":
             fmt = GL_RED
-        elif self.source_channels == 'RG' or self.source_channels == 'GB':
+        elif self.source_channels == "RG" or self.source_channels == "GB":
             fmt = GL_RG
-        elif self.source_channels == 'RGB':
+        elif self.source_channels == "RGB":
             fmt = GL_RGB
-        elif self.source_channels == 'RGBA':
+        elif self.source_channels == "RGBA":
             fmt = GL_RGBA
 
         # Generate the OpenGL texture
@@ -195,8 +188,7 @@ class Texture(object):
 
         # Bind texture and generate mipmaps
         glTexImage2D(
-            self.tex_type, 0, fmt, width, height, 0, fmt,
-            self.data_format, data
+            self.tex_type, 0, fmt, width, height, 0, fmt, self.data_format, data
         )
         if self.source is not None:
             glGenerateMipmap(self.tex_type)
@@ -216,7 +208,9 @@ class Texture(object):
             )
         else:
             if self.source is not None:
-                glTexParameteri(self.tex_type, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
+                glTexParameteri(
+                    self.tex_type, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR
+                )
             else:
                 glTexParameteri(self.tex_type, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
 
@@ -225,10 +219,7 @@ class Texture(object):
         border_color = 255 * np.ones(4).astype(np.uint8)
         if self.data_format == GL_FLOAT:
             border_color = np.ones(4).astype(np.float32)
-        glTexParameterfv(
-            self.tex_type, GL_TEXTURE_BORDER_COLOR,
-            border_color
-        )
+        glTexParameterfv(self.tex_type, GL_TEXTURE_BORDER_COLOR, border_color)
 
         # Unbind texture
         glBindTexture(self.tex_type, 0)
@@ -251,9 +242,11 @@ class Texture(object):
         glBindTexture(self.tex_type, 0)
 
     def _bind_as_depth_attachment(self):
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                               self.tex_type, self._texid, 0)
+        glFramebufferTexture2D(
+            GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, self.tex_type, self._texid, 0
+        )
 
     def _bind_as_color_attachment(self):
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                               self.tex_type, self._texid, 0)
+        glFramebufferTexture2D(
+            GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, self.tex_type, self._texid, 0
+        )

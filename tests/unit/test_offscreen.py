@@ -1,37 +1,46 @@
 import numpy as np
 import trimesh
 
-from pyrender import (OffscreenRenderer, PerspectiveCamera, DirectionalLight,
-                      SpotLight, Mesh, Node, Scene)
+from pyrender import (
+    OffscreenRenderer,
+    PerspectiveCamera,
+    DirectionalLight,
+    SpotLight,
+    Mesh,
+    Node,
+    Scene,
+)
 
 
 def test_offscreen_renderer(tmpdir):
 
     # Fuze trimesh
-    fuze_trimesh = trimesh.load('examples/models/fuze.obj')
+    fuze_trimesh = trimesh.load("examples/models/fuze.obj")
     fuze_mesh = Mesh.from_trimesh(fuze_trimesh)
 
     # Drill trimesh
-    drill_trimesh = trimesh.load('examples/models/drill.obj')
+    drill_trimesh = trimesh.load("examples/models/drill.obj")
     drill_mesh = Mesh.from_trimesh(drill_trimesh)
     drill_pose = np.eye(4)
-    drill_pose[0,3] = 0.1
-    drill_pose[2,3] = -np.min(drill_trimesh.vertices[:,2])
+    drill_pose[0, 3] = 0.1
+    drill_pose[2, 3] = -np.min(drill_trimesh.vertices[:, 2])
 
     # Wood trimesh
-    wood_trimesh = trimesh.load('examples/models/wood.obj')
+    wood_trimesh = trimesh.load("examples/models/wood.obj")
     wood_mesh = Mesh.from_trimesh(wood_trimesh)
 
     # Water bottle trimesh
-    bottle_gltf = trimesh.load('examples/models/WaterBottle.glb')
+    bottle_gltf = trimesh.load("examples/models/WaterBottle.glb")
     bottle_trimesh = bottle_gltf.geometry[list(bottle_gltf.geometry.keys())[0]]
     bottle_mesh = Mesh.from_trimesh(bottle_trimesh)
-    bottle_pose = np.array([
-        [1.0, 0.0, 0.0, 0.1],
-        [0.0, 0.0, -1.0, -0.16],
-        [0.0, 1.0, 0.0, 0.13],
-        [0.0, 0.0, 0.0, 1.0],
-    ])
+    bottle_pose = np.array(
+        [
+            [1.0, 0.0, 0.0, 0.1],
+            [0.0, 0.0, -1.0, -0.16],
+            [0.0, 1.0, 0.0, 0.13],
+            [0.0, 0.0, 0.0, 1.0],
+        ]
+    )
 
     boxv_trimesh = trimesh.creation.box(extents=0.1 * np.ones(3))
     boxv_vertex_colors = np.random.uniform(size=(boxv_trimesh.vertices.shape))
@@ -41,9 +50,9 @@ def test_offscreen_renderer(tmpdir):
     boxf_face_colors = np.random.uniform(size=boxf_trimesh.faces.shape)
     boxf_trimesh.visual.face_colors = boxf_face_colors
     # Instanced
-    poses = np.tile(np.eye(4), (2,1,1))
-    poses[0,:3,3] = np.array([-0.1, -0.10, 0.05])
-    poses[1,:3,3] = np.array([-0.15, -0.10, 0.05])
+    poses = np.tile(np.eye(4), (2, 1, 1))
+    poses[0, :3, 3] = np.array([-0.1, -0.10, 0.05])
+    poses[1, :3, 3] = np.array([-0.15, -0.10, 0.05])
     boxf_mesh = Mesh.from_trimesh(boxf_trimesh, poses=poses, smooth=False)
 
     points = trimesh.creation.icosphere(radius=0.05).vertices
@@ -51,22 +60,29 @@ def test_offscreen_renderer(tmpdir):
     points_mesh = Mesh.from_points(points, colors=point_colors)
 
     direc_l = DirectionalLight(color=np.ones(3), intensity=1.0)
-    spot_l = SpotLight(color=np.ones(3), intensity=10.0,
-                       innerConeAngle=np.pi / 16, outerConeAngle=np.pi / 6)
+    spot_l = SpotLight(
+        color=np.ones(3),
+        intensity=10.0,
+        innerConeAngle=np.pi / 16,
+        outerConeAngle=np.pi / 6,
+    )
 
     cam = PerspectiveCamera(yfov=(np.pi / 3.0))
-    cam_pose = np.array([
-        [0.0, -np.sqrt(2) / 2, np.sqrt(2) / 2, 0.5],
-        [1.0, 0.0, 0.0, 0.0],
-        [0.0, np.sqrt(2) / 2, np.sqrt(2) / 2, 0.4],
-        [0.0, 0.0, 0.0, 1.0]
-    ])
+    cam_pose = np.array(
+        [
+            [0.0, -np.sqrt(2) / 2, np.sqrt(2) / 2, 0.5],
+            [1.0, 0.0, 0.0, 0.0],
+            [0.0, np.sqrt(2) / 2, np.sqrt(2) / 2, 0.4],
+            [0.0, 0.0, 0.0, 1.0],
+        ]
+    )
 
     scene = Scene(ambient_light=np.array([0.02, 0.02, 0.02]))
 
-    fuze_node = Node(mesh=fuze_mesh, translation=np.array([
-        0.1, 0.15, -np.min(fuze_trimesh.vertices[:,2])
-    ]))
+    fuze_node = Node(
+        mesh=fuze_mesh,
+        translation=np.array([0.1, 0.15, -np.min(fuze_trimesh.vertices[:, 2])]),
+    )
     scene.add_node(fuze_node)
     boxv_node = Node(mesh=boxv_mesh, translation=np.array([-0.1, 0.10, 0.05]))
     scene.add_node(boxv_node)

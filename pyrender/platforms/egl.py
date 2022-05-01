@@ -10,7 +10,7 @@ EGL_DRM_DEVICE_FILE_EXT = 0x3233
 
 
 def _ensure_egl_loaded():
-    plugin = OpenGL.platform.PlatformPlugin.by_name('egl')
+    plugin = OpenGL.platform.PlatformPlugin.by_name("egl")
     if plugin is None:
         raise RuntimeError("EGL platform plugin is not available.")
 
@@ -23,7 +23,7 @@ def _ensure_egl_loaded():
 
 
 _ensure_egl_loaded()
-from OpenGL import EGL as egl
+from OpenGL import EGL as egl  # noqa: E402
 
 
 def _get_egl_func(func_name, res_type, *arg_types):
@@ -39,14 +39,15 @@ def _get_egl_func(func_name, res_type, *arg_types):
 
 def _get_egl_struct(struct_name):
     from OpenGL._opaque import opaque_pointer_cls
+
     return opaque_pointer_cls(struct_name)
 
 
 # These are not defined in PyOpenGL by default.
-_EGLDeviceEXT = _get_egl_struct('EGLDeviceEXT')
-_eglGetPlatformDisplayEXT = _get_egl_func('eglGetPlatformDisplayEXT', egl.EGLDisplay)
-_eglQueryDevicesEXT = _get_egl_func('eglQueryDevicesEXT', egl.EGLBoolean)
-_eglQueryDeviceStringEXT = _get_egl_func('eglQueryDeviceStringEXT', ctypes.c_char_p)
+_EGLDeviceEXT = _get_egl_struct("EGLDeviceEXT")
+_eglGetPlatformDisplayEXT = _get_egl_func("eglGetPlatformDisplayEXT", egl.EGLDisplay)
+_eglQueryDevicesEXT = _get_egl_func("eglQueryDevicesEXT", egl.EGLBoolean)
+_eglQueryDeviceStringEXT = _get_egl_func("eglQueryDeviceStringEXT", ctypes.c_char_p)
 
 
 def query_devices():
@@ -59,7 +60,9 @@ def query_devices():
         return []
 
     devices = (_EGLDeviceEXT * num_devices.value)()  # array of size num_devices
-    success = _eglQueryDevicesEXT(num_devices.value, devices, ctypes.pointer(num_devices))
+    success = _eglQueryDevicesEXT(
+        num_devices.value, devices, ctypes.pointer(num_devices)
+    )
     if not success or num_devices.value < 1:
         return []
 
@@ -80,12 +83,11 @@ def get_device_by_index(device_id):
 
     devices = query_devices()
     if device_id >= len(devices):
-        raise ValueError('Invalid device ID ({})'.format(device_id, len(devices)))
+        raise ValueError("Invalid device ID ({})".format(device_id))
     return devices[device_id]
 
 
 class EGLDevice:
-
     def __init__(self, display=None):
         self._display = display
 
@@ -98,21 +100,20 @@ class EGLDevice:
     @property
     def name(self):
         if self._display is None:
-            return 'default'
+            return "default"
 
         name = _eglQueryDeviceStringEXT(self._display, EGL_DRM_DEVICE_FILE_EXT)
         if name is None:
             return None
 
-        return name.decode('ascii')
+        return name.decode("ascii")
 
     def __repr__(self):
         return "<EGLDevice(name={})>".format(self.name)
 
 
 class EGLPlatform(Platform):
-    """Renders using EGL.
-    """
+    """Renders using EGL."""
 
     def __init__(self, viewport_width, viewport_height, device: EGLDevice = None):
         super(EGLPlatform, self).__init__(viewport_width, viewport_height)
@@ -126,52 +127,80 @@ class EGLPlatform(Platform):
     def init_context(self):
         _ensure_egl_loaded()
 
-        from OpenGL.EGL import (
-            EGL_SURFACE_TYPE, EGL_PBUFFER_BIT, EGL_BLUE_SIZE,
-            EGL_RED_SIZE, EGL_GREEN_SIZE, EGL_DEPTH_SIZE,
-            EGL_COLOR_BUFFER_TYPE, EGL_RGB_BUFFER,
-            EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT, EGL_CONFORMANT,
-            EGL_NONE, EGL_DEFAULT_DISPLAY, EGL_NO_CONTEXT,
-            EGL_OPENGL_API, EGL_CONTEXT_MAJOR_VERSION,
+        from OpenGL.EGL import (  # noqa: F401
+            EGL_SURFACE_TYPE,
+            EGL_PBUFFER_BIT,
+            EGL_BLUE_SIZE,
+            EGL_RED_SIZE,
+            EGL_GREEN_SIZE,
+            EGL_DEPTH_SIZE,
+            EGL_COLOR_BUFFER_TYPE,
+            EGL_RGB_BUFFER,
+            EGL_RENDERABLE_TYPE,
+            EGL_OPENGL_BIT,
+            EGL_CONFORMANT,
+            EGL_NONE,
+            EGL_DEFAULT_DISPLAY,
+            EGL_NO_CONTEXT,
+            EGL_OPENGL_API,
+            EGL_CONTEXT_MAJOR_VERSION,
             EGL_CONTEXT_MINOR_VERSION,
             EGL_CONTEXT_OPENGL_PROFILE_MASK,
             EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT,
-            eglGetDisplay, eglInitialize, eglChooseConfig,
-            eglBindAPI, eglCreateContext, EGLConfig
+            eglGetDisplay,
+            eglInitialize,
+            eglChooseConfig,
+            eglBindAPI,
+            eglCreateContext,
+            EGLConfig,
         )
         from OpenGL import arrays
 
-        config_attributes = arrays.GLintArray.asArray([
-            EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
-            EGL_BLUE_SIZE, 8,
-            EGL_RED_SIZE, 8,
-            EGL_GREEN_SIZE, 8,
-            EGL_DEPTH_SIZE, 24,
-            EGL_COLOR_BUFFER_TYPE, EGL_RGB_BUFFER,
-            EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
-            EGL_CONFORMANT, EGL_OPENGL_BIT,
-            EGL_NONE
-        ])
-        context_attributes = arrays.GLintArray.asArray([
-            EGL_CONTEXT_MAJOR_VERSION, 4,
-            EGL_CONTEXT_MINOR_VERSION, 1,
-            EGL_CONTEXT_OPENGL_PROFILE_MASK,
-            EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT,
-            EGL_NONE
-        ])
+        config_attributes = arrays.GLintArray.asArray(
+            [
+                EGL_SURFACE_TYPE,
+                EGL_PBUFFER_BIT,
+                EGL_BLUE_SIZE,
+                8,
+                EGL_RED_SIZE,
+                8,
+                EGL_GREEN_SIZE,
+                8,
+                EGL_DEPTH_SIZE,
+                24,
+                EGL_COLOR_BUFFER_TYPE,
+                EGL_RGB_BUFFER,
+                EGL_RENDERABLE_TYPE,
+                EGL_OPENGL_BIT,
+                EGL_CONFORMANT,
+                EGL_OPENGL_BIT,
+                EGL_NONE,
+            ]
+        )
+        context_attributes = arrays.GLintArray.asArray(
+            [
+                EGL_CONTEXT_MAJOR_VERSION,
+                4,
+                EGL_CONTEXT_MINOR_VERSION,
+                1,
+                EGL_CONTEXT_OPENGL_PROFILE_MASK,
+                EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT,
+                EGL_NONE,
+            ]
+        )
         major, minor = ctypes.c_long(), ctypes.c_long()
         num_configs = ctypes.c_long()
         configs = (EGLConfig * 1)()
 
         # Cache DISPLAY if necessary and get an off-screen EGL display
         orig_dpy = None
-        if 'DISPLAY' in os.environ:
-            orig_dpy = os.environ['DISPLAY']
-            del os.environ['DISPLAY']
+        if "DISPLAY" in os.environ:
+            orig_dpy = os.environ["DISPLAY"]
+            del os.environ["DISPLAY"]
 
         self._egl_display = self._egl_device.get_display()
         if orig_dpy is not None:
-            os.environ['DISPLAY'] = orig_dpy
+            os.environ["DISPLAY"] = orig_dpy
 
         # Initialize EGL
         assert eglInitialize(self._egl_display, major, minor)
@@ -184,8 +213,7 @@ class EGLPlatform(Platform):
 
         # Create an EGL context
         self._egl_context = eglCreateContext(
-            self._egl_display, configs[0],
-            EGL_NO_CONTEXT, context_attributes
+            self._egl_display, configs[0], EGL_NO_CONTEXT, context_attributes
         )
 
         # Make it current
@@ -193,18 +221,18 @@ class EGLPlatform(Platform):
 
     def make_current(self):
         from OpenGL.EGL import eglMakeCurrent, EGL_NO_SURFACE
+
         assert eglMakeCurrent(
-            self._egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE,
-            self._egl_context
+            self._egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, self._egl_context
         )
 
     def make_uncurrent(self):
-        """Make the OpenGL context uncurrent.
-        """
+        """Make the OpenGL context uncurrent."""
         pass
 
     def delete_context(self):
         from OpenGL.EGL import eglDestroyContext, eglTerminate
+
         if self._egl_display is not None:
             if self._egl_context is not None:
                 eglDestroyContext(self._egl_display, self._egl_context)
@@ -216,4 +244,4 @@ class EGLPlatform(Platform):
         return True
 
 
-__all__ = ['EGLPlatform']
+__all__ = ["EGLPlatform"]
