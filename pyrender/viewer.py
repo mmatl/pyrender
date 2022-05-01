@@ -190,6 +190,7 @@ class Viewer(pyglet.window.Window):
         viewer_flags=None,
         registered_keys=None,
         run_in_thread=False,
+        auto_start=True,
         **kwargs
     ):
 
@@ -204,6 +205,7 @@ class Viewer(pyglet.window.Window):
         self._is_active = False
         self._should_close = False
         self._run_in_thread = run_in_thread
+        self._auto_start = auto_start
 
         self._default_render_flags = {
             "flip_wireframe": False,
@@ -362,7 +364,11 @@ class Viewer(pyglet.window.Window):
             self._thread = Thread(target=self._init_and_start_app)
             self._thread.start()
         else:
-            self._init_and_start_app()
+            if auto_start:
+                self._init_and_start_app()
+
+    def start(self):
+        self._init_and_start_app()
 
     @property
     def scene(self):
@@ -572,7 +578,7 @@ class Viewer(pyglet.window.Window):
         if self._renderer is None:
             return
 
-        if self.run_in_thread:
+        if self.run_in_thread or not self._auto_start:
             self.render_lock.acquire()
 
         # Make OpenGL context current
@@ -606,7 +612,7 @@ class Viewer(pyglet.window.Window):
                     align=caption["location"],
                 )
 
-        if self.run_in_thread:
+        if self.run_in_thread or not self._auto_start:
             self.render_lock.release()
 
     def on_resize(self, width, height):

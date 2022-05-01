@@ -23,7 +23,7 @@ requirements = [
     'Pillow; python_version >= "3"',
     'pyglet<=1.4.11; python_version < "3"',  # For the pyglet viewer
     'pyglet; python_version >= "3"',
-    "PyOpenGL>=3.1.0",  # For OpenGL
+    "PyOpenGL~=3.1.0",  # For OpenGL
     #   'PyOpenGL_accelerate==3.1.0',             # For OpenGL
     'scipy<=1.5.4; python_version <= "3.6"',  # Because of trimesh missing dep
     'scipy; python_version > "3.6"',
