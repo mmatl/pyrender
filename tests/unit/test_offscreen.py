@@ -2,7 +2,7 @@ import numpy as np
 import trimesh
 
 from pyrender import (OffscreenRenderer, PerspectiveCamera, DirectionalLight,
-                      SpotLight, Mesh, Node, Scene)
+                      SpotLight, Mesh, Node, Scene, RenderFlags)
 
 
 def test_offscreen_renderer(tmpdir):
@@ -83,10 +83,12 @@ def test_offscreen_renderer(tmpdir):
     _ = scene.add(cam, pose=cam_pose)
 
     r = OffscreenRenderer(viewport_width=640, viewport_height=480)
-    color, depth = r.render(scene)
 
-    assert color.shape == (480, 640, 3)
-    assert depth.shape == (480, 640)
-    assert np.max(depth.data) > 0.05
-    assert np.count_nonzero(depth.data) > (0.2 * depth.size)
+    for channels, flags in ((3, RenderFlags.NONE), (4, RenderFlags.RGBA)):
+        color, depth = r.render(scene, flags=flags)
+        assert color.shape == (480, 640, channels)
+        assert depth.shape == (480, 640)
+        assert np.max(depth.data) > 0.05
+        assert np.count_nonzero(depth.data) > (0.2 * depth.size)
+
     r.delete()
