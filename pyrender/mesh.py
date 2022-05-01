@@ -5,12 +5,14 @@ Author: Matthew Matl
 """
 import copy
 
+import gltflib
 import numpy as np
 import trimesh
 
+from .gltf_helper import load_accessors
 from .primitive import Primitive
 from .constants import GLTF
-from .material import MetallicRoughnessMaterial
+from .material import Material, MetallicRoughnessMaterial
 
 
 class Mesh(object):
@@ -68,6 +70,7 @@ class Mesh(object):
     @weights.setter
     def weights(self, value):
         self._weights = value
+
 
     @property
     def is_visible(self):
@@ -326,3 +329,50 @@ class Mesh(object):
                     material = mat
 
         return colors, texcoords, material
+
+    @staticmethod
+    def from_gltflib(mesh, gltf: gltflib.GLTF, accessors=None, material=None, is_visible=True):
+        """Create a Mesh from a :class:`~gltflib.Mesh`.
+
+        Parameters
+        ----------
+        mesh : :class:`~gltflib.Mesh`
+            A triangular mesh.
+        gltf : :class: `~gltflib.GLTF`
+            The GLTF file that specifies the mesh.
+        accessors : :class: `List[np.types.NDArray[any]]`
+            Accessors are the buffered data types found in the GLTF mesh. If not provided,
+            it will be parsed from the file.
+        material : :class:`Material` or list of them
+            The material of the object, or list of material objects. Overrides any mesh material.
+            If not specified and the mesh has no material, a default material
+            will be used.
+        is_visible : bool
+            If False, the mesh will not be rendered.
+
+        Returns
+        -------
+        mesh : :class:`Mesh`
+            The created mesh.
+        """
+        if accessors is None:
+            accessors = load_accessors(gltf)
+
+        if isinstance(material, Material):
+            materials = [material]
+        elif isinstance(material, list):
+            materials = material
+        elif gltf.model.materials:
+            materials = [MetallicRoughnessMaterial.from_gltflib(mat) for mat in gltf.model.materials]
+        else:
+            materials = None
+
+        return Mesh(
+            primitives=[
+                Primitive.from_gltflib(primitive, materials, accessors=accessors)
+                for primitive in mesh.primitives
+            ],
+            weights=np.array(mesh.weights),
+            is_visible=is_visible,
+            name=mesh.name
+        )

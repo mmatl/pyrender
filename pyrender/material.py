@@ -6,6 +6,8 @@ https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_mate
 Author: Matthew Matl
 """
 import abc
+
+import gltflib
 import numpy as np
 import six
 
@@ -498,6 +500,30 @@ class MetallicRoughnessMaterial(Material):
         all_textures = {t for t in all_textures if t is not None}
         textures |= all_textures
         return textures
+
+    @staticmethod
+    def from_gltflib(material: gltflib.Material) -> 'MetallicRoughnessMaterial':
+        metallic_roughness_kwargs = dict(
+            name=material.name,
+            normalTexture=material.normalTexture,
+            occlusionTexture=material.occlusionTexture,
+            emissiveTexture=material.emissiveTexture,
+            emissiveFactor=material.emissiveFactor,
+            alphaMode=material.alphaMode,
+            alphaCutoff=material.alphaCutoff,
+            doubleSided=material.doubleSided if material.doubleSided else False
+        )
+
+        if material.pbrMetallicRoughness:
+            metallic_roughness_kwargs.update(dict(
+                baseColorFactor=material.pbrMetallicRoughness.baseColorFactor,
+                baseColorTexture=material.pbrMetallicRoughness.baseColorTexture,
+                metallicFactor=material.pbrMetallicRoughness.metallicFactor,
+                roughnessFactor=material.pbrMetallicRoughness.roughnessFactor,
+                metallicRoughnessTexture=material.pbrMetallicRoughness.metallicRoughnessTexture
+            ))
+
+        return MetallicRoughnessMaterial(**metallic_roughness_kwargs)
 
 
 class SpecularGlossinessMaterial(Material):

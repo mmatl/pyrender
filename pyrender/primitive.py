@@ -3,10 +3,14 @@ https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-pri
 
 Author: Matthew Matl
 """
+import typing
+
+import gltflib
 import numpy as np
 
 from OpenGL.GL import *
 
+from .gltf_helper import load_accessors, load_attribute
 from .material import Material, MetallicRoughnessMaterial
 from .constants import FLOAT_SZ, UINT_SZ, BufFlags, GLTF
 from .utils import format_color_array
@@ -487,3 +491,28 @@ class Primitive(object):
             buf_flags |= BufFlags.WEIGHTS_0
 
         return buf_flags
+
+    @staticmethod
+    def from_gltflib(primitive: gltflib.Primitive, materials: typing.List['Material'],
+                     gltf: typing.Optional[gltflib.GLTF] = None, accessors=None):
+        assert gltf is not None or accessors is not None, 'Must specify either gltf file or accessors'
+        if accessors is None:
+            accessors = load_accessors(gltf)
+        attr = load_attribute(primitive.attributes, accessors=accessors)
+
+        targets = None
+        if primitive.targets:
+            targets = [load_attribute(attr, accessors) for attr in primitive.targets]
+        return Primitive(
+            positions=attr.position,
+            normals=attr.normal,
+            tangents=attr.tangent,
+            texcoord_0=attr.textcoord_0,
+            color_0=attr.color_0,
+            joints_0=attr.joints_0,
+            weights_0=attr.weights_0,
+            material=materials[primitive.material] if primitive.material else None,
+            indices=accessors[primitive.indices].reshape(-1, 3) if primitive.indices else None,
+            mode=primitive.mode,
+            targets=targets
+        )

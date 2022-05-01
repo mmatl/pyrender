@@ -5,6 +5,10 @@ __pycache__/
 
 docs/**/generated/**
 
+# IDE
+.vscode
+.idea
+
 # C extensions
 *.so
 

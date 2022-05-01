@@ -6,12 +6,15 @@ Author: Matthew Matl
 import numpy as np
 import networkx as nx
 import trimesh
+import gltflib
 
+from .material import MetallicRoughnessMaterial
 from .mesh import Mesh
 from .camera import Camera
 from .light import Light, PointLight, DirectionalLight, SpotLight
 from .node import Node
 from .utils import format_color_vector
+from .gltf_helper import load_accessors
 
 
 class Scene(object):
@@ -583,3 +586,15 @@ class Scene(object):
             scene_pr.add(geometries[geom_name], pose=pose)
 
         return scene_pr
+
+    @staticmethod
+    def from_gltflib_scene(gltf: gltflib.GLTF):
+        accessors = load_accessors(gltf)
+        scene = Scene()
+        materials = None
+        if gltf.model.materials:
+            materials = [MetallicRoughnessMaterial.from_gltflib(mat) for mat in gltf.model.materials]
+        for mesh in gltf.model.meshes:
+            scene.add(Mesh.from_gltflib(mesh, gltf, accessors=accessors, material=materials))
+        # TODO: Add camera & other nodes to scene
+        return scene
