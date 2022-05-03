@@ -9,7 +9,7 @@ import gltflib
 import numpy as np
 import trimesh
 
-from .gltf_helper import load_accessors
+from .gltf_helper import load_accessors, load_image
 from .primitive import Primitive
 from .constants import GLTF
 from .material import Material, MetallicRoughnessMaterial
@@ -331,7 +331,7 @@ class Mesh(object):
         return colors, texcoords, material
 
     @staticmethod
-    def from_gltflib(mesh, gltf: gltflib.GLTF, accessors=None, material=None, is_visible=True):
+    def from_gltflib(mesh, gltf: gltflib.GLTF, accessors=None, material=None, images=None, is_visible=True):
         """Create a Mesh from a :class:`~gltflib.Mesh`.
 
         Parameters
@@ -363,7 +363,9 @@ class Mesh(object):
         elif isinstance(material, list):
             materials = material
         elif gltf.model.materials:
-            materials = [MetallicRoughnessMaterial.from_gltflib(mat) for mat in gltf.model.materials]
+            if images is None:
+                images = [load_image(img, gltf) for img in gltf.model.images]
+            materials = [MetallicRoughnessMaterial.from_gltflib(mat, gltf, images) for mat in gltf.model.materials]
         else:
             materials = None
 

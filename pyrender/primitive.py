@@ -511,8 +511,8 @@ class Primitive(object):
             color_0=attr.color_0,
             joints_0=attr.joints_0,
             weights_0=attr.weights_0,
-            material=materials[primitive.material] if primitive.material else None,
-            indices=accessors[primitive.indices].reshape(-1, 3) if primitive.indices else None,
+            material=materials[primitive.material] if primitive.material is not None else None,
+            indices=accessors[primitive.indices].reshape(-1, 3) if primitive.indices is not None else None,
             mode=primitive.mode,
             targets=targets
         )

@@ -14,7 +14,7 @@ from .camera import Camera
 from .light import Light, PointLight, DirectionalLight, SpotLight
 from .node import Node
 from .utils import format_color_vector
-from .gltf_helper import load_accessors
+from .gltf_helper import load_accessors, load_image
 
 
 class Scene(object):
@@ -593,7 +593,10 @@ class Scene(object):
         scene = Scene()
         materials = None
         if gltf.model.materials:
-            materials = [MetallicRoughnessMaterial.from_gltflib(mat) for mat in gltf.model.materials]
+            images = None
+            if gltf.model.images:
+                images = [load_image(img, gltf) for img in gltf.model.images]
+            materials = [MetallicRoughnessMaterial.from_gltflib(mat, gltf, images) for mat in gltf.model.materials]
         for mesh in gltf.model.meshes:
             scene.add(Mesh.from_gltflib(mesh, gltf, accessors=accessors, material=materials))
         # TODO: Add camera & other nodes to scene

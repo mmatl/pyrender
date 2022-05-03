@@ -6,11 +6,14 @@ https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_mate
 Author: Matthew Matl
 """
 import abc
+from typing import List
 
+import PIL
 import gltflib
 import numpy as np
 import six
 
+from .gltf_helper import load_image
 from .constants import TexFlags
 from .utils import format_color_vector, format_texture_source
 from .texture import Texture
@@ -502,7 +505,7 @@ class MetallicRoughnessMaterial(Material):
         return textures
 
     @staticmethod
-    def from_gltflib(material: gltflib.Material) -> 'MetallicRoughnessMaterial':
+    def from_gltflib(material: gltflib.Material, gltf: gltflib.GLTF, images: List['PIL.Image.Image']) -> 'MetallicRoughnessMaterial':
         metallic_roughness_kwargs = dict(
             name=material.name,
             normalTexture=material.normalTexture,
@@ -515,9 +518,14 @@ class MetallicRoughnessMaterial(Material):
         )
 
         if material.pbrMetallicRoughness:
+            base_color_texture = None
+            if material.pbrMetallicRoughness.baseColorTexture:
+                texture_pointer = gltf.model.textures[material.pbrMetallicRoughness.baseColorTexture.index]
+                base_color_texture = images[texture_pointer.source]
+
             metallic_roughness_kwargs.update(dict(
                 baseColorFactor=material.pbrMetallicRoughness.baseColorFactor,
-                baseColorTexture=material.pbrMetallicRoughness.baseColorTexture,
+                baseColorTexture=base_color_texture,
                 metallicFactor=material.pbrMetallicRoughness.metallicFactor,
                 roughnessFactor=material.pbrMetallicRoughness.roughnessFactor,
                 metallicRoughnessTexture=material.pbrMetallicRoughness.metallicRoughnessTexture

@@ -1,5 +1,7 @@
 from collections import namedtuple
+from io import BytesIO
 
+import PIL.Image
 import numpy as np
 import gltflib
 from typing import List, Optional
@@ -76,6 +78,11 @@ def _load_accessor(
 
 
 def load_accessors(gltf: gltflib.GLTF) -> AccessorType:
+    for buffer in gltf.model.buffers:
+        resource = gltf.get_resource(buffer.uri)
+        if isinstance(resource, gltflib.FileResource):
+            resource.load()
+
     buffers = [
         gltf.get_resource(buffer.uri).data
         for buffer in gltf.model.buffers
@@ -109,3 +116,28 @@ def load_attribute(attribute: gltflib.Attributes, accessors: AccessorType) -> At
         accessors[attribute.JOINTS_0] if attribute.JOINTS_0 else None,
         accessors[attribute.WEIGHTS_0] if attribute.WEIGHTS_0 else None,
     )
+
+
+def load_image(image: gltflib.Image, gltf: gltflib.GLTF) -> 'PIL.Image.Image':
+    resource = gltf.get_resource(image.uri)
+    if image.bufferView:
+        image_buffer_view = gltf.model.bufferViews[image.bufferView]
+        image_bytes = resource.data[
+            image_buffer_view.byteOffset:image_buffer_view.byteOffset+image_buffer_view.byteLength
+        ]
+    else:
+        image_bytes = resource.data
+    return PIL.Image.open(BytesIO(image_bytes))
+
+
+class TargetsCollection:
+    def __init__(self, attributes: List[AttributeType]):
+        self.positions = np.array([attr.position if attr.position is not None else 0 for attr in attributes])
+        self.normals = np.array([attr.normal if attr.normal is not None else 0 for attr in attributes])
+        self.tangents = np.array([attr.tangent if attr.tangent is not None else 0 for attr in attributes])
+        self.textcoord_0s = np.array([
+            attr.textcoord_0 if attr.textcoord_0 is not None else np.nan
+            for attr in attributes
+        ])
+        self.texcoord_1s = np.array([attr.texcoord_1 if attr.texcoord_1 is not None else np.nan for attr in attributes])
+        self.color_0s = np.array([attr.color_0 if attr.color_0 is not None else np.nan for attr in attributes])

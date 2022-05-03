@@ -175,7 +175,7 @@ class Viewer(pyglet.window.Window):
 
     def __init__(self, scene, viewport_size=None,
                  render_flags=None, viewer_flags=None,
-                 registered_keys=None, run_in_thread=False, **kwargs):
+                 registered_keys=None, run_in_thread=False, start=True, **kwargs):
 
         #######################################################################
         # Save attributes and flags
@@ -341,7 +341,10 @@ class Viewer(pyglet.window.Window):
             self.render_flags['point_size']
         )
         self._is_active = True
+        if start:
+            self.start()
 
+    def start(self):
         if self.run_in_thread:
             self._thread = Thread(target=self._init_and_start_app)
             self._thread.start()
@@ -557,8 +560,7 @@ class Viewer(pyglet.window.Window):
         if self._renderer is None:
             return
 
-        if self.run_in_thread:
-            self.render_lock.acquire()
+        self.render_lock.acquire()
 
         # Make OpenGL context current
         self.switch_to()
@@ -592,8 +594,7 @@ class Viewer(pyglet.window.Window):
                     align=caption['location']
                 )
 
-        if self.run_in_thread:
-            self.render_lock.release()
+        self.render_lock.release()
 
     def on_resize(self, width, height):
         """Resize the camera and trackball when the window is resized.
