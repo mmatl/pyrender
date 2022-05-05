@@ -76,15 +76,16 @@ The available keyboard commands are as follows:
 * `c`: Toggles backface culling.
 * `f`: Toggles fullscreen mode.
 * `h`: Toggles shadow rendering.
-* `i`: Toggles axis display mode (no axes, world axis, mesh axes, all axes).
-* `l`: Toggles lighting mode (scene lighting, Raymond lighting, or direct lighting).
+* `i`: Cycles axis display mode (no axes, world axis, mesh axes, all axes).
+* `l`: Cycles lighting mode (scene lighting, Raymond lighting, or direct lighting).
+* `L`: Uses flat lighting mode.
 * `m`: Toggles face normal visualization.
 * `n`: Toggles vertex normal visualization.
 * `o`: Toggles orthographic camera mode.
 * `q`: Quits the viewer.
 * `r`: Starts recording a GIF, and pressing again stops recording and opens a file dialog.
 * `s`: Opens a file dialog to save the current view as an image.
-* `w`: Toggles wireframe mode (scene default, flip wireframes, all wireframe, or all solid).
+* `w`: Cycles wireframe mode (scene default, flip wireframes, all wireframe, or all solid).
 * `z`: Resets the camera to the default view.
 
 As a note, displaying shadows significantly slows down rendering, so if you're

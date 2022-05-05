@@ -92,10 +92,11 @@ class Viewer(pyglet.window.Window):
     - ``c``: Toggles backface culling.
     - ``f``: Toggles fullscreen mode.
     - ``h``: Toggles shadow rendering.
-    - ``i``: Toggles axis display mode
+    - ``i``: Cycles axis display mode
       (no axes, world axis, mesh axes, all axes).
-    - ``l``: Toggles lighting mode
+    - ``l``: Cycles lighting mode
       (scene lighting, Raymond lighting, or direct lighting).
+    - ``L``: Uses flat lighting mode.
     - ``m``: Toggles face normal visualization.
     - ``n``: Toggles vertex normal visualization.
     - ``o``: Toggles orthographic mode.
@@ -103,7 +104,7 @@ class Viewer(pyglet.window.Window):
     - ``r``: Starts recording a GIF, and pressing again stops recording
       and opens a file dialog.
     - ``s``: Opens a file dialog to save the current view as an image.
-    - ``w``: Toggles wireframe mode
+    - ``w``: Cycles wireframe mode
       (scene default, flip wireframes, all wireframe, or all solid).
     - ``z``: Resets the camera to the initial view.
 
@@ -126,6 +127,8 @@ class Viewer(pyglet.window.Window):
       blue lines. Defaults to `False`.
     - ``cull_faces``: `bool`, If `True`, backfaces will be culled.
       Defaults to `True`.
+    - ``flat``: `bool`, If `True`, render the color buffer flat,
+      with no lighting computations. Defaults to `True`.
     - ``point_size`` : float, The point size in pixels. Defaults to 1px.
 
     Note
@@ -201,6 +204,7 @@ class Viewer(pyglet.window.Window):
             'face_normals': False,
             'cull_faces': True,
             'point_size': 1.0,
+            'flat': False,
         }
         self._default_viewer_flags = {
             'mouse_pressed': False,
@@ -753,9 +757,25 @@ class Viewer(pyglet.window.Window):
                 self._set_axes(True, False)
                 self._message_text = 'World Axis On'
 
-        # L toggles the lighting mode
+        # L cycles the lighting mode
         elif symbol == pyglet.window.key.L:
-            if self.viewer_flags['use_raymond_lighting']:
+            # SHIFT+L sets flat lighting
+            if modifiers & pyglet.window.key.MOD_SHIFT:
+                self.render_flags['flat'] = True
+                self._message_text = 'Flat Lighting'
+
+            # L unsets flat lighting if set
+            elif self.render_flags['flat']:
+                self.render_flags['flat'] = False
+                if self.viewer_flags['use_raymond_lighting']:
+                    self._message_text = 'Raymond Lighting'
+                elif self.viewer_flags['use_direct_lighting']:
+                    self._message_text = 'Direct Lighting'
+                else:
+                    self._message_text = 'Default Lighting'
+
+            # otherwise cycles lighting mode
+            elif self.viewer_flags['use_raymond_lighting']:
                 self.viewer_flags['use_raymond_lighting'] = False
                 self.viewer_flags['use_direct_lighting'] = True
                 self._message_text = 'Direct Lighting'
@@ -992,6 +1012,8 @@ class Viewer(pyglet.window.Window):
             flags |= RenderFlags.FACE_NORMALS
         if not self.render_flags['cull_faces']:
             flags |= RenderFlags.SKIP_CULL_FACES
+        if self.render_flags['flat']:
+            flags |= RenderFlags.FLAT
 
         self._renderer.render(self.scene, flags)
 
