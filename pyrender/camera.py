@@ -91,6 +91,20 @@ class Camera(object):
         """
         pass
 
+    @abc.abstractmethod
+    def inverse_transform_depth_ndc(self, depth_ndc):
+        """
+        Unproject the depth in Normalized Device Coordinates
+        to metric values in eye (camera) reference frame.
+        :param
+            depth_ndc: np.array np.float32
+                depth in [-1, 1] in normalized device coordinates
+        :return:
+            depth: np.array np.float32
+                depth in metric units in eye (camera) reference frame.
+        """
+        pass
+
 
 class PerspectiveCamera(Camera):
 
@@ -205,6 +219,19 @@ class PerspectiveCamera(Camera):
 
         return P
 
+    def inverse_transform_depth_ndc(self, depth_ndc):
+        inf_inds = (depth_ndc == 1)
+        noninf = np.logical_not(inf_inds)
+        depth_img = depth_ndc
+        if self.zfar is None:
+            depth_img[noninf] = 2 * self.znear / (1.0 - depth_img[noninf])
+        else:
+            depth_img[noninf] = ((2.0 * self.znear * self.zfar) /
+                                 (self.zfar + self.znear - depth_img[noninf] *
+                                  (self.zfar - self.znear)))
+        depth_img[inf_inds] = 0.0
+        return depth_img
+
 
 class OrthographicCamera(Camera):
     """An orthographic camera for orthographic projection.
@@ -308,6 +335,17 @@ class OrthographicCamera(Camera):
         P[2][3] = (f + n) / (n - f)
         P[3][3] = 1.0
         return P
+
+    def inverse_transform_depth_ndc(self, depth_ndc):
+        inf_inds = (depth_ndc == 1)
+        noninf = np.logical_not(inf_inds)
+        depth_img = depth_ndc
+        if self.zfar is None:
+            depth_img[noninf] = 2 * self.znear / (1.0 - depth_img[noninf])
+        else:
+            depth_img[noninf] = (depth_img[noninf] * (self.zfar - self.znear) + self.zfar + self.znear) / 2.0
+        depth_img[inf_inds] = 0.0
+        return depth_img
 
 
 class IntrinsicsCamera(Camera):
@@ -431,6 +469,19 @@ class IntrinsicsCamera(Camera):
             P[2][3] = (2 * f * n) / (n - f)
 
         return P
+
+    def inverse_transform_depth_ndc(self, depth_ndc):
+        inf_inds = (depth_ndc == 1)
+        noninf = np.logical_not(inf_inds)
+        depth_img = depth_ndc
+        if self.zfar is None:
+            depth_img[noninf] = 2 * self.znear / (1.0 - depth_img[noninf])
+        else:
+            depth_img[noninf] = ((2.0 * self.znear * self.zfar) /
+                                 (self.zfar + self.znear - depth_img[noninf] *
+                                  (self.zfar - self.znear)))
+        depth_img[inf_inds] = 0.0
+        return depth_img
 
 
 __all__ = ['Camera', 'PerspectiveCamera', 'OrthographicCamera',
