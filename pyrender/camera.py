@@ -117,7 +117,7 @@ class PerspectiveCamera(Camera):
     def __init__(self,
                  yfov,
                  znear=DEFAULT_Z_NEAR,
-                 zfar=None,
+                 zfar=DEFAULT_Z_FAR,
                  aspectRatio=None,
                  name=None):
         super(PerspectiveCamera, self).__init__(
