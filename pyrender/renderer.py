@@ -564,12 +564,14 @@ class Renderer(object):
                 program.set_uniform(b.format('glossiness_factor'),
                                     material.glossinessFactor)
 
-            # Set blending options
+            # Set alpha options
+            glEnable(GL_BLEND)
             if material.alphaMode == 'BLEND':
-                glEnable(GL_BLEND)
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+            elif material.alphaMode == "MASK":
+                program.set_uniform(b.format('alpha_cutoff'), material.alphaCutoff)
+                glBlendFunc(GL_ONE, GL_ZERO)
             else:
-                glEnable(GL_BLEND)
                 glBlendFunc(GL_ONE, GL_ZERO)
 
             # Set wireframe mode
@@ -988,6 +990,8 @@ class Renderer(object):
                 defines['USE_METALLIC_MATERIAL'] = 1
             elif isinstance(primitive.material, SpecularGlossinessMaterial):
                 defines['USE_GLOSSY_MATERIAL'] = 1
+            if primitive.material.alphaMode == 'MASK':
+                defines['IS_MASK_ALPHA_MODE'] = 1
 
         program = self._program_cache.get_program(
             vertex_shader=vertex_shader,

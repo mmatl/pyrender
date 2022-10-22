@@ -67,6 +67,9 @@ struct Material {
 #ifdef HAS_BASE_COLOR_TEX
     sampler2D base_color_texture;
 #endif
+#ifdef IS_MASK_ALPHA_MODE
+    float alpha_cutoff;
+#endif
 #ifdef HAS_METALLIC_ROUGHNESS_TEX
     sampler2D metallic_roughness_texture;
 #endif
@@ -337,6 +340,10 @@ void main()
     vec4 base_color = material.base_color_factor;
 #ifdef HAS_BASE_COLOR_TEX
     base_color = base_color * srgb_to_linear(texture(material.base_color_texture, uv_0));
+#endif
+#ifdef IS_MASK_ALPHA_MODE
+    // Discard fragment if alpha is less than the cutoff
+    if (base_color.a <= material.alpha_cutoff) discard;
 #endif
 
     // Compute specular and diffuse colors
