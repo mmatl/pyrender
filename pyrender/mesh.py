@@ -302,7 +302,7 @@ class Mesh(object):
                         occlusionTexture=mat.occlusionTexture,
                         emissiveTexture=mat.emissiveTexture,
                         emissiveFactor=mat.emissiveFactor,
-                        alphaMode='BLEND',
+                        alphaMode=mat.alphaMode,
                         baseColorFactor=mat.baseColorFactor,
                         baseColorTexture=mat.baseColorTexture,
                         metallicFactor=mat.metallicFactor,
