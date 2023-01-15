@@ -21,10 +21,11 @@ class OffscreenRenderer(object):
         The size of screen-space points in pixels.
     """
 
-    def __init__(self, viewport_width, viewport_height, point_size=1.0):
+    def __init__(self, viewport_width, viewport_height, point_size=1.0, line_width=1.0):
         self.viewport_width = viewport_width
         self.viewport_height = viewport_height
         self.point_size = point_size
+        self.line_width = line_width
 
         self._platform = None
         self._renderer = None
@@ -148,7 +149,7 @@ class OffscreenRenderer(object):
             ))
         self._platform.init_context()
         self._platform.make_current()
-        self._renderer = Renderer(self.viewport_width, self.viewport_height)
+        self._renderer = Renderer(self.viewport_width, self.viewport_height, self.point_size, self.line_width)
 
     def __del__(self):
         try:
