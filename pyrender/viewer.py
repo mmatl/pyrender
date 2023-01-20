@@ -659,7 +659,7 @@ class Viewer(pyglet.window.Window):
             if dy > 0:
                 sf = spfc * dy
             elif dy < 0:
-                sf = - spbc * dy
+                sf = spbc / abs(dy)
 
             c = self._camera_node.camera
             xmag = max(c.xmag * sf, 1e-8)
