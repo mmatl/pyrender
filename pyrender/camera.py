@@ -184,7 +184,7 @@ class PerspectiveCamera(Camera):
         if aspect_ratio is None:
             if width is None or height is None:
                 raise ValueError('Aspect ratio of camera must be defined')
-            aspect_ratio = float(width) / float(height)
+            aspect_ratio = float(width) / (float(height) + 1e-6)
 
         a = aspect_ratio
         t = np.tan(self.yfov / 2.0)
