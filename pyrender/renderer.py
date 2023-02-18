@@ -599,6 +599,12 @@ class Renderer(object):
         if primitive.mode == GLTF.POINTS:
             glEnable(GL_PROGRAM_POINT_SIZE)
             glPointSize(self.point_size)
+            
+        # Disable depth mask if specified in material
+        if material.depthMask == False:
+            glDepthMask(GL_FALSE)
+        else:
+            glDepthMask(GL_TRUE)
 
         # Render mesh
         n_instances = 1
@@ -617,6 +623,9 @@ class Renderer(object):
 
         # Unbind mesh buffers
         primitive._unbind()
+        
+        # Depth mask is on by default in forward pass
+        glDepthMask(GL_TRUE)
 
     def _bind_lighting(self, scene, program, node, flags):
         """Bind all lighting uniform values for a scene.
