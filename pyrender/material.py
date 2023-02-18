@@ -109,6 +109,8 @@ class Material(object):
         self.wireframe = wireframe
 
         self._tex_flags = None
+        
+        self.depthMask = True
 
     @property
     def name(self):
@@ -249,6 +251,16 @@ class Material(object):
         material.
         """
         return self._compute_textures()
+    
+    @property
+    def depthMask(self):
+        return self._depthMask
+    
+    @depthMask.setter
+    def depthMask(self, value):
+        if not isinstance(value, bool):
+            raise TypeError('depthMask must be bool')
+        self._depthMask = value
 
     def _compute_transparency(self):
         return False
