@@ -1,8 +1,9 @@
 import numpy as np
 import trimesh
+import pytest
 
 from pyrender import (OffscreenRenderer, PerspectiveCamera, DirectionalLight,
-                      SpotLight, Mesh, Node, Scene)
+                      SpotLight, Mesh, Node, Scene, RenderFlags)
 
 
 def test_offscreen_renderer(tmpdir):
@@ -83,10 +84,22 @@ def test_offscreen_renderer(tmpdir):
     _ = scene.add(cam, pose=cam_pose)
 
     r = OffscreenRenderer(viewport_width=640, viewport_height=480)
-    color, depth = r.render(scene)
+    color_u8, depth = r.render(scene)
+    r.delete()
 
-    assert color.shape == (480, 640, 3)
+    assert color_u8.shape == (480, 640, 3)
+    assert color_u8.dtype == np.uint8
     assert depth.shape == (480, 640)
     assert np.max(depth.data) > 0.05
     assert np.count_nonzero(depth.data) > (0.2 * depth.size)
+
+    # render in floating point
+    r = OffscreenRenderer(viewport_width=640, viewport_height=480)
+    color_f32, depth = r.render(scene, RenderFlags.COLOR_FLOAT32)
     r.delete()
+    assert color_f32.shape == (480, 640, 3)
+    assert color_f32.dtype == np.float32
+
+    delta = np.abs(color_f32*255 - color_u8.astype(np.float32))
+    assert np.percentile(delta, 99.9) <= 1
+    assert np.max(delta) < 3
