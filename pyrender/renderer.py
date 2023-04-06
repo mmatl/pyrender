@@ -218,25 +218,37 @@ class Renderer(object):
         # Draw text
         font.render_string(text, x, y, scale, align)
 
-    def read_color_buf(self):
+    def read_color_buf(self, flags=RenderFlags.NONE):
         """Read and return the current viewport's color buffer.
 
         Alpha cannot be computed for an on-screen buffer.
 
         Returns
         -------
-        color_im : (h, w, 3) uint8
+        color_im : (h, w, 3) uint8 COLOR_FLOAT32 flag is not set in flags, otherwise float32
             The color buffer in RGB byte format.
         """
         # Extract color image from frame buffer
         width, height = self.viewport_width, self.viewport_height
         glBindFramebuffer(GL_READ_FRAMEBUFFER, 0)
         glReadBuffer(GL_FRONT)
-        color_buf = glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE)
-
-        # Re-format them into numpy arrays
-        color_im = np.frombuffer(color_buf, dtype=np.uint8)
-        color_im = color_im.reshape((height, width, 3))
+        if flags & RenderFlags.RGBA:
+            glformat = GL_RGBA
+            npshape = (height, width, 4)
+        else:
+            glformat = GL_RGB
+            npshape = (height, width, 3)
+        if flags & RenderFlags.COLOR_FLOAT32:
+            gltype = GL_FLOAT
+            npdtype = np.float32
+        else:
+            gltype = GL_UNSIGNED_BYTE
+            npdtype = np.uint8
+        color_buf = glReadPixels(
+            0, 0, width, height, glformat, gltype,
+        )
+        color_im = np.frombuffer(color_buf, dtype=npdtype)
+        color_im = color_im.reshape(npshape)
         color_im = np.flip(color_im, axis=0)
 
         # Resize for macos if needed
@@ -1009,7 +1021,7 @@ class Renderer(object):
 
         # If using offscreen render, bind main framebuffer
         if flags & RenderFlags.OFFSCREEN:
-            self._configure_main_framebuffer()
+            self._configure_main_framebuffer(flags)
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, self._main_fb_ms)
         else:
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0)
@@ -1051,7 +1063,7 @@ class Renderer(object):
         if self._shadow_fb is not None:
             glDeleteFramebuffers(1, [self._shadow_fb])
 
-    def _configure_main_framebuffer(self):
+    def _configure_main_framebuffer(self, flags):
         # If mismatch with prior framebuffer, delete it
         if (self._main_fb is not None and
                 self.viewport_width != self._main_fb_dims[0] or
@@ -1065,7 +1077,7 @@ class Renderer(object):
 
             glBindRenderbuffer(GL_RENDERBUFFER, self._main_cb)
             glRenderbufferStorage(
-                GL_RENDERBUFFER, GL_RGBA,
+                GL_RENDERBUFFER, GL_RGBA32F if flags & RenderFlags.COLOR_FLOAT32 else GL_RGBA,
                 self.viewport_width, self.viewport_height
             )
 
@@ -1090,7 +1102,7 @@ class Renderer(object):
             self._main_cb_ms, self._main_db_ms = glGenRenderbuffers(2)
             glBindRenderbuffer(GL_RENDERBUFFER, self._main_cb_ms)
             glRenderbufferStorageMultisample(
-                GL_RENDERBUFFER, 4, GL_RGBA,
+                GL_RENDERBUFFER, 4, GL_RGBA32F if flags & RenderFlags.COLOR_FLOAT32 else GL_RGBA,
                 self.viewport_width, self.viewport_height
             )
             glBindRenderbuffer(GL_RENDERBUFFER, self._main_db_ms)
@@ -1172,17 +1184,22 @@ class Renderer(object):
 
         # Read color
         if flags & RenderFlags.RGBA:
-            color_buf = glReadPixels(
-                0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE
-            )
-            color_im = np.frombuffer(color_buf, dtype=np.uint8)
-            color_im = color_im.reshape((height, width, 4))
+            glformat = GL_RGBA
+            npshape = (height, width, 4)
         else:
-            color_buf = glReadPixels(
-                0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE
-            )
-            color_im = np.frombuffer(color_buf, dtype=np.uint8)
-            color_im = color_im.reshape((height, width, 3))
+            glformat = GL_RGB
+            npshape = (height, width, 3)
+        if flags & RenderFlags.COLOR_FLOAT32:
+            gltype = GL_FLOAT
+            npdtype = np.float32
+        else:
+            gltype = GL_UNSIGNED_BYTE
+            npdtype = np.uint8
+        color_buf = glReadPixels(
+            0, 0, width, height, glformat, gltype,
+        )
+        color_im = np.frombuffer(color_buf, dtype=npdtype)
+        color_im = color_im.reshape(npshape)
         color_im = np.flip(color_im, axis=0)
 
         # Resize for macos if needed

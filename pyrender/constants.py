@@ -54,6 +54,8 @@ class RenderFlags(object):
     FLAT = 4096
     """Render the color buffer flat, with no lighting computations."""
     SEG = 8192
+    """Return a float32 color buffer instead of default uint8."""
+    COLOR_FLOAT32 = 16384
 
 
 class TextAlign:
