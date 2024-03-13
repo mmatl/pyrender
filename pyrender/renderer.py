@@ -335,7 +335,7 @@ class Renderer(object):
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-        if not bool(flags & RenderFlags.SEG or flags & RenderFlags.FLAT):
+        if not bool(flags & RenderFlags.SEG or flags & RenderFlags.DISABLE_AA):
             glEnable(GL_MULTISAMPLE)
         else:
             glDisable(GL_MULTISAMPLE)
