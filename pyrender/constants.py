@@ -54,7 +54,8 @@ class RenderFlags(object):
     FLAT = 4096
     """Render the color buffer flat, with no lighting computations."""
     SEG = 8192
-
+    DISABLE_AA = 16384
+    """Disables the anti alias during rendering"""
 
 class TextAlign:
     """Text alignment options for captions.
