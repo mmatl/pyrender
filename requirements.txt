@@ -1,7 +1,7 @@
 freetype-py
 imageio
 networkx
-numpy
+numpy<2.0.0
 Pillow
 pyglet==1.4.0a1
 PyOpenGL
