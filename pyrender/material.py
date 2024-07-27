@@ -429,6 +429,8 @@ class MetallicRoughnessMaterial(Material):
 
     @baseColorTexture.setter
     def baseColorTexture(self, value):
+        if value and (value.mode == 'LA' or value.mode == "L"):
+            value = value.convert('RGBA')
         self._baseColorTexture = self._format_texture(value, 'RGBA')
         self._tex_flags = None
 
