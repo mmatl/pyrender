@@ -680,7 +680,7 @@ class Viewer(pyglet.window.Window):
                 callback = tup
             else:
                 callback = tup[0]
-                if len(tup) == 2:
+                if len(tup) >= 2:
                     args = tup[1]
                 if len(tup) == 3:
                     kwargs = tup[2]
