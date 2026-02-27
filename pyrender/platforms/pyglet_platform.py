@@ -1,11 +1,15 @@
-from pyrender.constants import (TARGET_OPEN_GL_MAJOR, TARGET_OPEN_GL_MINOR,
-                                MIN_OPEN_GL_MAJOR, MIN_OPEN_GL_MINOR)
+from pyrender.constants import (
+    TARGET_OPEN_GL_MAJOR,
+    TARGET_OPEN_GL_MINOR,
+    MIN_OPEN_GL_MAJOR,
+    MIN_OPEN_GL_MINOR,
+)
 from .base import Platform
 
 import OpenGL
 
 
-__all__ = ['PygletPlatform']
+__all__ = ["PygletPlatform"]
 
 
 class PygletPlatform(Platform):
@@ -19,7 +23,8 @@ class PygletPlatform(Platform):
 
     def init_context(self):
         import pyglet
-        pyglet.options['shadow_window'] = False
+
+        pyglet.options["shadow_window"] = False
 
         try:
             pyglet.lib.x11.xlib.XInitThreads()
@@ -27,38 +32,50 @@ class PygletPlatform(Platform):
             pass
 
         self._window = None
-        confs = [pyglet.gl.Config(sample_buffers=1, samples=4,
-                                  depth_size=24,
-                                  double_buffer=True,
-                                  major_version=TARGET_OPEN_GL_MAJOR,
-                                  minor_version=TARGET_OPEN_GL_MINOR),
-                 pyglet.gl.Config(depth_size=24,
-                                  double_buffer=True,
-                                  major_version=TARGET_OPEN_GL_MAJOR,
-                                  minor_version=TARGET_OPEN_GL_MINOR),
-                 pyglet.gl.Config(sample_buffers=1, samples=4,
-                                  depth_size=24,
-                                  double_buffer=True,
-                                  major_version=MIN_OPEN_GL_MAJOR,
-                                  minor_version=MIN_OPEN_GL_MINOR),
-                 pyglet.gl.Config(depth_size=24,
-                                  double_buffer=True,
-                                  major_version=MIN_OPEN_GL_MAJOR,
-                                  minor_version=MIN_OPEN_GL_MINOR)]
+        confs = [
+            pyglet.gl.Config(
+                sample_buffers=1,
+                samples=4,
+                depth_size=24,
+                double_buffer=True,
+                major_version=TARGET_OPEN_GL_MAJOR,
+                minor_version=TARGET_OPEN_GL_MINOR,
+            ),
+            pyglet.gl.Config(
+                depth_size=24,
+                double_buffer=True,
+                major_version=TARGET_OPEN_GL_MAJOR,
+                minor_version=TARGET_OPEN_GL_MINOR,
+            ),
+            pyglet.gl.Config(
+                sample_buffers=1,
+                samples=4,
+                depth_size=24,
+                double_buffer=True,
+                major_version=MIN_OPEN_GL_MAJOR,
+                minor_version=MIN_OPEN_GL_MINOR,
+            ),
+            pyglet.gl.Config(
+                depth_size=24,
+                double_buffer=True,
+                major_version=MIN_OPEN_GL_MAJOR,
+                minor_version=MIN_OPEN_GL_MINOR,
+            ),
+        ]
         for conf in confs:
             try:
-                self._window = pyglet.window.Window(config=conf, visible=False,
-                                                    resizable=False,
-                                                    width=1, height=1)
+                self._window = pyglet.window.Window(
+                    config=conf, visible=False, resizable=False, width=1, height=1
+                )
                 break
             except pyglet.window.NoSuchConfigException as e:
                 pass
 
         if not self._window:
             raise ValueError(
-                'Failed to initialize Pyglet window with an OpenGL >= 3+ '
-                'context. If you\'re logged in via SSH, ensure that you\'re '
-                'running your script with vglrun (i.e. VirtualGL). The '
+                "Failed to initialize Pyglet window with an OpenGL >= 3+ "
+                "context. If you're logged in via SSH, ensure that you're "
+                "running your script with vglrun (i.e. VirtualGL). The "
                 'internal error message was "{}"'.format(e)
             )
 
@@ -69,7 +86,10 @@ class PygletPlatform(Platform):
     def make_uncurrent(self):
         try:
             import pyglet
-            pyglet.gl.xlib.glx.glXMakeContextCurrent(self._window.context.x_display, 0, 0, None)
+
+            pyglet.gl.xlib.glx.glXMakeContextCurrent(
+                self._window.context.x_display, 0, 0, None
+            )
         except Exception:
             pass
 

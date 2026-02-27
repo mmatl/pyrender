@@ -1,13 +1,14 @@
 # Pyrender
 
-[![Build Status](https://travis-ci.org/mmatl/pyrender.svg?branch=master)](https://travis-ci.org/mmatl/pyrender)
+<!-- [![Build Status](https://travis-ci.org/mmatl/pyrender.svg?branch=master)](https://travis-ci.org/mmatl/pyrender)
 [![Documentation Status](https://readthedocs.org/projects/pyrender/badge/?version=latest)](https://pyrender.readthedocs.io/en/latest/?badge=latest)
-[![Coverage Status](https://coveralls.io/repos/github/mmatl/pyrender/badge.svg?branch=master)](https://coveralls.io/github/mmatl/pyrender?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/mmatl/pyrender/badge.svg?branch=master)](https://coveralls.io/github/mmatl/pyrender?branch=master) -->
 [![PyPI version](https://badge.fury.io/py/pyrender.svg)](https://badge.fury.io/py/pyrender)
 [![Downloads](https://pepy.tech/badge/pyrender)](https://pepy.tech/project/pyrender)
 
-Pyrender is a pure Python (2.7, 3.4, 3.5, 3.6) library for physically-based
-rendering and visualization.
+Pyrender is a pure Python (3.10+) library for physically-based
+rendering and visualization, updated for compatibility with recent versions
+of its dependencies including pyglet 2.x, trimesh 4.x, modern NumPy, and OpenGL.
 It is designed to meet the [glTF 2.0 specification from Khronos](https://www.khronos.org/gltf/).
 
 Pyrender is lightweight, easy to install, and simple to use.
