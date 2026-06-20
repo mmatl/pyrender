@@ -212,7 +212,7 @@ class Primitive(object):
     @indices.setter
     def indices(self, value):
         if value is not None:
-            value = np.asanyarray(value, dtype=np.float32)
+            value = np.asanyarray(value, dtype=np.uint32)
             value = np.ascontiguousarray(value)
         self._indices = value
 
