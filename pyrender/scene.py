@@ -476,8 +476,8 @@ class Scene(object):
         if node not in self.nodes:
             raise ValueError('Node must already be in scene')
         node._matrix = pose
-        if node.mesh is not None:
-            self._bounds = None
+        # Meshless nodes can move descendant meshes as well.
+        self._bounds = None
 
     def clear(self):
         """Clear out all nodes to form an empty scene.
